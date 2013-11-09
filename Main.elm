@@ -74,7 +74,7 @@ type Point = Positioned {}
 type Box = Boxed {}
 
 type Effect = (Time -> Form)
-type Card = Boxed ({effect:Effect})
+type Card = Boxed ({effect:Effect, status:CardStatus})
 type Cards = [Card]
 
 
@@ -106,7 +106,9 @@ cardBoxes =
   in
     map (((+) yOff ) . (*) distY) [0..rows-1] |> map cardBoxRow |> concat
 
-card effect box = { box | effect=effect }
+card effect box =
+  let boxedEffect = { box | effect=effect }
+  in { boxedEffect | status=FaceDown }
 
 -- todo: shuffle effects
 cards = map (card starfield) cardBoxes
