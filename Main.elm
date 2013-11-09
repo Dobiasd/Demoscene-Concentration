@@ -11,6 +11,13 @@ needed time inversly indicates the players performance. ;-)
 import Touch
 import Window
 
+import Plasma(plasma)
+import Starfield(starfield)
+import Particles(particles)
+import Tunnel(tunnel)
+import Lissajous(lissajous)
+import Sinescroller(sinescroller)
+
 
 -- /---------------------\
 -- | model configuration |
@@ -19,8 +26,14 @@ import Window
 {-| The game field extends from -100 to +100 in x and y coordinates. -}
 (gameWidth,gameHeight) = (200,200)
 framesPerSecond = 60
+
 effects : [Effect]
-effects = [effect "plasma" plasma, effect "starfield" starfield]
+effects = [ effect "plasma" plasma
+          , effect "starfield" starfield
+          , effect "particles" particles
+          , effect "tunnel" tunnel
+          , effect "lissajous" lissajous
+          , effect "sinescroller" sinescroller ]
 
 
 -- /--------------------\
@@ -80,37 +93,29 @@ type Cards = [Card]
 effect : String -> EffectFunc -> Effect
 effect name func = {name=name, func=func}
 
--- todo move effects to own modules
-plasma : Time -> Form
-plasma t = rect 200 200 |> filled (rgb 255 0 0)
-
-starfield : Time -> Form
-starfield t = rect 200 200 |> filled (rgb 0 0 255)
-
 backside : Time -> Form
 backside _ = rect 200 200 |> filled (rgb 0 0 0)
 
 doneOverlay : Time -> Form
 doneOverlay _ = rect 200 200 |> filled (rgba 0 0 0 0.5)
 
-
 {-| Creation of one single row of cards with equidistant gaps. -}
 cardBoxRow : Float -> [Box]
 cardBoxRow y =
   let
-    cols = 2
-    distX = 90 -- todo calculate dynamically
-    xOff = toFloat (ceiling  (-cols / 2)) * distX / 2
-    cardWidth = 70
-    cardHeight = 70
+    cols = 4
+    distX = 50
+    xOff = -distX * (toFloat cols - 1) / 2
+    cardWidth = 45
+    cardHeight = 45
   in
     map (\x -> box (distX * x + xOff) y cardWidth cardHeight) [0..cols-1]
 
 cardBoxes =
   let
-    rows = 2
-    distY = 90 -- todo calculate dynamically
-    yOff = toFloat (ceiling  (-rows / 2)) * distY / 2
+    rows = 3
+    distY = 55
+    yOff = -distY * (toFloat rows - 1) / 2
   in
     map (((+) yOff ) . (*) distY) [0..rows-1] |> map cardBoxRow |> concat
 
@@ -121,10 +126,8 @@ card effect box =
 
 
 -- todo: shuffle effects
-e1 = head effects
-e2 = (head . tail) effects
 cards : Cards
-cards = zipWith (\effect box -> card effect box) [e1, e1, e2, e2] cardBoxes
+cards = zipWith (\effect box -> card effect box) (effects ++ effects) cardBoxes
 
 
 
