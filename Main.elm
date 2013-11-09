@@ -17,9 +17,10 @@ import Window
 -- \---------------------/
 
 {-| The game field extends from -100 to +100 in x and y coordinates. -}
-(gameWidth,gameHeight) = (200,200)
+(gameWidth,gameHeight) = (1000,1000) -- todo (200,200)
 framesPerSecond = 60
-effects = []
+effects : [Effect]
+effects = [plasma, starfield]
 
 
 -- /--------------------\
@@ -38,6 +39,7 @@ textPosY = -90
 -- | inputs |
 -- \--------/
 
+data CardStatus = FaceDown | FaceUp | Done
 data Action = Tap Point | Step Float
 type Input = { winSize:(Int,Int), action:Action }
 
@@ -67,16 +69,56 @@ actions = merge steps flips
 type Positioned a = { a | x:Float, y:Float }
 type Sized      a = { a | w:Float, h:Float }
 type Boxed      a = Sized (Positioned a)
+
 type Point = Positioned {}
-type Effect = Int -- todo function
+type Box = Boxed {}
+
+type Effect = (Time -> Form)
 type Card = Boxed ({effect:Effect})
 type Cards = [Card]
-cards = []
+
+
+-- todo move effects to own modules
+plasma : Time -> Form
+plasma t = rect 200 200 |> filled (rgb 255 0 0)
+
+starfield : Time -> Form
+starfield t = rect 200 200 |> filled (rgb 0 0 255)
+
+
+{-| Creation of one single row of cards with equidistant gaps. -}
+cardBoxRow : Float -> [Box]
+cardBoxRow y =
+  let
+    cols = 2
+    distX = 50 -- todo calculate dynamically
+    xOff = toFloat (ceiling  (-cols / 2)) * distX / 2
+    cardWidth = 40
+    cardHeight = 40
+  in
+    map (\x -> box (distX * x + xOff) y cardWidth cardHeight) [0..cols-1]
+
+cardBoxes =
+  let
+    rows = 2
+    distY = 50 -- todo calculate dynamically
+    yOff = toFloat (ceiling  (-rows / 2)) * distY / 2
+  in
+    map (((+) yOff ) . (*) distY) [0..rows-1] |> map cardBoxRow |> concat
+
+card effect box = { box | effect=effect }
+
+-- todo: shuffle effects
+cards = map (card starfield) cardBoxes
+
 
 data State = Start | Play | Won
 
 point : Float -> Float -> Point
 point x y = {x=x, y=y}
+
+box : Float -> Float -> Float -> Float -> Box
+box x y w h = {x=x, y=y, w=w, h=h }
 
 type Game = { state:State
             , cards:Cards
