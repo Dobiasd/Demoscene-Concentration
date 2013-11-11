@@ -25,7 +25,7 @@ import Sinescroller(sinescroller)
 
 {-| The game field extends from -100 to +100 in x and y coordinates. -}
 (gameWidth,gameHeight) = (200,200)
-framesPerSecond = 60
+framesPerSecond = 2
 
 effects : [Effect]
 effects = [ effect "plasma" plasma
@@ -254,7 +254,8 @@ stepGame ({action,winSize}) ({state, time} as game) =
 displayCard : Time -> Card -> Form
 displayCard time card =
   let texture = case card.status of
-                  FaceDown -> backside time
+                  --FaceDown -> backside time -- todo back in
+                  FaceDown -> card.effect.func time
                   FaceUp -> card.effect.func time
                   Done -> group [card.effect.func time, doneOverlay time]
   in texture |> move (card.x, card.y) |> scale (card.w / 200)
