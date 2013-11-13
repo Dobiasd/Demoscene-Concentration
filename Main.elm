@@ -25,7 +25,7 @@ import Sinescroller(sinescroller)
 
 {-| The game field extends from -100 to +100 in x and y coordinates. -}
 (gameWidth,gameHeight) = (200,200)
-framesPerSecond = 2
+framesPerSecond = 10
 
 effects : [Effect]
 effects = [ effect "plasma" plasma
