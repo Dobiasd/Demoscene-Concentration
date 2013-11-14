@@ -53,8 +53,6 @@ data Action = Tap Point | Step Float
 type Input = { winSize:(Int,Int), action:Action }
 
 speed : Signal Time
---speed = lift ((/)1000) <| fps framesPerSecond
---speed = lift inSeconds <| fps framesPerSecond
 speed = fps framesPerSecond
 
 input : Signal Input
