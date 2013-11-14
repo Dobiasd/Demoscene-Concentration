@@ -25,7 +25,9 @@ import Sinescroller(sinescroller)
 
 {-| The game field extends from -100 to +100 in x and y coordinates. -}
 (gameWidth,gameHeight) = (200,200)
-framesPerSecond = 10
+framesPerSecond = 60
+
+-- todo: give effects a state and increment it by delta
 
 effects : [Effect]
 effects = [ effect "plasma" plasma
@@ -278,7 +280,7 @@ display ({state,time,cards} as game) =
       [
         displayCards time cards
         , timeTextForm
-        , asText game |> toForm |> scale 0.2
+        --, asText game |> toForm |> scale 0.2
         --, asText cards |> toForm |> scale 0.2
       ]
 

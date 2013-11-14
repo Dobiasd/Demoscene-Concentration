@@ -6,13 +6,11 @@ module Plasma where
 -}
 
 
-
-
 {-| Returns a plasma effect filled form depending on the current time. -}
 plasma : Time -> Form
 plasma t =
   let
-    pixels = 16
+    pixels = 8
     poss = rectPositions pixels pixels
     colR (x,y) = bilinearInterpolatedRect (x,y+1) (x+1,y)
       (plasmaCol (x) (y+1) t)
@@ -24,11 +22,12 @@ plasma t =
     [rect pixels pixels |> filled black] ++ rectForms
       |> group |> scale (200/pixels)
 
+
 {-| Returns all integral positions inside a rect.
 rectPositions 2 3 =
   [(0,0),(1,0),(0,1),(1,1),(0,2),(1,2)]
 -}
-
+rectPositions : Float -> Float -> [(Float,Float)]
 rectPositions w h =
   let
     xs = [0..(w-1)]
@@ -37,45 +36,54 @@ rectPositions w h =
   in
     map row ys |> concat
 
-type PlasmaColConf1D = { weight:Float, scale:Float, timeScale:Float }
-type PlasmaColConf = { x:PlasmaColConf1D, y:PlasmaColConf1D }
 
-plasmaColConf1D : Float -> Float -> Float -> PlasmaColConf1D
-plasmaColConf1D w s t = { weight=w, scale=s, timeScale=t }
+type PlasmaColConf = { sf:Float, xf:Float, yf:Float, tf:Float }
 
-plasmaColConf : PlasmaColConf1D -> PlasmaColConf1D -> PlasmaColConf
-plasmaColConf xConf yConf = { x=xConf, y=yConf }
+
+plasmaColConf : Float -> Float -> Float -> Float -> PlasmaColConf
+plasmaColConf sf xf yf tf = { sf=sf, xf=xf, yf=yf, tf=tf }
+
 
 rConf : [ PlasmaColConf ]
-rConf = [ plasmaColConf (plasmaColConf1D 1 1 4) (plasmaColConf1D 2 3 2)
-        , plasmaColConf (plasmaColConf1D 1 4 1) (plasmaColConf1D 0 5 7)
+rConf = [ plasmaColConf -4   3  -4   1
+        , plasmaColConf  6   6   1   5
+        , plasmaColConf  2   5  -7  -8
+        , plasmaColConf -3   5   3  -7
+        , plasmaColConf  5   1  -7   2
+        , plasmaColConf -4   8  -1  -3
+        , plasmaColConf -5   7   4   7
+        , plasmaColConf  3   8  -5   1
         ]
 
 gConf : [ PlasmaColConf ]
-gConf = [ plasmaColConf (plasmaColConf1D 1 2 2) (plasmaColConf1D 4 6 8)
-        , plasmaColConf (plasmaColConf1D 1 8 8) (plasmaColConf1D 1 2 5)
+gConf = [ plasmaColConf  4  -2  -3  -2
+        , plasmaColConf  2   1  -2   5
+        , plasmaColConf -6   2  -6  -6
+        , plasmaColConf -4   6   6  -3
+        , plasmaColConf -6   6  -5  -3
+        , plasmaColConf  4  -8   4  -5
+        , plasmaColConf  1   3   6   1
+        , plasmaColConf  5   6  -2  -5
         ]
 
 bConf : [ PlasmaColConf ]
-bConf = [ plasmaColConf (plasmaColConf1D 1 4 7) (plasmaColConf1D 2 6 3)
-        , plasmaColConf (plasmaColConf1D 2 4 2) (plasmaColConf1D 5 2 1)
+bConf = [ plasmaColConf  6  -7   6   1
+        , plasmaColConf -7  -2  -8   7
+        , plasmaColConf  2   7  -1   8
+        , plasmaColConf -3  -4   4  -1
+        , plasmaColConf  3  -4   8   7
+        , plasmaColConf -4   8   0   6
+        , plasmaColConf  4  -1   5  -3
+        , plasmaColConf  1   5  -4  -3
         ]
-
-colValFromConf1D : Float -> Float -> PlasmaColConf1D -> Float
-colValFromConf1D p t conf =
-  conf.weight * sin(conf.scale * p + conf.timeScale * t)
 
 colValFromConf : Float -> Float -> Float -> PlasmaColConf -> Float
 colValFromConf x y t conf =
-  let
-    xCol = colValFromConf1D x t conf.x
-    yCol = colValFromConf1D y t conf.y
-  in
-    xCol + yCol
+  conf.sf * sin ( (conf.xf * x) + (conf.yf * y) + (conf.tf * t) )
 
 divisorForColConfs : [PlasmaColConf] -> Float
 divisorForColConfs confs =
-  sum <| map (\conf -> conf.x.weight + conf.y.weight) confs
+  sum <| map (abs . .sf) confs
 
 colValFromConfs : Float -> Float -> Float -> [PlasmaColConf] -> Float
 colValFromConfs x y t confs =
@@ -84,34 +92,21 @@ colValFromConfs x y t confs =
 plasmaCol : Float -> Float -> Float -> Color
 plasmaCol xIn yIn tIn =
   let
-    x = xIn / 5
-    y = yIn / 5
-    t = 0.0004 * tIn
-    r = colValFromConfs x y t rConf
-    g = colValFromConfs x y t gConf
-    b = colValFromConfs x y t bConf
-  in
-    rgb (127 + round (127 * r))
-        --(127 + round (127 * g))
-        --(127 + round (127 * b))
-        0 0
-
-newplasmaCol : Float -> Float -> Float -> Color
-newplasmaCol xIn yIn tIn =
-  let
-    x = xIn / 3
-    y = yIn / 3
-    t = 0.004 * tIn
-    v = sin (x+t) + sin(y+t)/2 + sin(x+y+t)/2.0
-    a = x * sin (t/3)
-    b = cos (t/2)
-    v' = v + sin(sqrt(a*a+b*b+1.0)+t)
-    pi = 3.14
+    x = xIn / 7
+    y = yIn / 7
+    t = tIn * 0.0004
+    rRaw = colValFromConfs x y t rConf
+    gRaw = colValFromConfs x y t gConf
+    bRaw = colValFromConfs x y t bConf
+    correctCol = clamp 0 255
+    center = 32
+    factor = 224
   in
     rgb
-      1
-      (127 + round (127 * sin(pi*v')))
-      (127 + round (127 * cos(pi*v')))
+      (round (center + factor * rRaw) |> correctCol)
+      (round (center + factor * gRaw) |> correctCol)
+      (round (center + factor * bRaw) |> correctCol)
+
 
 bilinearInterpolatedRect :
   (Float,Float) ->
@@ -121,32 +116,28 @@ bilinearInterpolatedRect :
   Color ->
   Color ->
   Form
-bilinearInterpolatedRect tl br
-    (Color rtl gtl btl atl)
-    (Color rbl gbl bbl abl)
-    (Color rbr gbr bbr abr)
-    (Color rtr gtr btr atr) =
+bilinearInterpolatedRect
+    ((tlx,tly) as tl)
+    ((brx,bry) as br)
+    ((Color rtl gtl btl atl) as ctl)
+    ((Color rbl gbl bbl abl) as cbl)
+    ((Color rbr gbr bbr abr) as cbr)
+    ((Color rtr gtr btr atr) as ctr) =
   let
-    ctl = rgba rtl gtl btl 1
-    cbl = rgba rbl gbl bbl 1
-    cbr = rgba rbr gbr bbr 1
-    ctr = rgba rtr gtr btr 1
-    tr = (fst br,snd tl)
-    bl = (fst tl,snd br)
-    g1cm = rgba ((rtl+rbr) `div` 2) ((gtl+gbr) `div` 2) ((btl+bbr) `div` 2) 0.7
-    g2cm = rgba ((rtr+rbl) `div` 2) ((gtr+gbl) `div` 2) ((btr+bbl) `div` 2) 0.03
-
-    w = fst br - fst tl
-    h = snd tr - snd bl
-    c = (fst bl + w/2, snd tr - h/2)
-    (movex, movey) = c
-
-    tln = (fst tl - fst c, snd tl - snd c)
-    bln = (fst bl - fst c, snd bl - snd c)
-    brn = (fst br - fst c, snd br - snd c)
-    trn = (fst tr - fst c, snd tr - snd c)
-    g1 = linear tln brn [(0,ctl), (0.5,g1cm), (1,cbr)]
-    g2 = linear trn bln [(0,ctr), (0.5,g2cm), (1,cbl)]
+    ((trx,try) as tr) = (brx,tly)
+    ((blx,bly) as bl) = (tlx,bry)
+    g1cm = rgba
+      ((rtl+rbr) `div` 2) ((gtl+gbr) `div` 2) ((btl+bbr) `div` 2) 0.7
+    g2cm = rgba
+      ((rtr+rbl) `div` 2) ((gtr+gbl) `div` 2) ((btr+bbl) `div` 2) 0.03
+    (w,h) = (brx-tlx, tly-bry)
+    ((cx,cy) as c) = (tlx + w/2, tly - h/2)
+    tlg = (tlx - cx, tly - cy)
+    blg = (blx - cx, bly - cy)
+    brg = (brx - cx, bry - cy)
+    trg = (trx - cx, try - cy)
+    g1 = linear tlg brg [(0,ctl), (0.5,g1cm), (1,cbr)]
+    g2 = linear trg blg [(0,ctr), (0.5,g2cm), (1,cbl)]
   in
     group [
       gradient g1 (rect w h)
