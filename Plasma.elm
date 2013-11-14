@@ -47,16 +47,19 @@ plasmaColConf : PlasmaColConf1D -> PlasmaColConf1D -> PlasmaColConf
 plasmaColConf xConf yConf = { x=xConf, y=yConf }
 
 rConf : [ PlasmaColConf ]
-rConf = [ plasmaColConf (plasmaColConf1D 2 1 4) (plasmaColConf1D 5 3 2)
-        , plasmaColConf (plasmaColConf1D 7 4 1) (plasmaColConf1D 1 5 7) ]
+rConf = [ plasmaColConf (plasmaColConf1D 1 1 4) (plasmaColConf1D 2 3 2)
+        , plasmaColConf (plasmaColConf1D 1 4 1) (plasmaColConf1D 0 5 7)
+        ]
 
 gConf : [ PlasmaColConf ]
-gConf = [ plasmaColConf (plasmaColConf1D 6 2 2) (plasmaColConf1D 4 6 8)
-        , plasmaColConf (plasmaColConf1D 4 8 8) (plasmaColConf1D 8 2 5) ]
+gConf = [ plasmaColConf (plasmaColConf1D 1 2 2) (plasmaColConf1D 4 6 8)
+        , plasmaColConf (plasmaColConf1D 1 8 8) (plasmaColConf1D 1 2 5)
+        ]
 
 bConf : [ PlasmaColConf ]
-bConf = [ plasmaColConf (plasmaColConf1D 1 5 7) (plasmaColConf1D 8 5 3)
-        , plasmaColConf (plasmaColConf1D 2 4 2) (plasmaColConf1D 5 2 1) ]
+bConf = [ plasmaColConf (plasmaColConf1D 1 4 7) (plasmaColConf1D 2 6 3)
+        , plasmaColConf (plasmaColConf1D 2 4 2) (plasmaColConf1D 5 2 1)
+        ]
 
 colValFromConf1D : Float -> Float -> PlasmaColConf1D -> Float
 colValFromConf1D p t conf =
@@ -72,7 +75,7 @@ colValFromConf x y t conf =
 
 divisorForColConfs : [PlasmaColConf] -> Float
 divisorForColConfs confs =
-  sum <| map (\conf -> conf.x.weight + conf.x.weight) confs
+  sum <| map (\conf -> conf.x.weight + conf.y.weight) confs
 
 colValFromConfs : Float -> Float -> Float -> [PlasmaColConf] -> Float
 colValFromConfs x y t confs =
@@ -83,17 +86,32 @@ plasmaCol xIn yIn tIn =
   let
     x = xIn / 5
     y = yIn / 5
-    t = 0.004 * tIn
-    rDiv = divisorForColConfs rConf
-    gDiv = divisorForColConfs gConf
-    bDiv = divisorForColConfs bConf
+    t = 0.0004 * tIn
     r = colValFromConfs x y t rConf
     g = colValFromConfs x y t gConf
     b = colValFromConfs x y t bConf
   in
     rgb (127 + round (127 * r))
-        (127 + round (127 * g))
-        (127 + round (127 * b))
+        --(127 + round (127 * g))
+        --(127 + round (127 * b))
+        0 0
+
+newplasmaCol : Float -> Float -> Float -> Color
+newplasmaCol xIn yIn tIn =
+  let
+    x = xIn / 3
+    y = yIn / 3
+    t = 0.004 * tIn
+    v = sin (x+t) + sin(y+t)/2 + sin(x+y+t)/2.0
+    a = x * sin (t/3)
+    b = cos (t/2)
+    v' = v + sin(sqrt(a*a+b*b+1.0)+t)
+    pi = 3.14
+  in
+    rgb
+      1
+      (127 + round (127 * sin(pi*v')))
+      (127 + round (127 * cos(pi*v')))
 
 bilinearInterpolatedRect :
   (Float,Float) ->
