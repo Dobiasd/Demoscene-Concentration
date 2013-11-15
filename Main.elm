@@ -11,12 +11,12 @@ needed time inversly indicates the players performance. ;-)
 import Touch
 import Window
 
-import Plasma(plasma)
-import Starfield(starfield)
-import Particles(particles)
-import Tunnel(tunnel)
-import Lissajous(lissajous)
-import Sinescroller(sinescroller)
+import Plasma
+import Starfield
+import Particles
+import Lissajous
+import Sinescroller
+import Tunnel
 
 
 -- /---------------------\
@@ -30,12 +30,12 @@ framesPerSecond = 60
 -- todo: give effects a state and increment it by delta
 
 effects : [Effect]
-effects = [ effect "plasma" plasma
-          , effect "starfield" starfield
-          , effect "particles" particles
-          , effect "tunnel" tunnel
-          , effect "lissajous" lissajous
-          , effect "sinescroller" sinescroller ]
+effects = [ effect "plasma" Plasma.plasma
+          , effect "starfield" Starfield.starfield
+          , effect "particles" Particles.particles
+          , effect "lissajous" Lissajous.lissajous
+          , effect "sinescroller" Sinescroller.sinescroller
+          , effect "tunnel" Tunnel.tunnel ]
 
 
 -- /--------------------\
@@ -176,12 +176,6 @@ gameScale (winW, winH) (gameW,gameH) =
 gameState : Signal Game
 gameState = foldp stepGame defaultGame input
 
-stepDelta : Time -> Game -> Game
-stepDelta delta ({state, time} as game) =
-  case state of
-    Play -> { game | time <- if state == Start then time else time + delta }
-    _ -> game
-
 inBox : Positioned a -> Boxed b -> Bool
 inBox pos box =
   let
@@ -238,12 +232,29 @@ stepTap gameTapPos ({state,cards} as game) =
     { game | state <- state',
              cards <- cards' }
 
+stepCard : Float -> Card -> Card
+stepCard delta ({status} as card) =
+  case status of
+    FaceUp -> card -- todo: update
+    _ -> card
+
+stepCards : Float -> Cards -> Cards
+stepCards delta cards = cards
+
+stepDelta : Float -> Game -> Game
+stepDelta delta ({cards, state, time} as game) =
+  let
+    cards' = stepCards delta cards
+  in
+    { game | cards <- cards',
+             time <- case state of
+                       Play -> time + delta
+                       _ -> time }
+
 stepGame : Input -> Game -> Game
 stepGame ({action}) ({state, time} as game) =
   case action of
-    Step delta -> { game | time <- case state of
-                                     Play -> time + delta
-                                     _ -> time }
+    Step delta -> stepDelta delta game
     Tap tapPos winDims -> stepTap (winPosToGamePos tapPos winDims) game
 
 
