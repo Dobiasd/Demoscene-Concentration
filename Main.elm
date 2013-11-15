@@ -51,14 +51,14 @@ timeTextPosY = 95
 -- \--------/
 
 data CardStatus = FaceDown | FaceUp | Done
-data Action = Tap Point | Step Float
-type Input = { winSize:(Int,Int), action:Action }
+data Action = Tap Point (Int,Int) | Step Float
+type Input = { action:Action }
 
 speed : Signal Time
 speed = fps framesPerSecond
 
 input : Signal Input
-input = (Input <~ Window.dimensions ~ actions)
+input = (Input <~ actions)
 
 steps : Signal Action
 steps = lift Step speed
@@ -66,9 +66,9 @@ steps = lift Step speed
 flips : Signal Action
 flips =
   let
-    f t = Tap <| point (toFloat t.x) (toFloat t.y)
+    f t winDims = Tap (point (toFloat t.x) (toFloat t.y)) winDims
   in
-    lift f Touch.taps |> dropRepeats
+    f <~ Touch.taps ~ Window.dimensions |> sampleOn Touch.taps |> dropRepeats
 
 actions = merge steps flips
 
@@ -239,12 +239,12 @@ stepTap gameTapPos ({state,cards} as game) =
              cards <- cards' }
 
 stepGame : Input -> Game -> Game
-stepGame ({action,winSize}) ({state, time} as game) =
+stepGame ({action}) ({state, time} as game) =
   case action of
     Step delta -> { game | time <- case state of
                                      Play -> time + delta
                                      _ -> time }
-    Tap tapPos -> stepTap (winPosToGamePos tapPos winSize) game
+    Tap tapPos winDims -> stepTap (winPosToGamePos tapPos winDims) game
 
 
 -- /---------\
