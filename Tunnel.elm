@@ -5,6 +5,14 @@ module Tunnel where
 @docs tunnel
 -}
 
+type State = {time:Float}
+
+make : State
+make = {time=0}
+
+step : Float -> State -> State
+step delta ({time} as state) = { state | time <- time + delta }
+
 {-| Returns a tunnel effect filled form depending on the current time. -}
-tunnel : Time -> Form
-tunnel t = rect 200 200 |> filled (rgb 0 255 255)
+display : State -> Form
+display {time} = rect 200 200 |> filled (rgb 0 255 255)

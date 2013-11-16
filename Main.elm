@@ -11,12 +11,7 @@ needed time inversly indicates the players performance. ;-)
 import Touch
 import Window
 
-import Plasma
-import Starfield
-import Particles
-import Lissajous
-import Sinescroller
-import Tunnel
+import Effects
 
 
 -- /---------------------\
@@ -26,16 +21,6 @@ import Tunnel
 {-| The game field extends from -100 to +100 in x and y coordinates. -}
 (gameWidth,gameHeight) = (200,200)
 framesPerSecond = 60
-
--- todo: give effects a state and increment it by delta
-
-effects : [Effect]
-effects = [ effect "plasma" Plasma.plasma
-          , effect "starfield" Starfield.starfield
-          , effect "particles" Particles.particles
-          , effect "lissajous" Lissajous.lissajous
-          , effect "sinescroller" Sinescroller.sinescroller
-          , effect "tunnel" Tunnel.tunnel ]
 
 
 -- /--------------------\
@@ -85,13 +70,8 @@ type Boxed      a = Sized (Positioned a)
 type Point = Positioned {}
 type Box = Boxed {}
 
-type EffectFunc = Time -> Form
-type Effect = Named {func:EffectFunc}
-type Card = Boxed {effect:Effect, status:CardStatus}
+type Card = Boxed {effect:Effects.Effect, status:CardStatus}
 type Cards = [Card]
-
-effect : String -> EffectFunc -> Effect
-effect name func = {name=name, func=func}
 
 backside : Time -> Form
 backside _ = rect 200 200 |> filled (rgb 0 0 0)
@@ -127,7 +107,16 @@ card effect box =
 
 -- todo: shuffle effects
 cards : Cards
-cards = zipWith (\effect box -> card effect box) (effects ++ effects) cardBoxes
+cards =
+  let
+    effects = [ Effects.makePlasma
+              , Effects.makeStarfield
+              , Effects.makeParticles
+              , Effects.makeTunnel
+              , Effects.makeLissajous
+              , Effects.makeSinescroller ]
+  in
+    zipWith (\effect box -> card effect box) (effects ++ effects) cardBoxes
 
 
 
@@ -200,9 +189,13 @@ flipCardsHit : Point -> Cards -> Cards
 flipCardsHit tapPos cards =
     foldr (goflipCardsHit tapPos) [] cards
 
-allEqual : [a] -> Bool
-allEqual xs = if length xs < 2 then True
-                               else all ((==) (head xs)) (tail xs)
+allEqual : Cards -> Bool
+allEqual cards =
+  let
+    es = map .effect cards
+  in
+    if length es < 2 then True
+      else all (Effects.equalType (head es)) (tail es)
 
 -- todo: simplify
 stepTap : Point -> Game -> Game
@@ -216,9 +209,7 @@ stepTap gameTapPos ({state,cards} as game) =
                                           else cardsNotDone
     (cardsNotDoneUp', cardsNotDoneDown') =
        partition (((==) FaceUp) . (.status)) cardsNotDone'
-    cardsNotDoneUpEffectNames = map (.name . .effect) cardsNotDoneUp'
-    names = cardsNotDoneUpEffectNames
-    foundPair = length names == 2 && allEqual names
+    foundPair = length cardsNotDoneUp' == 2 && allEqual cardsNotDoneUp'
     cardsNotDoneUpDone' = map (\c -> {c | status <- Done}) cardsNotDoneUp'
     allDone = all
     cards' = cardsDone ++ cardsNotDoneDown'
@@ -233,13 +224,13 @@ stepTap gameTapPos ({state,cards} as game) =
              cards <- cards' }
 
 stepCard : Float -> Card -> Card
-stepCard delta ({status} as card) =
+stepCard delta ({status, effect} as card) =
   case status of
-    FaceUp -> card -- todo: update
+    FaceUp -> { card | effect <- Effects.step delta effect }
     _ -> card
 
 stepCards : Float -> Cards -> Cards
-stepCards delta cards = cards
+stepCards delta cards = map (stepCard delta) cards
 
 stepDelta : Float -> Game -> Game
 stepDelta delta ({cards, state, time} as game) =
@@ -266,9 +257,9 @@ displayCard : Time -> Card -> Form
 displayCard time card =
   let texture = case card.status of
                   --FaceDown -> backside time -- todo back in
-                  FaceDown -> card.effect.func time
-                  FaceUp -> card.effect.func time
-                  Done -> group [card.effect.func time, doneOverlay time]
+                  FaceDown -> Effects.display card.effect
+                  FaceUp -> Effects.display card.effect
+                  Done -> group [Effects.display card.effect, doneOverlay time]
   in texture |> move (card.x, card.y) |> scale (card.w / 200)
 
 
@@ -291,7 +282,7 @@ display ({state,time,cards} as game) =
       [
         displayCards time cards
         , timeTextForm
-        --, asText game |> toForm |> scale 0.2
+        , asText game |> toForm |> scale 0.2
         --, asText cards |> toForm |> scale 0.2
       ]
 

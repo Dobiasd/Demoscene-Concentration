@@ -6,16 +6,25 @@ module Plasma where
 -}
 
 
+type State = {time:Float}
+
+make : State
+make = {time=0}
+
+step : Float -> State -> State
+step delta ({time} as state) = { state | time <- time + delta }
+
 {-| Returns a plasma effect filled form depending on the current time. -}
-plasma : Time -> Form
-plasma t =
+display : State -> Form
+display ({time} as state) =
   let
+    t = time -- todo: Why you no work with time directly?
     pixels = 8
     poss = rectPositions pixels pixels
     colR (x,y) = bilinearInterpolatedRect (x,y+1) (x+1,y)
-      (plasmaCol (x) (y+1) t)
-      (plasmaCol (x) (y) t)
-      (plasmaCol (x+1) (y) t)
+      (plasmaCol (x)   (y+1) t)
+      (plasmaCol (x)   (y)   t)
+      (plasmaCol (x+1) (y)   t)
       (plasmaCol (x+1) (y+1) t)
     rectForms = map colR poss |> map (move (-pixels/2,-pixels/2))
   in
@@ -79,7 +88,7 @@ bConf = [ plasmaColConf  6  -7   6   1
 
 colValFromConf : Float -> Float -> Float -> PlasmaColConf -> Float
 colValFromConf x y t conf =
-  conf.sf * sin ( (conf.xf * x) + (conf.yf * y) + (conf.tf * t) )
+  conf.sf * cos ( (conf.xf * x) + (conf.yf * y) + (conf.tf * t) )
 
 divisorForColConfs : [PlasmaColConf] -> Float
 divisorForColConfs confs =
@@ -108,14 +117,8 @@ plasmaCol xIn yIn tIn =
       (round (center + factor * bRaw) |> correctCol)
 
 
-bilinearInterpolatedRect :
-  (Float,Float) ->
-  (Float,Float) ->
-  Color ->
-  Color ->
-  Color ->
-  Color ->
-  Form
+bilinearInterpolatedRect : (Float,Float) -> (Float,Float) ->
+  Color -> Color -> Color -> Color -> Form
 bilinearInterpolatedRect
     ((tlx,tly) as tl)
     ((brx,bry) as br)
