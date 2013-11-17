@@ -256,8 +256,8 @@ stepGame ({action}) ({state, time} as game) =
 displayCard : Time -> Card -> Form
 displayCard time card =
   let texture = case card.status of
-                  --FaceDown -> backside time -- todo back in
-                  FaceDown -> Effects.display card.effect
+                  FaceDown -> backside time
+                  --FaceDown -> Effects.display card.effect
                   FaceUp -> Effects.display card.effect
                   Done -> group [Effects.display card.effect, doneOverlay time]
   in texture |> move (card.x, card.y) |> scale (card.w / 200)
