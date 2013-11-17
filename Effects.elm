@@ -29,6 +29,7 @@ equalType e1 e2 =
     (ATunnel _      , ATunnel _      ) -> True
     (ALissajous _   , ALissajous _   ) -> True
     (ASinescroller _, ASinescroller _) -> True
+    (_, _)                             -> False
 
 -- todo: factory with string parameter?
 makePlasma       = APlasma       <| Plasma.make
