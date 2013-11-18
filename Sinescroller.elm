@@ -5,15 +5,24 @@ module Sinescroller where
 @docs sinescroller
 -}
 
+import Effect(Effect, effect)
+
 type State = {time:Float}
 
-make : State
-make = {time=0}
+sinescroller : State -> Effect
+sinescroller s = Effect {step=step s, display=display s, name="Sinescroller"}
 
-step : Float -> State -> State
-step delta ({time} as state) = { state | time <- time + delta }
+make : Effect
+make = sinescroller {time=0}
+
+step : State -> Float -> Effect
+step ({time} as state) delta = sinescroller { state | time <- time + delta }
 
 {-| Returns a sine scroller effect filled form
 depending on the current time. -}
 display : State -> Form
-display {time} = rect 200 200 |> filled (rgb 255 255 0)
+display ({time} as state) =
+    group [
+      rect 200 200 |> filled (rgb 255 255 0)
+    , asText time |> toForm
+    ]

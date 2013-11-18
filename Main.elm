@@ -11,7 +11,16 @@ needed time inversly indicates the players performance. ;-)
 import Touch
 import Window
 
-import Effects
+import Effect(Effect,equalType)
+
+import Lissajous
+import Plasma
+import Particles
+import Sinescroller
+import Starfield
+import Tunnel
+
+-- todo: still show cards a second or so after a pair is found
 
 
 -- /---------------------\
@@ -70,7 +79,7 @@ type Boxed      a = Sized (Positioned a)
 type Point = Positioned {}
 type Box = Boxed {}
 
-type Card = Boxed {effect:Effects.Effect, status:CardStatus}
+type Card = Boxed {effect:Effect, status:CardStatus}
 type Cards = [Card]
 
 backside : Time -> Form
@@ -109,12 +118,12 @@ card effect box =
 cards : Cards
 cards =
   let
-    effects = [ Effects.makePlasma
-              , Effects.makeStarfield
-              , Effects.makeParticles
-              , Effects.makeTunnel
-              , Effects.makeLissajous
-              , Effects.makeSinescroller ]
+    effects = [ Lissajous.make
+              , Plasma.make
+              , Particles.make
+              , Sinescroller.make
+              , Starfield.make
+              , Tunnel.make ]
   in
     zipWith (\effect box -> card effect box) (effects ++ effects) cardBoxes
 
@@ -195,7 +204,7 @@ allEqual cards =
     es = map .effect cards
   in
     if length es < 2 then True
-      else all (Effects.equalType (head es)) (tail es)
+      else all (equalType (head es)) (tail es)
 
 -- todo: simplify
 stepTap : Point -> Game -> Game
@@ -217,6 +226,7 @@ stepTap gameTapPos ({state,cards} as game) =
     state' = case state of
                Won -> Won
                Start -> Play
+               Play -> Play
                Play -> if all (((==) Done) . .status) cards' then Won
                                                              else Play
   in
@@ -225,9 +235,12 @@ stepTap gameTapPos ({state,cards} as game) =
 
 stepCard : Float -> Card -> Card
 stepCard delta ({status, effect} as card) =
-  case status of
-    FaceUp -> { card | effect <- Effects.step delta effect }
-    _ -> card
+  let
+    f (Effect ef) = ef.step
+  in
+    case status of
+      FaceUp -> { card | effect <- f effect delta }
+      _ -> card
 
 stepCards : Float -> Cards -> Cards
 stepCards delta cards = map (stepCard delta) cards
@@ -255,11 +268,14 @@ stepGame ({action}) ({state, time} as game) =
 
 displayCard : Time -> Card -> Form
 displayCard time card =
-  let texture = case card.status of
+  let
+    f (Effect ef) = ef.display
+    texture = case card.status of
                   FaceDown -> backside time
-                  --FaceDown -> Effects.display card.effect
-                  FaceUp -> Effects.display card.effect
-                  Done -> group [Effects.display card.effect, doneOverlay time]
+                  --FaceDown -> card.effect.display
+                  FaceUp -> f card.effect
+                  --Done -> group [f card.effect, doneOverlay time]
+                  Done -> rect 0 0 |> filled (rgb 0 0 0)
   in texture |> move (card.x, card.y) |> scale (card.w / 200)
 
 
@@ -282,7 +298,7 @@ display ({state,time,cards} as game) =
       [
         displayCards time cards
         , timeTextForm
-        , asText game |> toForm |> scale 0.2
+        --, asText game |> toForm |> scale 0.2
         --, asText cards |> toForm |> scale 0.2
       ]
 

@@ -5,21 +5,24 @@ module Plasma where
 @docs plasma
 -}
 
-
+import Effect(Effect, effect)
+pixels = 8
 type State = {time:Float}
 
-make : State
-make = {time=0}
+plasma : State -> Effect
+plasma s = Effect {step = step s, display = display s, name = "Plasma"}
 
-step : Float -> State -> State
-step delta ({time} as state) = { state | time <- time + delta }
+make : Effect
+make = plasma {time=0}
+
+step : State -> Float -> Effect
+step ({time} as state) delta = plasma { state | time <- time + delta }
 
 {-| Returns a plasma effect filled form depending on the current time. -}
 display : State -> Form
 display ({time} as state) =
   let
     t = time -- todo: Why you no work with time directly?
-    pixels = 8
     poss = rectPositions pixels pixels
     colR (x,y) = bilinearInterpolatedRect (x,y+1) (x+1,y)
       (plasmaCol (x)   (y+1) t)
@@ -101,8 +104,8 @@ colValFromConfs x y t confs =
 plasmaCol : Float -> Float -> Float -> Color
 plasmaCol xIn yIn tIn =
   let
-    x = xIn / 7
-    y = yIn / 7
+    x = xIn / (1.0 * pixels)
+    y = yIn / (1.0 * pixels)
     t = tIn * 0.0004
     rRaw = colValFromConfs x y t rConf
     gRaw = colValFromConfs x y t gConf

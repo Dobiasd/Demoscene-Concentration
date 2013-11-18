@@ -5,14 +5,23 @@ module Tunnel where
 @docs tunnel
 -}
 
+import Effect(Effect, effect)
+
 type State = {time:Float}
 
-make : State
-make = {time=0}
+tunnel : State -> Effect
+tunnel s = Effect {step = step s, display = display s, name = "Tunnel"}
 
-step : Float -> State -> State
-step delta ({time} as state) = { state | time <- time + delta }
+make : Effect
+make = tunnel {time=0}
+
+step : State -> Float -> Effect
+step ({time} as state) delta = tunnel { state | time <- time + delta }
 
 {-| Returns a tunnel effect filled form depending on the current time. -}
 display : State -> Form
-display {time} = rect 200 200 |> filled (rgb 0 255 255)
+display ({time} as state) =
+    group [
+      rect 200 200 |> filled (rgb 0 255 255)
+    , asText time |> toForm
+    ]

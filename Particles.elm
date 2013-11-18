@@ -5,14 +5,23 @@ module Particles where
 @docs particles
 -}
 
+import Effect(Effect, effect)
+
 type State = {time:Float}
 
-make : State
-make = {time=0}
+particles : State -> Effect
+particles s = Effect {step = step s, display = display s, name = "Particles"}
 
-step : Float -> State -> State
-step delta ({time} as state) = { state | time <- time + delta }
+make : Effect
+make = particles {time=0}
+
+step : State -> Float -> Effect
+step ({time} as state) delta = particles { state | time <- time + delta }
 
 {-| Returns a particle effect filled form depending on the current time. -}
 display : State -> Form
-display {time} = rect 200 200 |> filled (rgb 0 255 0)
+display ({time} as state) =
+    group [
+      rect 200 200 |> filled (rgb 0 255 0)
+    , asText time |> toForm
+    ]

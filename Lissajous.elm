@@ -5,14 +5,23 @@ module Lissajous where
 @docs lissajous
 -}
 
+import Effect(Effect, effect)
+
 type State = {time:Float}
 
-make : State
-make = {time=0}
+lissajous : State -> Effect
+lissajous s = Effect {step = step s, display = display s, name = "Lissajous"}
 
-step : Float -> State -> State
-step delta ({time} as state) = { state | time <- time + delta }
+make : Effect
+make = lissajous {time=0}
+
+step : State -> Float -> Effect
+step ({time} as state) delta = lissajous { state | time <- time + delta }
 
 {-| Returns a lissajous effect filled form depending on the current time. -}
 display : State -> Form
-display {time} = rect 200 200 |> filled (rgb 255 0 255)
+display ({time} as state) =
+    group [
+      rect 200 200 |> filled (rgb 255 0 255)
+    , asText time |> toForm -- todo: Why does it crash if time is not used?
+    ]
