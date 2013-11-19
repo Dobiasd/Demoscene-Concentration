@@ -23,5 +23,7 @@ display : State -> Form
 display ({time} as state) =
     group [
       rect 200 200 |> filled (rgb 255 0 255)
-    , asText time |> toForm -- todo: Why does it crash if time is not used?
+-- todo: Why does it crash if the following line is commented out
+--       and dropRepeats is used in main?
+    --, asText time |> toForm
     ]

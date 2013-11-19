@@ -311,4 +311,4 @@ displayFullScreen (w,h) game =
   in
     collage w h [ display game |> scale factor ]
 
-main = displayFullScreen <~ Window.dimensions ~ dropRepeats gameState
+main = displayFullScreen <~ Window.dimensions ~ gameState
