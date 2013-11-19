@@ -22,7 +22,7 @@ import Tunnel
 
 -- todo: still show cards a second or so after a pair is found
 -- todo: move all into src directory. move effects into effects directory.
-
+-- todo: draw Elm logo onto card backsides
 
 -- /---------------------\
 -- | model configuration |
