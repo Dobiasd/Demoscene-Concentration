@@ -13,6 +13,7 @@ import Window
 
 import Effect(Effect,equalType)
 
+import ElmLogo(elmLogo)
 import Lissajous
 import Plasma
 import Particles
@@ -84,7 +85,8 @@ type Card = Boxed {effect:Effect, status:CardStatus}
 type Cards = [Card]
 
 backside : Time -> Form
-backside _ = rect 200 200 |> filled (rgb 0 0 0)
+backside _ = group[ rect 200 200 |> outlined (solid gray), elmLogo ]
+
 
 doneOverlay : Time -> Form
 doneOverlay _ = rect 200 200 |> filled (rgba 0 0 0 0.5)
