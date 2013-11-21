@@ -22,16 +22,12 @@ step ({time} as state) delta = plasma { state | time <- time + delta }
 display : State -> Form
 display ({time} as state) =
   let
-    -- workaround for compiler bug
-    -- https://groups.google.com/forum/?fromgroups#!topic/elm-discuss/GzB8Junt_i8
-    -- todo: remove with Elm version 0.11
-    timeCopy = time
     poss = rectPositions pixels pixels
     colR (x,y) = bilinearInterpolatedRect (x,y+1) (x+1,y)
-      (plasmaCol (x)   (y+1) timeCopy)
-      (plasmaCol (x)   (y)   timeCopy)
-      (plasmaCol (x+1) (y)   timeCopy)
-      (plasmaCol (x+1) (y+1) timeCopy)
+      (plasmaCol (x)   (y+1) time)
+      (plasmaCol (x)   (y)   time)
+      (plasmaCol (x+1) (y)   time)
+      (plasmaCol (x+1) (y+1) time)
     rectForms = map colR poss |> map (move (-pixels/2,-pixels/2))
   in
     [rect pixels pixels |> filled black] ++ rectForms
