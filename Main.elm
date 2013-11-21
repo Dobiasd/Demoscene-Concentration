@@ -13,7 +13,10 @@ import Window
 
 import Effect(Effect,equalType)
 
-import ElmLogo(elmLogo)
+import Common(Point, Positioned, Boxed, Box, point, box)
+
+import Card
+import Card(Card)
 import Lissajous
 import Plasma
 import Particles
@@ -46,7 +49,6 @@ timeTextPosY = 95
 -- | inputs |
 -- \--------/
 
-data CardStatus = FaceDown | FaceUp | Done
 data Action = Tap Point (Int,Int) | Step Float
 type Input = { action:Action }
 
@@ -73,23 +75,9 @@ actions = merge steps flips
 -- | model |
 -- \-------/
 
-type Named      a = { a | name:String }
-type Positioned a = { a | x:Float, y:Float }
-type Sized      a = { a | w:Float, h:Float }
-type Boxed      a = Sized (Positioned a)
 
-type Point = Positioned {}
-type Box = Boxed {}
+type Cards = [Card.Card]
 
-type Card = Boxed {effect:Effect, status:CardStatus}
-type Cards = [Card]
-
-backside : Time -> Form
-backside _ = group[ rect 200 200 |> outlined (solid gray), elmLogo ]
-
-
-doneOverlay : Time -> Form
-doneOverlay _ = rect 200 200 |> filled (rgba 0 0 0 0.5)
 
 {-| Creation of one single row of cards with equidistant gaps. -}
 cardBoxRow : Float -> [Box]
@@ -111,11 +99,6 @@ cardBoxes =
   in
     map (((+) yOff ) . (*) distY) [0..rows-1] |> map cardBoxRow |> concat
 
-card effect box =
-  let boxedEffect = { box | effect=effect }
-  in { boxedEffect | status=FaceDown }
-
-
 
 -- todo: shuffle effects
 cards : Cards
@@ -128,17 +111,13 @@ cards =
               , Starfield.make
               , Tunnel.make ]
   in
-    zipWith (\effect box -> card effect box) (effects ++ effects) cardBoxes
+    zipWith (\effect box -> Card.make effect box) (effects ++ effects) cardBoxes
 
 
 
 data State = Start | Play | Won
 
-point : Float -> Float -> Point
-point x y = {x=x, y=y}
 
-box : Float -> Float -> Float -> Float -> Box
-box x y w h = {x=x, y=y, w=w, h=h }
 
 type Game = { state:State
             , cards:Cards
@@ -190,9 +169,9 @@ goflipCardsHit tapPos ({status} as card) acc =
   let
     hit = tapPos `inBox` card
     status' = if not hit then status else case status of
-                                            Done -> Done
-                                            FaceUp -> FaceDown
-                                            FaceDown -> FaceUp
+                                            Card.Done -> Card.Done
+                                            Card.FaceUp -> Card.FaceDown
+                                            Card.FaceDown -> Card.FaceUp
     card' = { card | status <- status' }
   in
     card'::acc
@@ -213,16 +192,16 @@ allEqual cards =
 stepTap : Point -> Game -> Game
 stepTap gameTapPos ({state,cards} as game) =
   let
-    (cardsDone, cardsNotDone) = partition (((==) Done) . (.status)) cards
-    cardsNotDoneFaceDown = map (\c -> {c | status <- FaceDown}) cardsNotDone
-    faceUpCount = cards |> filter (((==) FaceUp) . (.status)) |> length
+    (cardsDone, cardsNotDone) = partition (((==) Card.Done) . (.status)) cards
+    cardsNotDoneFaceDown = map (\c -> {c | status <- Card.FaceDown}) cardsNotDone
+    faceUpCount = cards |> filter (((==) Card.FaceUp) . (.status)) |> length
     cardsNotDone' = flipCardsHit gameTapPos <|
                       if faceUpCount == 2 then cardsNotDoneFaceDown
                                           else cardsNotDone
     (cardsNotDoneUp', cardsNotDoneDown') =
-       partition (((==) FaceUp) . (.status)) cardsNotDone'
+       partition (((==) Card.FaceUp) . (.status)) cardsNotDone'
     foundPair = length cardsNotDoneUp' == 2 && allEqual cardsNotDoneUp'
-    cardsNotDoneUpDone' = map (\c -> {c | status <- Done}) cardsNotDoneUp'
+    cardsNotDoneUpDone' = map (\c -> {c | status <- Card.Done}) cardsNotDoneUp'
     allDone = all
     cards' = cardsDone ++ cardsNotDoneDown'
              ++ if foundPair then cardsNotDoneUpDone' else cardsNotDoneUp'
@@ -230,23 +209,16 @@ stepTap gameTapPos ({state,cards} as game) =
                Won -> Won
                Start -> Play
                Play -> Play
-               Play -> if all (((==) Done) . .status) cards' then Won
-                                                             else Play
+               Play -> if all (((==) Card.Done) . .status) cards' then Won
+                                                                  else Play
   in
     { game | state <- state',
              cards <- cards' }
 
-stepCard : Float -> Card -> Card
-stepCard delta ({status, effect} as card) =
-  let
-    f (Effect ef) = ef.step
-  in
-    case status of
-      FaceUp -> { card | effect <- f effect delta }
-      _ -> card
+
 
 stepCards : Float -> Cards -> Cards
-stepCards delta cards = map (stepCard delta) cards
+stepCards delta cards = map (Card.step delta) cards
 
 stepDelta : Float -> Game -> Game
 stepDelta delta ({cards, state, time} as game) =
@@ -265,6 +237,9 @@ stepGame ({action}) ({state, time} as game) =
     Tap tapPos winDims -> stepTap (winPosToGamePos tapPos winDims) game
 
 
+
+
+
 -- /---------\
 -- | display |
 -- \---------/
@@ -274,12 +249,13 @@ displayCard time card =
   let
     f (Effect ef) = ef.display
     texture = case card.status of
-                  FaceDown -> backside time
+                  Card.FaceDown -> group [ Card.backside time, Card.border ]
                   --FaceDown -> card.effect.display
-                  FaceUp -> f card.effect
+                  Card.FaceUp -> group [ f card.effect, Card.border ]
                   --Done -> group [f card.effect, doneOverlay time]
-                  Done -> rect 0 0 |> filled (rgb 0 0 0)
-  in texture |> move (card.x, card.y) |> scale (card.w / 200)
+                  Card.Done -> rect 0 0 |> filled (rgb 0 0 0)
+  in
+    texture |> move (card.x, card.y) |> scale (card.w / 200)
 
 
 displayCards : Time -> Cards -> Form
