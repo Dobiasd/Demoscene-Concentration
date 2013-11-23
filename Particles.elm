@@ -21,7 +21,7 @@ step ({time} as state) delta = particles { state | time <- time + delta }
 {-| Returns a particle effect filled form depending on the current time. -}
 display : State -> Form
 display ({time} as state) =
-    group [
-      rect 200 200 |> filled (rgb 0 255 0)
-    , asText time |> toForm
-    ]
+  group [
+    rect 200 200 |> filled (rgb 0 255 0)
+  , asText time |> toForm
+  ]

@@ -41,8 +41,8 @@ framesPerSecond = 60
 -- | view configuration |
 -- \--------------------/
 
-timeTextHeight = 7
-timeTextPosY = 95
+timeTextHeight = 5
+timeTextPosY = 100
 
 
 -- /--------\
@@ -84,17 +84,17 @@ cardBoxRow : Float -> [Box]
 cardBoxRow y =
   let
     cols = 4
-    distX = 50
+    distX = 60
     xOff = -distX * (toFloat cols - 1) / 2
-    cardWidth = 45
-    cardHeight = 45
+    cardWidth = 55
+    cardHeight = 55
   in
     map (\x -> box (distX * x + xOff) y cardWidth cardHeight) [0..cols-1]
 
 cardBoxes =
   let
     rows = 3
-    distY = 55
+    distY = 65
     yOff = -distY * (toFloat rows - 1) / 2
   in
     map (((+) yOff ) . (*) distY) [0..rows-1] |> map cardBoxRow |> concat

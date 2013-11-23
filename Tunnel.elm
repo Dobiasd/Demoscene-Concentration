@@ -21,7 +21,7 @@ step ({time} as state) delta = tunnel { state | time <- time + delta }
 {-| Returns a tunnel effect filled form depending on the current time. -}
 display : State -> Form
 display ({time} as state) =
-    group [
-      rect 200 200 |> filled (rgb 0 255 255)
-    , asText time |> toForm
-    ]
+  group [
+    rect 200 200 |> filled (rgb 0 255 255)
+  , asText time |> toForm
+  ]
