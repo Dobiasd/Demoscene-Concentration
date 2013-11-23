@@ -277,8 +277,6 @@ display ({state,time,cards} as game) =
       [
         displayCards time cards
         , timeTextForm
-        --, asText game |> toForm |> scale 0.2
-        --, asText cards |> toForm |> scale 0.2
       ]
 
 {-| Draw game maximized into the window. -}
