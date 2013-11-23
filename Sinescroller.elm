@@ -39,10 +39,6 @@ charPos time textPos =
       (toFloat textPos * charDist - time * timeFactX)
       (70 * sin (toFloat textPos * textPosFact + timeFactY*time))
 
-txt : Color -> String -> Form
-txt col =
-  toForm . text . (Text.height 28) . monospace . Text.color col . toText
-
 charCol : Float -> Positioned a -> Color
 charCol time {x,y} = hsv (0.001 * time + 0.03 * x) 1 1
 
@@ -65,7 +61,11 @@ wrapCharPos minX ({x} as sc) =
 scrollerChars a b c = (map (uncurry3 scrollerChar)) (zip3 a b c)
 
 displayScrollerChar : ScrollerChar -> Form
-displayScrollerChar {s,x,y,col} = txt col s |> move (x,y)
+displayScrollerChar {s,x,y,col} =
+  let
+    txt c = text . (Text.height 28) . monospace . Text.color c . toText
+  in
+    txt col s |> toForm |> move (x,y)
 
 {-| Returns a sine scroller effect filled form
 depending on the current state. -}
@@ -73,7 +73,6 @@ display : State -> Form
 display ({time} as state) =
   let
     len = String.length message
-    poss : [Point]
     poss = map (charPos time) [0..len]
     cols = map (charCol time) poss
     charStrings = deconcat message

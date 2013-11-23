@@ -262,14 +262,13 @@ displayCards : Time -> Cards -> Form
 displayCards time cards =
   map (displayCard time) cards |> group
 
-{-| Render text using a given transformation function. -}
-txt : (Text -> Text) -> String -> Element
-txt f = text . f . monospace . Text.color lightBlue . toText
 
 {-| Draw game into a form with size (gameWidth,gameHeight). -}
 display : Game -> Form
 display ({state,time,cards} as game) =
   let
+    txt : (Text -> Text) -> String -> Element
+    txt f = text . f . monospace . Text.color lightBlue . toText
     timeTextForm = txt (Text.height timeTextHeight) (show <| time / 1000)
                      |> toForm |> move (0, timeTextPosY)
   in
