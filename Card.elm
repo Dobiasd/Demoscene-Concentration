@@ -3,6 +3,7 @@ module Card where
 import ElmLogo(elmLogo)
 import Common(Point, Positioned, Boxed)
 import Effect(Effect)
+import Effect
 
 data Status = FaceDown | FaceUp | Done
 
@@ -37,9 +38,6 @@ make effect box =
 
 step : Float -> Card -> Card
 step delta ({status, effect} as card) =
-  let
-    f (Effect ef) = ef.step
-  in
-    case status of
-      FaceUp -> { card | effect <- f effect delta }
-      _ -> card
+  case status of
+    FaceUp -> { card | effect <- Effect.step effect delta }
+    _ -> card

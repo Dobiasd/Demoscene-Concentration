@@ -11,12 +11,14 @@ needed time inversly indicates the players performance. ;-)
 import Touch
 import Window
 
-import Effect(Effect,equalType)
+import Effect(Effect)
+import Effect
 
 import Common(Point, Positioned, Boxed, Box, point, box)
 
 import Card
 import Card(Card)
+import Cube
 import Lissajous
 import Plasma
 import Particles
@@ -99,19 +101,17 @@ cardBoxes =
   in
     map (((+) yOff ) . (*) distY) [0..rows-1] |> map cardBoxRow |> concat
 
+effects = [ Lissajous.make
+          , Plasma.make
+          , Particles.make
+          , Sinescroller.make
+          , Starfield.make
+          , Tunnel.make ]
 
 -- todo: shuffle effects
 cards : Cards
 cards =
-  let
-    effects = [ Lissajous.make
-              , Plasma.make
-              , Particles.make
-              , Sinescroller.make
-              , Starfield.make
-              , Tunnel.make ]
-  in
-    zipWith (\effect box -> Card.make effect box) (effects ++ effects) cardBoxes
+  zipWith (\effect box -> Card.make effect box) (effects ++ effects) cardBoxes
 
 
 
@@ -121,12 +121,14 @@ data State = Start | Play | Won
 
 type Game = { state:State
             , cards:Cards
+            , wonEffect:Effect
             , time:Time }
 
 defaultGame : Game
 defaultGame =
-  { state = Start
+  { state = Won
   , cards = cards
+  , wonEffect = Cube.make effects
   , time = 0 }
 
 
@@ -186,7 +188,7 @@ allEqual cards =
     es = map .effect cards
   in
     if length es < 2 then True
-      else all (equalType (head es)) (tail es)
+      else all (Effect.equalType (head es)) (tail es)
 
 -- todo: simplify
 stepTap : Point -> Game -> Game
@@ -220,15 +222,18 @@ stepTap gameTapPos ({state,cards} as game) =
 stepCards : Float -> Cards -> Cards
 stepCards delta cards = map (Card.step delta) cards
 
+stepWon : Float -> Game -> Game
+stepWon delta ({wonEffect} as game) =
+  { game | wonEffect <- Effect.step wonEffect delta }
+
 stepDelta : Float -> Game -> Game
 stepDelta delta ({cards, state, time} as game) =
-  let
-    cards' = stepCards delta cards
-  in
-    { game | cards <- cards',
-             time <- case state of
-                       Play -> time + delta
-                       _ -> time }
+  case state of
+    Won -> stepWon delta game
+    _   -> { game | cards <- stepCards delta cards,
+                    time <-  case state of
+                               Play -> time + delta
+                               _ -> time }
 
 stepGame : Input -> Game -> Game
 stepGame ({action}) ({state, time} as game) =
@@ -247,11 +252,10 @@ stepGame ({action}) ({state, time} as game) =
 displayCard : Time -> Card -> Form
 displayCard time card =
   let
-    f (Effect ef) = ef.display
     texture = case card.status of
                   Card.FaceDown -> group [ Card.backside time, Card.border ]
                   --FaceDown -> card.effect.display
-                  Card.FaceUp -> group [ f card.effect, Card.border ]
+                  Card.FaceUp -> group [ Effect.display card.effect, Card.border ]
                   --Done -> group [f card.effect, doneOverlay time]
                   Card.Done -> rect 0 0 |> filled (rgb 0 0 0)
   in
@@ -263,9 +267,12 @@ displayCards time cards =
   map (displayCard time) cards |> group
 
 
+displayWon : Game -> Form
+displayWon ({wonEffect} as game) = Effect.display wonEffect
+
 {-| Draw game into a form with size (gameWidth,gameHeight). -}
-display : Game -> Form
-display ({state,time,cards} as game) =
+displayNotYetDone : Game -> Form
+displayNotYetDone ({time,cards} as game) =
   let
     txt : (Text -> Text) -> String -> Element
     txt f = text . f . monospace . Text.color lightBlue . toText
@@ -277,6 +284,12 @@ display ({state,time,cards} as game) =
         displayCards time cards
         , timeTextForm
       ]
+
+display : Game -> Form
+display ({state} as game) =
+  case state of
+    Won -> displayWon game
+    _   -> displayNotYetDone game
 
 {-| Draw game maximized into the window. -}
 displayFullScreen : (Int,Int) -> Game -> Element
