@@ -32,6 +32,13 @@ curry3 f a b c = f (a,b,c)
 uncurry3 : (a -> b -> c -> d) -> (a,b,c) -> d
 uncurry3 f (a,b,c) = f a b c
 
+
+
+type Vector = { x:Float, y:Float, z:Float }
+
+vector : Float -> Float -> Float -> Vector
+vector x y z = { x=x, y=y, z=z }
+
 type Transform3D = { m11:Float, m12:Float, m13:Float, m14:Float
                    , m21:Float, m22:Float, m23:Float, m24:Float
                    , m31:Float, m32:Float, m33:Float, m34:Float
@@ -68,3 +75,41 @@ rotateZ a = transform3D (cos a) (-(sin a)) 0 0
                         (sin a)   (cos a)  0 0
                            0         0     1 0
                            0         0     0 1
+
+applyTransform3D : Vector -> Transform3D -> Vector
+applyTransform3D
+    {x,y,z}
+    { m11, m12, m13, m14
+    , m21, m22, m23, m24
+    , m31, m32, m33, m34
+    , m41, m42, m43, m44 } =
+  vector
+    (m11*x + m12*x + m13*x + m14*x)
+    (m21*y + m22*y + m23*y + m24*y)
+    (m31*z + m32*z + m33*z + m34*z)
+
+
+type Face = { tl:Vector, tr:Vector, bl:Vector }
+
+face : Vector -> Vector -> Vector -> Face
+face tl tr bl = { tl=tl, tr=tr, bl=bl }
+
+cube = [ Face (Vector (-1) ( 1) ( 1))
+              (Vector ( 1) ( 1) ( 1))
+              (Vector (-1) (-1) ( 1))
+       , Face (Vector ( 1) ( 1) (-1))
+              (Vector (-1) ( 1) (-1))
+              (Vector ( 1) (-1) (-1))
+       , Face (Vector ( 1) ( 1) ( 1))
+              (Vector ( 1) ( 1) (-1))
+              (Vector ( 1) (-1) ( 1))
+       , Face (Vector (-1) ( 1) (-1))
+              (Vector (-1) ( 1) ( 1))
+              (Vector (-1) (-1) (-1))
+       , Face (Vector (-1) ( 1) (-1))
+              (Vector ( 1) ( 1) (-1))
+              (Vector (-1) ( 1) ( 1))
+       , Face (Vector (-1) (-1) ( 1))
+              (Vector ( 1) (-1) ( 1))
+              (Vector (-1) (-1) (-1))
+       ]

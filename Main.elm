@@ -126,7 +126,7 @@ type Game = { state:State
 
 defaultGame : Game
 defaultGame =
-  { state = Start
+  { state = Won
   , cards = cards
   , wonEffect = Cube.make effects
   , time = 0 }
