@@ -76,17 +76,17 @@ rotateZ a = transform3D (cos a) (-(sin a)) 0 0
                            0         0     1 0
                            0         0     0 1
 
-applyTransform3D : Vector -> Transform3D -> Vector
+applyTransform3D : Transform3D -> Vector -> Vector
 applyTransform3D
-    {x,y,z}
     { m11, m12, m13, m14
     , m21, m22, m23, m24
     , m31, m32, m33, m34
-    , m41, m42, m43, m44 } =
+    , m41, m42, m43, m44 }
+    {x,y,z} =
   vector
-    (m11*x + m12*x + m13*x + m14*x)
-    (m21*y + m22*y + m23*y + m24*y)
-    (m31*z + m32*z + m33*z + m34*z)
+    (m11*x + m12*y + m13*z)
+    (m21*x + m22*y + m23*z)
+    (m31*x + m32*y + m33*z)
 
 
 type Face = { tl:Vector, tr:Vector, bl:Vector }
@@ -94,22 +94,40 @@ type Face = { tl:Vector, tr:Vector, bl:Vector }
 face : Vector -> Vector -> Vector -> Face
 face tl tr bl = { tl=tl, tr=tr, bl=bl }
 
-cube = [ Face (Vector (-1) ( 1) ( 1))
-              (Vector ( 1) ( 1) ( 1))
-              (Vector (-1) (-1) ( 1))
-       , Face (Vector ( 1) ( 1) (-1))
-              (Vector (-1) ( 1) (-1))
-              (Vector ( 1) (-1) (-1))
-       , Face (Vector ( 1) ( 1) ( 1))
-              (Vector ( 1) ( 1) (-1))
-              (Vector ( 1) (-1) ( 1))
-       , Face (Vector (-1) ( 1) (-1))
-              (Vector (-1) ( 1) ( 1))
-              (Vector (-1) (-1) (-1))
-       , Face (Vector (-1) ( 1) (-1))
-              (Vector ( 1) ( 1) (-1))
-              (Vector (-1) ( 1) ( 1))
-       , Face (Vector (-1) (-1) ( 1))
-              (Vector ( 1) (-1) ( 1))
-              (Vector (-1) (-1) (-1))
-       ]
+addVec : Vector -> Vector -> Vector
+addVec a b = Vector (a.x + b.x) (a.y + b.y) (a.y + b.y)
+
+subVec : Vector -> Vector -> Vector
+subVec a b = Vector (a.x - b.x) (a.y - b.y) (a.y - b.y)
+
+faceBr : Face -> Vector
+faceBr {tl,tr,bl} = (tl `addVec` tr) `subVec` bl
+
+cubeFaces = [ Face (Vector (-100) ( 100) ( 100))
+                   (Vector ( 100) ( 100) ( 100))
+                   (Vector (-100) (-100) ( 100))
+            , Face (Vector ( 100) ( 100) (-100))
+                   (Vector (-100) ( 100) (-100))
+                   (Vector ( 100) (-100) (-100))
+            , Face (Vector ( 100) ( 100) ( 100))
+                   (Vector ( 100) ( 100) (-100))
+                   (Vector ( 100) (-100) ( 100))
+            , Face (Vector (-100) ( 100) (-100))
+                   (Vector (-100) ( 100) ( 100))
+                   (Vector (-100) (-100) (-100))
+            , Face (Vector (-100) ( 100) (-100))
+                   (Vector ( 100) ( 100) (-100))
+                   (Vector (-100) ( 100) ( 100))
+            , Face (Vector (-100) (-100) ( 100))
+                   (Vector ( 100) (-100) ( 100))
+                   (Vector (-100) (-100) (-100))
+            ]
+
+
+transformFace : Transform3D -> Face -> Face
+transformFace matrix {tl,tr,bl} =
+  let f = applyTransform3D matrix
+  in face (f tl) (f tr) (f bl)
+
+transformFaces : Transform3D -> [Face] -> [Face]
+transformFaces matrix = map (transformFace matrix)

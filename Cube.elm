@@ -7,7 +7,10 @@ module Cube where
 
 import Effect(Effect, effect)
 
-import Common(vector, transform3D, rotateX, applyTransform3D)
+import Common(vector, transform3D,
+              rotateX, rotateY, rotateZ,
+              applyTransform3D, Face, faceBr,
+              cubeFaces, transformFaces)
 
 --import Quaternion
 
@@ -23,25 +26,37 @@ step : State -> Float -> Effect
 step ({time} as state) delta = cube { state | time <- time + delta }
 
 
+calcFaces : Float -> [Face]
+calcFaces time =
+  let
+    rx = rotateX (0.0011*time)
+    ry = rotateY (0.0013*time)
+    rz = rotateZ (0.0015*time)
+  in
+    cubeFaces |> transformFaces rx |> transformFaces ry |> transformFaces rz
 
---calcPositions : Float ->
-
--- todo: isometric projection?
+displayFace : Face -> Form -> Form
+displayFace ({tl,tr,bl} as face) form =
+  let
+    br = faceBr face
+    vtp {x,y} = (x,y)
+    width = 3
+    lsGray = solid (rgba 0 0 0 0.3)
+    grayLSWide = { lsGray | width <- width, join <- Smooth, cap <- Round }
+    outline = path [vtp tl, vtp tr, vtp bl, vtp br, vtp tl]
+  in
+    outline |> traced grayLSWide
 
 {-| Returns a rotating 3d cube effect filled form
 depending on the current time. -}
 display : State -> Form
 display ({time} as state) =
   let
-    --p = (1,1,1)
-    --rotation = Quaternion.angleAxis (time/10) (1,0,0)
-    --p' = (Quaternion.mul (Quaternion.fromVec p) rotation)
-    p = vector 1 1 1
-    r = rotateX (time/500)
-    p' = applyTransform3D p r
+    faces = calcFaces time
+    dummyForm = rect 200 200 |> filled (rgb 0 255 0)
+    forms = [dummyForm,dummyForm,dummyForm,dummyForm,dummyForm,dummyForm]
+    facesWithForms = zip faces forms
+    resultForms = map (uncurry displayFace) facesWithForms
+    --resultForms = [(uncurry displayFace) (head facesWithForms)]
   in
-  group [
-    rect 200 200 |> filled (rgb 0 255 0)
---    , asText time |> toForm |> scale 0.3
-  , asText p' |> toForm |> scale 0.3
-  ]
+    group resultForms |> scale 0.5
