@@ -9,7 +9,7 @@ import Effect(Effect, effect)
 
 import Common(vector, transform3D, rotateX, applyTransform3D)
 
-import Quaternion
+--import Quaternion
 
 type State = {time:Float, faces:[Effect]}
 
