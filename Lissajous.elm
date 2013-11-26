@@ -5,6 +5,8 @@ module Lissajous where
 @docs lissajous
 -}
 
+-- todo: like vector ball in second reality
+
 import Effect(Effect, effect)
 
 type State = {time:Float}

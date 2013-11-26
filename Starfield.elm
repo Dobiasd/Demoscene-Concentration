@@ -5,6 +5,8 @@ module Starfield where
 @docs starfield
 -}
 
+-- todo: add (or replace with) moiree pattern?
+
 import Effect(Effect, effect)
 
 type State = {time:Float}

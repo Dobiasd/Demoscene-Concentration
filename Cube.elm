@@ -43,7 +43,7 @@ displayFace ({tl,tr,bl} as face) form =
     width = 3
     lsGray = solid (rgba 0 0 0 0.3)
     grayLSWide = { lsGray | width <- width, join <- Smooth, cap <- Round }
-    outline = path [vtp tl, vtp tr, vtp bl, vtp br, vtp tl]
+    outline = path [vtp tr, vtp tl, vtp bl, vtp br, vtp tr]
   in
     outline |> traced grayLSWide
 

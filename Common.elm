@@ -101,7 +101,7 @@ subVec : Vector -> Vector -> Vector
 subVec a b = Vector (a.x - b.x) (a.y - b.y) (a.y - b.y)
 
 faceBr : Face -> Vector
-faceBr {tl,tr,bl} = (tl `addVec` tr) `subVec` bl
+faceBr {tl,tr,bl} = (tr `subVec` tl) `addVec` bl
 
 cubeFaces = [ Face (Vector (-100) ( 100) ( 100))
                    (Vector ( 100) ( 100) ( 100))
