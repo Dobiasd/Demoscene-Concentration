@@ -24,6 +24,7 @@ import Moire
 import Plasma
 import Particles
 import Sinescroller
+import Starfield -- todo raus
 import Tunnel
 
 -- todo: still show cards a second or so after a pair is found
@@ -128,7 +129,8 @@ defaultGame : Game
 defaultGame =
   { state = Won
   , cards = cards
-  , wonEffect = Cube.make effects
+  --, wonEffect = Cube.make effects (rgb 0 0 0)
+  , wonEffect = Starfield.make
   , time = 0 }
 
 

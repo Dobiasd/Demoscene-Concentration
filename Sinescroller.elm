@@ -5,16 +5,16 @@ module Sinescroller where
 @docs sinescroller
 -}
 
+import Cube
 import Effect(Effect, effect)
+import Effect
 import Common(Colored,Positioned,Point,point,zip3,uncurry3)
-
--- todo: rotating wireframe 3d object in background
 
 import String
 
 charDist = 14
 
-type State = {time:Float}
+type State = {time:Float, cube:Effect}
 
 message = "Greetings go out to everybody loving the demoscene and functional programming. ;-)   -   daiw.de"
 
@@ -22,10 +22,12 @@ sinescroller : State -> Effect
 sinescroller s = Effect {step=step s, display=display s, name="Sinescroller"}
 
 make : Effect
-make = sinescroller {time=0}
+make = sinescroller {time=0, cube=Cube.make [] (rgba 255 255 255 0.07)}
 
 step : State -> Float -> Effect
-step ({time} as state) delta = sinescroller { state | time <- time + delta }
+step ({time, cube} as state) delta =
+    sinescroller { state | time <- time + delta
+                         , cube <- Effect.step cube delta }
 
 deconcat : String -> [String]
 deconcat = String.foldr (\c acc -> String.fromList [c] :: acc) []
@@ -72,7 +74,7 @@ displayScrollerChar {s,x,y,col} =
 {-| Returns a sine scroller effect filled form
 depending on the current state. -}
 display : State -> Form
-display ({time} as state) =
+display ({time,cube} as state) =
   let
     len = String.length message
     poss = map (charPos time) [0..len]
@@ -83,4 +85,7 @@ display ({time} as state) =
     goodChars = filter (\{x} -> x > -80 && x < 80) wrappedChars
     forms = map displayScrollerChar goodChars
   in
-    [rect 200 200 |> filled (rgb 0 0 0)] ++ forms |> group
+     [rect 200 200 |> filled (rgb 0 0 0)]
+     ++ [(Effect.display cube)]
+     ++ forms
+     |> group

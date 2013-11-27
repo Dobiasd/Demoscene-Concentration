@@ -33,11 +33,34 @@ uncurry3 : (a -> b -> c -> d) -> (a,b,c) -> d
 uncurry3 f (a,b,c) = f a b c
 
 
+{- [1,2,3,4,5,6,7,8] -> [(1,2,3),(4,5,6)] -}
+nonOverlappingTriples : [a] -> [(a,a,a)]
+nonOverlappingTriples l =
+  case l of
+    (x1::x2::x3::xs) -> (x1,x2,x3) :: nonOverlappingTriples xs
+    _             -> []
+
+
+-- todo: for all comparables
+-- todo free predicate
+quicksort : [Float] -> [Float]
+quicksort l =
+  case l of
+    [] -> []
+    (p::xs) ->
+      let
+        lesser  = filter ((>=) p) xs
+        greater = filter ((<) p) xs
+      in
+        (quicksort lesser) ++ [p] ++ (quicksort greater)
 
 type Vector = { x:Float, y:Float, z:Float }
 
 vector : Float -> Float -> Float -> Vector
 vector x y z = { x=x, y=y, z=z }
+
+dist : Vector -> Float
+dist {x,y,z} = sqrt (x^2 + y^2 + z^2)
 
 type Transform3D = { m11:Float, m12:Float, m13:Float, m14:Float
                    , m21:Float, m22:Float, m23:Float, m24:Float
@@ -131,3 +154,24 @@ transformFace matrix {tl,tr,bl} =
 
 transformFaces : Transform3D -> [Face] -> [Face]
 transformFaces matrix = map (transformFace matrix)
+
+
+
+
+random : Float -> (Float,Float)
+random seed =
+  let
+    f seed = 0.5 + 0.5 * cos (seed + 7.312)
+    val = f seed
+    nextSeed = seed * seed + 1.23456 + cos seed
+  in
+    (nextSeed, val)
+
+randoms : Float -> Int -> [Float]
+randoms seed amount =
+  let
+    go _ (seed, l) =
+      let (nextSeed, val) = random seed
+      in (nextSeed, val::l)
+  in
+    foldr go (seed, []) [0..amount] |> snd
