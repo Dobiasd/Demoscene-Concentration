@@ -7,6 +7,8 @@ module Tunnel where
 
 import Effect(Effect, effect)
 
+-- todo: colored fast starfield in background
+
 type State = {time:Float}
 
 tunnel : State -> Effect

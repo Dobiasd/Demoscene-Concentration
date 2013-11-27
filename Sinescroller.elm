@@ -8,6 +8,8 @@ module Sinescroller where
 import Effect(Effect, effect)
 import Common(Colored,Positioned,Point,point,zip3,uncurry3)
 
+-- todo: starfield in background
+
 import String
 
 charDist = 14

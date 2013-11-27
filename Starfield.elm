@@ -5,7 +5,7 @@ module Starfield where
 @docs starfield
 -}
 
--- todo: add (or replace with) moiree pattern?
+-- todo: configurable speed and color, make work with camera movements
 
 import Effect(Effect, effect)
 

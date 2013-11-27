@@ -5,6 +5,9 @@ module Particles where
 @docs particles
 -}
 
+-- todo: particle fountain. glowing balls. bouncing from floor, disappearing
+--       rotating camera
+
 import Effect(Effect, effect)
 
 type State = {time:Float}
