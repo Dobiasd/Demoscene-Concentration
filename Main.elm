@@ -28,6 +28,8 @@ import Starfield -- todo raus
 import Tunnel
 
 -- todo: still show cards a second or so after a pair is found
+--       cardstate Done + Gone
+--       gamestate Won + End
 -- todo: move all into src directory. move effects into effects directory.
 -- todo: draw Elm logo onto card backsides
 

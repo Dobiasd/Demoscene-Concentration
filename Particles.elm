@@ -6,7 +6,7 @@ module Particles where
 -}
 
 -- todo: particle fountain. glowing balls. bouncing from floor, disappearing
---       rotate everything
+--       fractal tree, z-buffer, rotate everything
 
 import Effect(Effect, effect)
 
