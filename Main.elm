@@ -20,10 +20,10 @@ import Card
 import Card(Card)
 import Cube
 import Lissajous
+import Moire
 import Plasma
 import Particles
 import Sinescroller
-import Starfield
 import Tunnel
 
 -- todo: still show cards a second or so after a pair is found
@@ -105,7 +105,7 @@ effects = [ Lissajous.make
           , Plasma.make
           , Particles.make
           , Sinescroller.make
-          , Starfield.make
+          , Moire.make
           , Tunnel.make ]
 
 -- todo: shuffle effects
