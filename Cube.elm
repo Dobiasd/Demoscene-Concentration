@@ -12,8 +12,6 @@ import Common(vector, transform3D,
               applyTransform3D, Face, faceBr,
               cubeFaces, transformFaces)
 
---import Quaternion
-
 type State = {time:Float, faces:[Effect]}
 
 cube : State -> Effect

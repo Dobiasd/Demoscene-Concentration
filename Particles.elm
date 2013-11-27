@@ -6,7 +6,7 @@ module Particles where
 -}
 
 -- todo: particle fountain. glowing balls. bouncing from floor, disappearing
---       rotating camera
+--       rotate everything
 
 import Effect(Effect, effect)
 

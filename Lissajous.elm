@@ -5,8 +5,9 @@ module Lissajous where
 @docs lissajous
 -}
 
--- todo: like vector ball in second reality, very slow starfield in background
---       everything rotating.
+-- todo: like vector ball in second reality,
+--       very slow and dark starfield in background
+--       shadows.
 
 import Effect(Effect, effect)
 

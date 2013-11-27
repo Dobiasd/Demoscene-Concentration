@@ -5,7 +5,7 @@ module Starfield where
 @docs starfield
 -}
 
--- todo: configurable speed and color, make work with camera movements
+-- todo: configurable speed and color
 
 import Effect(Effect, effect)
 

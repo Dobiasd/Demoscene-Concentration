@@ -8,7 +8,7 @@ module Sinescroller where
 import Effect(Effect, effect)
 import Common(Colored,Positioned,Point,point,zip3,uncurry3)
 
--- todo: starfield in background
+-- todo: rotating wireframe 3d object in background
 
 import String
 
