@@ -8,57 +8,86 @@ module Starfield where
 -- todo: configurable speed and color
 
 import Effect(Effect, effect)
-import Common(Vector, vector, nonOverlappingTriples, dist, randoms)
+import Common(Vector, vector, nonOverlappingQuadruples, dist, randoms,
+              Positioned3,Colored,Point,point)
 
-type State = {time:Float, stars:[Vector]}
+type Star = Positioned3 (Colored {})
+
+star : Vector -> Color -> Star
+star pos col = { pos | col = col }
+
+data Mode = BW | Colored
+
+type State = {time:Float, stars:[Star], mode:Mode, speed:Float, amount:Int}
 
 starfield : State -> Effect
 starfield s = Effect {step = step s, display = display s, name = "Starfield"}
 
-make : Effect
-make = starfield {time=0, stars=[]}
+make : Mode -> Float -> Int -> Effect
+make mode speed amount =
+  starfield {time=0, stars=[], mode=mode, speed=speed, amount=amount}
 
 minDist = 2
 
-starInAllowedRange : Vector -> Bool
-starInAllowedRange ({x,y,z} as v) = z < (-minDist) && dist (vector x y 0) > 10
-
-generateNewStars : Int -> Float -> [Vector]
-generateNewStars amount time =
+starInAllowedRange : Star -> Bool
+starInAllowedRange ({x,y,z} as star) =
   let
-    randomFloats = randoms time amount
-    triples = nonOverlappingTriples randomFloats
-    f (x,y,z) = vector (10000*x - 5000)
-                       (10000*y - 5000)
-                       (80*z  - 180)
+    pos2d = project2d star
+  in
+    z < (-minDist) &&
+    dist (vector x y 0) > 10 &&
+    pos2d.x >= -100 && pos2d.x <= 100 &&
+    pos2d.y >= -100 && pos2d.y <= 100
+
+generateNewStars : Mode -> Int -> Float -> [Star]
+generateNewStars mode amount time =
+  let
+    randomFloats = randoms time (amount*4)
+    triples = nonOverlappingQuadruples randomFloats
+    calcCol v = case mode of
+                  BW -> rgb 255 255 255
+                  Colored -> hsv (v*123.234) 1 1
+    f (x,y,z,c) = star (vector (10000*x - 5000)
+                               (10000*y - 5000)
+                               (80*z  - 180))
+                     (calcCol c)
   in
     map f triples
 
-stepStars : Float -> [Vector] -> [Vector]
-stepStars delta = map (\({z} as v) -> { v | z <- z + 0.05 * delta })
+stepStar : Float -> Star -> Star
+stepStar delta ({z} as star) = { star | z <- z + 0.05 * delta }
+
+stepStars : Float -> [Star] -> [Star]
+stepStars delta = map (stepStar delta)
 
 step : State -> Float -> Effect
-step ({time, stars} as state) delta =
+step ({time, stars, speed, mode, amount} as state) delta =
   let
-    oldStars = stars |> (stepStars delta) |> filter starInAllowedRange
-    newAmount = max 0 (128 - length oldStars)
-    stars' = oldStars ++ generateNewStars newAmount time
+    oldStars = stars |> (stepStars (speed * delta)) |> filter starInAllowedRange
+    newAmount = max 0 (amount - length oldStars)
+    stars' = oldStars ++ (generateNewStars mode) newAmount time
   in
     starfield { state | time <- time + delta
                       , stars <- stars' }
 
-displayStar : Vector -> Form
-displayStar {x,y,z} =
+project2d : Positioned3 a -> Point
+project2d {x,y,z} = point (x / (-z)) (y / (-z))
+
+decomposeColor : Color -> (Int,Int,Int,Float)
+decomposeColor (Color r g b a) = (r,g,b,a)
+
+displayStar : Star -> Form
+displayStar ({x,y,z,col} as star) =
   let
+    (r,g,b,a) = decomposeColor col
     radius = 100 / (-z)
     intensity = 1 / (sqrt(sqrt(sqrt(-z))))
     grad = radial (0,0) 0 (0,0) radius
-          [(0 ,rgba 255 255 255 intensity),
-           (1 ,rgba 255 255 255 0)]
-    x2d = x / (-z)
-    y2d = y / (-z)
+          [(0 ,rgba r g b intensity),
+           (1 ,rgba r g b 0)]
+    pos2d = project2d star
   in
-    circle radius |> gradient grad |> move (x2d,y2d)
+    circle radius |> gradient grad |> move (pos2d.x,pos2d.y)
 
 {-| Returns a starfield effect filled form depending on the current time. -}
 display : State -> Form

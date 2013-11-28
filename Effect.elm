@@ -14,4 +14,6 @@ step : Effect -> Float -> Effect
 step (Effect ef) = ef.step
 
 display : Effect -> Form
-display (Effect ef) = ef.display
+display effect = case effect of
+                   (Effect ef) -> ef.display
+                   _           -> rect 0 0 |> filled (rgb 0 0 0)

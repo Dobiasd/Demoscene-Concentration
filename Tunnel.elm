@@ -5,25 +5,27 @@ module Tunnel where
 @docs tunnel
 -}
 
-import Effect(Effect, effect)
-
 -- todo: colored fast starfield in background
 
-type State = {time:Float}
+import Effect(Effect, effect)
+import Effect
+import Starfield
+
+type State = {time:Float, background:Effect}
 
 tunnel : State -> Effect
 tunnel s = Effect {step = step s, display = display s, name = "Tunnel"}
 
 make : Effect
-make = tunnel {time=0}
+make = tunnel {time=0, background=Starfield.make Starfield.Colored 4 128}
 
 step : State -> Float -> Effect
-step ({time} as state) delta = tunnel { state | time <- time + delta }
+step ({time,background} as state) delta =
+  tunnel { state | time <- time + delta
+                    , background <- Effect.step background delta }
 
 {-| Returns a tunnel effect filled form depending on the current time. -}
 display : State -> Form
-display ({time} as state) =
-  group [
-    rect 200 200 |> filled (rgb 0 255 255)
-  , asText time |> toForm
-  ]
+display ({time,background} as state) =
+  Effect.display background
+  --group [ rect 200 200 |> filled (rgb 0 255 255) ]

@@ -40,6 +40,12 @@ nonOverlappingTriples l =
     (x1::x2::x3::xs) -> (x1,x2,x3) :: nonOverlappingTriples xs
     _             -> []
 
+{- [1,2,3,4,5,6,7,8,9] -> [(1,2,3,4),(5,6,7,8)] -}
+nonOverlappingQuadruples : [a] -> [(a,a,a,a)]
+nonOverlappingQuadruples l =
+  case l of
+    (x1::x2::x3::x4::xs) -> (x1,x2,x3,x4) :: nonOverlappingQuadruples xs
+    _                    -> []
 
 -- todo: for all comparables
 -- todo free predicate
@@ -155,14 +161,12 @@ transformFace matrix {tl,tr,bl} =
 transformFaces : Transform3D -> [Face] -> [Face]
 transformFaces matrix = map (transformFace matrix)
 
-
-
--- [1..10]
+-- [1..1000]
 randomInt : Int -> (Int,Int)
 randomInt i =
   let
-    j   = 7 * i  `mod` 101
-    ans = (j - 1) `mod` 10 + 1
+    j   = 701 * i  `mod` 10001
+    ans = (j - 1) `mod` 1000 + 1
   in
     (j, ans)
 
@@ -171,7 +175,7 @@ random seed =
   let
     intSeed = round (10000 * seed)
     (newIntSeed, intVal) = randomInt intSeed
-    floatVal = toFloat (intVal-1) / 9
+    floatVal = toFloat (intVal-1) / 999
     newFloatSeed = toFloat newIntSeed / 10000
   in
     (newFloatSeed, floatVal)
@@ -184,4 +188,4 @@ randoms seed amount =
       let (nextSeed, val) = random seed
       in (nextSeed, val::l)
   in
-    foldr go (seed, []) [1..amount] |> snd
+    foldr go (seed+1.23, []) [1..amount] |> snd

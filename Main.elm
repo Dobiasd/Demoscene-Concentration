@@ -24,14 +24,13 @@ import Moire
 import Plasma
 import Particles
 import Sinescroller
-import Starfield -- todo raus
+import Starfield -- todo: take out
 import Tunnel
 
 -- todo: still show cards a second or so after a pair is found
 --       cardstate Done + Gone
 --       gamestate Won + End
 -- todo: move all into src directory. move effects into effects directory.
--- todo: draw Elm logo onto card backsides
 
 -- /---------------------\
 -- | model configuration |
@@ -132,7 +131,9 @@ defaultGame =
   { state = Won
   , cards = cards
   --, wonEffect = Cube.make effects (rgb 0 0 0)
-  , wonEffect = Starfield.make
+  , wonEffect = Lissajous.make
+  --, wonEffect = Tunnel.make
+  --, wonEffect = Starfield.make Starfield.BW 1
   , time = 0 }
 
 
