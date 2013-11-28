@@ -131,9 +131,10 @@ defaultGame =
   { state = Won
   , cards = cards
   --, wonEffect = Cube.make effects (rgb 0 0 0)
-  , wonEffect = Lissajous.make
+  --, wonEffect = Lissajous.make
+  , wonEffect = Moire.make
   --, wonEffect = Tunnel.make
-  --, wonEffect = Starfield.make Starfield.BW 1
+  --, wonEffect = Starfield.make Starfield.BW 0.1 128
   , time = 0 }
 
 
