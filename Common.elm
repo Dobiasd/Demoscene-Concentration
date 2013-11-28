@@ -157,15 +157,25 @@ transformFaces matrix = map (transformFace matrix)
 
 
 
+-- [1..10]
+randomInt : Int -> (Int,Int)
+randomInt i =
+  let
+    j   = 7 * i  `mod` 101
+    ans = (j - 1) `mod` 10 + 1
+  in
+    (j, ans)
 
 random : Float -> (Float,Float)
 random seed =
   let
-    f seed = 0.5 + 0.5 * cos (seed + 7.312)
-    val = f seed
-    nextSeed = seed * seed + 1.23456 + cos seed
+    intSeed = round (10000 * seed)
+    (newIntSeed, intVal) = randomInt intSeed
+    floatVal = toFloat (intVal-1) / 9
+    newFloatSeed = toFloat newIntSeed / 10000
   in
-    (nextSeed, val)
+    (newFloatSeed, floatVal)
+
 
 randoms : Float -> Int -> [Float]
 randoms seed amount =
@@ -174,4 +184,4 @@ randoms seed amount =
       let (nextSeed, val) = random seed
       in (nextSeed, val::l)
   in
-    foldr go (seed, []) [0..amount] |> snd
+    foldr go (seed, []) [1..amount] |> snd

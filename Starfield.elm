@@ -18,28 +18,18 @@ starfield s = Effect {step = step s, display = display s, name = "Starfield"}
 make : Effect
 make = starfield {time=0, stars=[]}
 
-minZ = 2
+minDist = 2
 
--- todo: why the f do I have no stars if this is always True?
 starInAllowedRange : Vector -> Bool
-starInAllowedRange ({x,y,z} as v) =
-  z < (-minZ)
-  --dist v > 1000 &&
-  --dist (vector x y 0) > 100
-  --True
+starInAllowedRange ({x,y,z} as v) = z < (-minDist) && dist (vector x y 0) > 10
 
-removePassedStars : [Vector] -> [Vector]
-removePassedStars = filter starInAllowedRange
-
-
-generateNewStars : [Vector] -> Time -> [Vector]
-generateNewStars stars time =
+generateNewStars : Int -> Float -> [Vector]
+generateNewStars amount time =
   let
-    amount = max 0 (128 - length stars)
     randomFloats = randoms time amount
     triples = nonOverlappingTriples randomFloats
-    f (x,y,z) = vector (8000*x - 4000)
-                       (8000*y - 4000)
+    f (x,y,z) = vector (10000*x - 5000)
+                       (10000*y - 5000)
                        (80*z  - 180)
   in
     map f triples
@@ -50,8 +40,9 @@ stepStars delta = map (\({z} as v) -> { v | z <- z + 0.05 * delta })
 step : State -> Float -> Effect
 step ({time, stars} as state) delta =
   let
-    oldStars = stars |> (stepStars delta) |> removePassedStars
-    stars' = oldStars ++ generateNewStars oldStars time
+    oldStars = stars |> (stepStars delta) |> filter starInAllowedRange
+    newAmount = max 0 (128 - length oldStars)
+    stars' = oldStars ++ generateNewStars newAmount time
   in
     starfield { state | time <- time + delta
                       , stars <- stars' }
@@ -64,8 +55,8 @@ displayStar {x,y,z} =
     grad = radial (0,0) 0 (0,0) radius
           [(0 ,rgba 255 255 255 intensity),
            (1 ,rgba 255 255 255 0)]
-    x2d = x / z
-    y2d = y / z
+    x2d = x / (-z)
+    y2d = y / (-z)
   in
     circle radius |> gradient grad |> move (x2d,y2d)
 
@@ -73,10 +64,7 @@ displayStar {x,y,z} =
 display : State -> Form
 display ({time, stars} as state) =
   let
-    backGround = rect 200 200 |> filled (rgb 255 0 0) -- todo: make black
+    backGround = rect 200 200 |> filled (rgb 0 0 0) -- todo: make black
     starForms = map displayStar stars
-    --starForms = [displayStar {x=0,y=0,z=-1}]
-    -- todo: Why is the number 0 even though is see stars?
-    debugForm = asText (length stars) |> toForm
   in
-    backGround :: starForms ++ [debugForm] |> group
+    backGround :: starForms |> group
