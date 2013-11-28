@@ -5,7 +5,8 @@ module Tunnel where
 @docs tunnel
 -}
 
--- todo: colored fast starfield in background
+-- todo: tunnel made of squares with missing elements
+--       different colors, colors also go forwars but slower than we
 
 import Effect(Effect, effect)
 import Effect

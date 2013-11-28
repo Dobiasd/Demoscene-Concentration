@@ -9,7 +9,8 @@ module Starfield where
 
 import Effect(Effect, effect)
 import Common(Vector, vector, nonOverlappingQuadruples, dist, randoms,
-              Positioned3,Colored,Point,point)
+              Positioned3,Colored,Point,point,project2d,
+              decomposeColor)
 
 type Star = Positioned3 (Colored {})
 
@@ -47,8 +48,8 @@ generateNewStars mode amount time =
     calcCol v = case mode of
                   BW -> rgb 255 255 255
                   Colored -> hsv (v*123.234) 1 1
-    f (x,y,z,c) = star (vector (10000*x - 5000)
-                               (10000*y - 5000)
+    f (x,y,z,c) = star (vector (100*x - 50)
+                               (100*y - 50)
                                (80*z  - 180))
                      (calcCol c)
   in
@@ -70,12 +71,6 @@ step ({time, stars, speed, mode, amount} as state) delta =
     starfield { state | time <- time + delta
                       , stars <- stars' }
 
-project2d : Positioned3 a -> Point
-project2d {x,y,z} = point (x / (-z)) (y / (-z))
-
-decomposeColor : Color -> (Int,Int,Int,Float)
-decomposeColor (Color r g b a) = (r,g,b,a)
-
 displayStar : Star -> Form
 displayStar ({x,y,z,col} as star) =
   let
@@ -93,7 +88,7 @@ displayStar ({x,y,z,col} as star) =
 display : State -> Form
 display ({time, stars} as state) =
   let
-    backGround = rect 200 200 |> filled (rgb 0 0 0) -- todo: make black
+    backGround = rect 200 200 |> filled (rgb 0 0 0)
     starForms = map displayStar stars
   in
     backGround :: starForms |> group
