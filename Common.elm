@@ -1,10 +1,12 @@
 module Common where
 
+-- todo: handle 2d as special case of 3d
 type Named       a = { a | name:String }
 type Positioned  a = { a | x:Float, y:Float }
 type Moving      a = { a | vx:Float, vy:Float }
 type Sized       a = { a | w:Float, h:Float }
 type WithRadius  a = { a | r:Float }
+type WithNormal  a = { a | nx:Float, ny:Float, nz:Float }
 type Colored     a = { a | col:Color }
 type Boxed       a = Sized (Positioned a)
 type Positioned3 a = Positioned { a | z:Float }
@@ -60,18 +62,19 @@ nonOverlappingSextuples l =
     _                            -> []
 
 
--- todo: for all comparables
--- todo free predicate
-quicksort : [Float] -> [Float]
-quicksort l =
+quicksort : (a -> a -> Bool) -> [a] -> [a]
+quicksort cmp l =
   case l of
     [] -> []
     (p::xs) ->
       let
-        lesser  = filter ((>=) p) xs
-        greater = filter ((<) p) xs
+        lesser  = filter (cmp p) xs
+        greater = filter (not . (cmp p)) xs
       in
-        (quicksort lesser) ++ [p] ++ (quicksort greater)
+        (quicksort cmp lesser) ++ [p] ++ (quicksort cmp greater)
+
+sortBy = quicksort
+
 
 type Vector = {x:Float, y:Float, z:Float}
 
@@ -190,8 +193,37 @@ transformFace matrix {tl,tr,bl} =
 transformFaces : Transform3D -> [Face] -> [Face]
 transformFaces matrix = map (transformFace matrix)
 
-project2d : Positioned3 a -> Point
-project2d {x,y,z} = point (100*x / (-z)) (100*y / (-z))
+project2d : Positioned3 a -> Point3
+project2d {x,y,z} = point3 (100*x / (-z)) (100*y / (-z)) z
+
+normalize : Vector -> Vector
+normalize v = v `multVec` (1 / dist v)
+
+type Disc = WithRadius ( Colored ( Positioned3 ( WithNormal {} ) ) )
+
+disc : Float -> Float -> Float -> Float -> Float -> Float -> Color -> Disc
+disc x y z nx ny nz c = {x=x, y=y, z=z, col=c, r=300, nx=nx,ny=ny,nz=nz}
+
+type PositionedForm = Positioned3 {f:Form}
+
+positionedForm : Form -> Positioned3 a -> PositionedForm
+positionedForm f {x,y,z} = { f=f, x=x, y=y, z=z }
+
+point2DtoPair : Positioned a -> (Float,Float)
+point2DtoPair pt = (pt.x, pt.y)
+
+displayDisc : Disc -> PositionedForm
+displayDisc ({x,y,z,nx,ny,nz,col,r} as disc) =
+  let
+    c2d = project2d disc
+    r2d = r / (-z)
+    normale = normalize {x=nx,y=ny,z=nz}
+    centeredForm = oval r2d r2d |> filled col
+  in
+    positionedForm centeredForm {x=c2d.x,y=c2d.y,z=z}
+
+
+
 
 -- [1..1000]
 randomInt : Int -> (Int,Int)
