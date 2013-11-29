@@ -34,11 +34,12 @@ transformLine : Transform3D -> Line -> Line
 transformLine m (s,e) =
   line (applyTransform3D m s) (applyTransform3D m e)
 
-displayLine : Line -> Form
-displayLine (s, e) =
+displayLine : Float -> Line -> Form
+displayLine num (s, e) =
   let
     width = 8
-    lS1 = solid (rgba 127 127 255 0.1)
+    --lS1 = solid (rgba 127 127 255 0.1)
+    lS1 = solid (hsva (2.6 + cos num) 1 1 0.1)
     lS1Wide = { lS1 | width <- width, join <- Smooth, cap <- Round }
     outline = path [(s.x,s.y), (e.x,e.y)]
   in
@@ -50,8 +51,9 @@ displayLines pattern angle =
   let
     r = rotateZ angle
     lines = map (transformLine r) pattern
+    nums = map toFloat [0..(length(lines))]
   in
-    map displayLine lines |> group
+    map (uncurry displayLine) (zip nums lines) |> group
 
 {-| Returns a moire effect filled form depending on the current time. -}
 display : State -> Form
