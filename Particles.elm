@@ -5,9 +5,6 @@ module Particles where
 @docs particles
 -}
 
--- todo: fractal tree, glow to floor, positioned forms (z-buffer), zsort
-
-
 import Effect(Effect, effect)
 import Common(Vector,vector,Transform3D,applyTransform3D,rotateY,project2d,
               randoms,nonOverlappingSextuples,
@@ -16,7 +13,6 @@ import Common(Vector,vector,Transform3D,applyTransform3D,rotateY,project2d,
 
 type State = {time:Float,balls:[Object]}
 
--- todo radius needed?
 type BallCore = Positioned3 (Moving3 (Colored {age:Float}))
 
 ballCore : Float -> Float -> Float
