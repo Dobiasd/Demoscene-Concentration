@@ -5,9 +5,7 @@ module Particles where
 @docs particles
 -}
 
--- todo: particle fountain. glowing balls. bouncing from floor, disappearing
---       fractal tree, z-buffer, rotate everything
--- todo: shadow oval, glow, positioned forms, zsort, bigger core for balls
+-- todo: fractal tree, glow to floor, positioned forms (z-buffer), zsort
 
 
 import Effect(Effect, effect)
@@ -19,13 +17,13 @@ import Common(Vector,vector,Transform3D,applyTransform3D,rotateY,project2d,
 type State = {time:Float,balls:[Object]}
 
 -- todo radius needed?
-type BallCore = WithRadius (Positioned3 (Moving3 (Colored {age:Float})))
+type BallCore = Positioned3 (Moving3 (Colored {age:Float}))
 
 ballCore : Float -> Float -> Float
         -> Float -> Float -> Float
-        -> Float -> Color -> BallCore
-ballCore x y z vx vy vz r col =
-  {x=x,y=y,z=z,vx=vx,vy=vy,vz=vz,r=r,col=col,age=0}
+        -> Color -> BallCore
+ballCore x y z vx vy vz col =
+  {x=x,y=y,z=z,vx=vx,vy=vy,vz=vz,col=col,age=0}
 
 data Object = Ball BallCore | Line Vector Vector Color
 
@@ -40,7 +38,6 @@ generateNewBalls amount time =
     f (x,y,z,vx,vy,vz) = Ball <|
       ballCore (40 * x - 20) (40 * y - 20) (40 * z - 20)
                (0.2 * vx - 0.1) (0.2 * vy - 0.1) (0.2 * vz - 0.1)
-               9
                (rgba 255 192 128 0.4)
   in
     map f sextuples
@@ -57,17 +54,18 @@ displayBallShadow ({x,y,z} as bc) =
            (1, rgba 0 0 0 0)]
   in
     if z < -1 && pos2d.x >= -100 && pos2d.x <= 100 then
-      circle radius |> gradient grad |> move (pos2d.x,pos2d.y)
+      oval radius (0.3*radius) |> gradient grad |> move (pos2d.x,pos2d.y-(0.7*radius))
       else rect 0 0 |> filled (rgb 0 0 0)
 
 displayBall : BallCore -> Form
-displayBall ({x,y,z,col,r} as bc) =
+displayBall ({x,y,z,col} as bc) =
   let
     (r,g,b,a) = decomposeColor col
     radius = 100 / (-z)
     grad = radial (0,0) 0 (0,0) radius
-          [(0, rgba r g b 0.7),
-           (1, rgba r g b 0.2)]
+          [(0  , rgba r g b 0.7),
+           (0.3, rgba r g b 0.7),
+           (1  , rgba r g b 0.2)]
     pos2d = project2d bc
   in
     if z < -1 && pos2d.x >= -100 && pos2d.x <= 100 then
@@ -85,7 +83,7 @@ displayObj obj = case obj of
                    _              -> rect 0 0 |> filled (rgb 0 0 0)
 
 stepBallUsual : Float -> BallCore -> Object
-stepBallUsual delta ({x,y,z,vx,vy,vz,r,col,age} as bc) =
+stepBallUsual delta ({x,y,z,vx,vy,vz,col,age} as bc) =
   let
     p' = vector (x + vx)
                 (max (origin.y) (y + vy))
@@ -160,7 +158,7 @@ displayStar star =
   let
     pos2d = project2d star
   in
-    circle 1 |> filled white |> move (pos2d.x,pos2d.y)
+    circle 0.6 |> filled white |> move (pos2d.x,pos2d.y)
 
 staticStars : [Vector]
 staticStars =
