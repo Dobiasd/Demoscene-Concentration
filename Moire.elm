@@ -5,19 +5,23 @@ module Moire where
 @docs moire
 -}
 
-import Effect(Effect, effect)
+import Effect(Effect,effect)
+import Effect
 import Common(Vector,vector,Transform3D,applyTransform3D,rotateZ)
+import Starfield
 
-type State = {time:Float}
+type State = {time:Float, background:Effect}
 
 moire : State -> Effect
 moire s = Effect {step = step s, display = display s, name = "Moire"}
 
 make : Effect
-make = moire {time=0}
+make = moire {time=0, background=Starfield.make Starfield.BW 1.1 128}
 
 step : State -> Float -> Effect
-step ({time} as state) delta = moire { state | time <- time + delta }
+step ({time, background} as state) delta =
+  moire { state | time <- time + delta
+                , background <- Effect.step background delta }
 
 type Line = (Vector, Vector)
 
@@ -57,13 +61,13 @@ displayLines pattern angle =
 
 {-| Returns a moire effect filled form depending on the current time. -}
 display : State -> Form
-display ({time} as state) =
+display ({time, background} as state) =
   let
     angles = map ((*)(time/20000)) [1..15]
     patterns = map (displayLines pattern) angles
   in
     [
       rect 200 200 |> filled (rgb 0 0 0)
-    --, asText time |> toForm
+    , Effect.display background
     ] ++ patterns
     |> group
