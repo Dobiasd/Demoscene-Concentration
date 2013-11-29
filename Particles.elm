@@ -7,6 +7,8 @@ module Particles where
 
 -- todo: particle fountain. glowing balls. bouncing from floor, disappearing
 --       fractal tree, z-buffer, rotate everything
+-- todo: shadow oval, glow, positioned forms, zsort, bigger core for balls
+
 
 import Effect(Effect, effect)
 import Common(Vector,vector,Transform3D,applyTransform3D,rotateY,project2d,
@@ -153,17 +155,35 @@ displayFloor =
   in
     floorForm
 
+displayStar : Vector -> Form
+displayStar star =
+  let
+    pos2d = project2d star
+  in
+    circle 1 |> filled white |> move (pos2d.x,pos2d.y)
+
+staticStars : [Vector]
+staticStars =
+  let
+    f i = vector (     100 * (cos (1234 * i)))
+                 ( 30 + 30 * (cos (2345 * i)))
+                 (     100 * (cos (3456 * i)))
+  in
+    map f [0..128]
+
+
 {-| Returns a particle effect filled form depending on the current time. -}
 display : State -> Form
 display ({time,balls} as state) =
   let
     m = rotateY (0.0003*time)
     rotatedBalls = map (transformObj m) balls
+    starForms = map (applyTransform3D m) staticStars |> map displayStar
     m2 = move3 (vector 0 0 (-30))
     moved2Balls = map (transformObj m2) rotatedBalls
     ballForms = map displayObj moved2Balls
   in
     [
       rect 200 200 |> filled (rgb 0 0 0)
-    ] ++ displayFloor :: ballForms
+    ] ++ starForms ++ displayFloor :: ballForms
     |> group
