@@ -10,7 +10,7 @@ import Common(Vector,vector,Transform3D,applyTransform3D,rotateY,project2d,
               randoms,nonOverlappingSextuples,
               WithRadius,Positioned3,Moving3,Colored,
               decomposeColor,addVec,move3,distTo,multVec,subVec,
-              PositionedForm, positionedForm, displayPositionedForms)
+              PositionedForm, positionedForm, displayPositionedForms, isPosOK)
 
 type Ball = Positioned3 (Moving3 (Colored {}))
 
@@ -129,12 +129,12 @@ displayFloor =
   in
     floorForm
 
-displayStar : Vector -> Form
+displayStar : Vector -> PositionedForm
 displayStar star =
   let
-    pos2d = project2d star
+    {x,y} = project2d star
   in
-    circle 0.6 |> filled white |> move (pos2d.x,pos2d.y)
+    positionedForm (circle 0.6 |> filled white |> move (x,y)) {x=x,y=y,z=star.z}
 
 staticStars : [Vector]
 staticStars =
@@ -152,7 +152,7 @@ display ({time,balls} as state) =
   let
     m = rotateY (0.0003*time)
     rotatedBalls = map (transformBall m) balls
-    starForms = map (applyTransform3D m) staticStars |> map displayStar
+    starForms = map (applyTransform3D m) staticStars |> map displayStar |> filter isPosOK |> map .f
     m2 = move3 (vector 0 0 (-30))
     moved2Balls = map (transformBall m2) rotatedBalls
     ballForms = map displayBallWithShadow moved2Balls |> concat |> displayPositionedForms

@@ -206,20 +206,23 @@ disc x y z nx ny nz c = {x=x, y=y, z=z, col=c, r=300, nx=nx,ny=ny,nz=nz}
 
 type PositionedForm = Positioned3 {f:Form}
 
-scalarProd : Positioned3 a -> Positioned3 b -> Float
-scalarProd v1 v2 = v1.x * v2.x + v1.y * v2.y + v1.z * v2.z
-
 positionedForm : Form -> Positioned3 a -> PositionedForm
 positionedForm f {x,y,z} = { f=f, x=x, y=y, z=z }
 
+scalarProd : Positioned3 a -> Positioned3 b -> Float
+scalarProd v1 v2 = v1.x * v2.x + v1.y * v2.y + v1.z * v2.z
+
 displayPositionedForm : PositionedForm -> Form
 displayPositionedForm {f,x,y} = f |> move (x, y)
+
+isPosOK : Positioned3 a -> Bool
+isPosOK {x,y,z} = z < -1 && x >= -100 && x <= 100 && y >= -100 && y <= 100
 
 displayPositionedForms : [PositionedForm] -> Form
 displayPositionedForms fs =
     fs
     |> sortBy (\a b -> a.z > b.z)
-    |> filter (\{x,y,z} -> z < -1 && x >= -100 && x <= 100 )
+    |> filter isPosOK
     |> map displayPositionedForm |> group
 
 point2DtoPair : Positioned a -> (Float,Float)

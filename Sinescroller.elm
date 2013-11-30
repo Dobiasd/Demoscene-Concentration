@@ -82,7 +82,7 @@ display ({time,cube} as state) =
     charStrings = deconcat message
     chars = scrollerChars charStrings poss cols
     wrappedChars = map (wrapCharPos <| -charDist * (14 + toFloat len)) chars
-    goodChars = filter (\{x} -> x > -80 && x < 80) wrappedChars
+    goodChars = filter (\{x} -> x > -93 && x < 93) wrappedChars
     forms = map displayScrollerChar goodChars
   in
      [rect 200 200 |> filled (rgb 0 0 0)]
