@@ -16,7 +16,7 @@ moire : State -> Effect
 moire s = Effect {step = step s, display = display s, name = "Moire"}
 
 make : Effect
-make = moire {time=0, background=Starfield.make Starfield.BW 1.1 128}
+make = moire {time=0, background=Starfield.make Starfield.Colored 1.1 128}
 
 step : State -> Float -> Effect
 step ({time, background} as state) delta =

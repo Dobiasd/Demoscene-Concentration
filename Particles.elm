@@ -80,7 +80,7 @@ stepBallUsual delta ({x,y,z,vx,vy,vz,col} as b) =
        , vx <- v'.x, vy <- v'.y, vz <- v'.z }
 
 throwBall : Ball -> Ball
-throwBall ({vy} as b) = { b | vy <- 1.8 }
+throwBall ({vy} as b) = { b | vy <- 2.3 }
 
 pullToRoot : Float -> Ball -> Ball
 pullToRoot delta ({x,y,z,vx,vy,vz} as b) =
