@@ -196,7 +196,7 @@ transformFaces matrix = map (transformFace matrix)
 project2d : Positioned3 a -> Point3
 project2d {x,y,z} = point3 (100*x / (-z)) (100*y / (-z)) z
 
-normalize : Vector -> Vector
+normalize : Positioned3 a -> Positioned3 a
 normalize v = v `multVec` (1 / dist v)
 
 type Disc = WithRadius ( Colored ( Positioned3 ( WithNormal {} ) ) )
@@ -206,8 +206,21 @@ disc x y z nx ny nz c = {x=x, y=y, z=z, col=c, r=300, nx=nx,ny=ny,nz=nz}
 
 type PositionedForm = Positioned3 {f:Form}
 
+scalarProd : Positioned3 a -> Positioned3 b -> Float
+scalarProd v1 v2 = v1.x * v2.x + v1.y * v2.y + v1.z * v2.z
+
 positionedForm : Form -> Positioned3 a -> PositionedForm
 positionedForm f {x,y,z} = { f=f, x=x, y=y, z=z }
+
+displayPositionedForm : PositionedForm -> Form
+displayPositionedForm {f,x,y} = f |> move (x, y)
+
+displayPositionedForms : [PositionedForm] -> Form
+displayPositionedForms fs =
+    fs
+    |> sortBy (\a b -> a.z > b.z)
+    |> filter (\{x,y,z} -> z < -1 && x >= -100 && x <= 100 )
+    |> map displayPositionedForm |> group
 
 point2DtoPair : Positioned a -> (Float,Float)
 point2DtoPair pt = (pt.x, pt.y)
@@ -217,8 +230,12 @@ displayDisc ({x,y,z,nx,ny,nz,col,r} as disc) =
   let
     c2d = project2d disc
     r2d = r / (-z)
+    normToCam = normalize disc
     normale = normalize {x=nx,y=ny,z=nz}
-    centeredForm = oval r2d r2d |> filled col
+    proj = normale `scalarProd` normToCam
+    discHeight = proj * r2d
+    angle = atan2 normale.x normale.y
+    centeredForm = oval r2d discHeight |> filled col |> rotate -angle
   in
     positionedForm centeredForm {x=c2d.x,y=c2d.y,z=z}
 

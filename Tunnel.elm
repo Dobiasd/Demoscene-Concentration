@@ -13,7 +13,7 @@ import Effect
 import Starfield
 import Common(Disc,randoms,nonOverlappingQuadruples,
               disc,vector,project2d,dist,displayDisc,
-              sortBy,point,Point)
+              sortBy,point,Point,displayPositionedForms)
 
 type State = {time:Float, background:Effect, discs:[Disc]}
 
@@ -22,7 +22,7 @@ tunnel s = Effect {step = step s, display = display s, name = "Tunnel"}
 
 make : Effect
 make = tunnel { time=0
-              , background=Starfield.make Starfield.Colored 4 128
+              , background=Starfield.make Starfield.BW 0.3 128
               , discs=[] }
 
 minDist = 2
@@ -41,27 +41,23 @@ calcPosOffset time z =
   point (z * cos time) (z * sin time)
 
 -- todo: now too much discs are produces
-generateNewDiscRings : Int -> Float -> [Disc]
-generateNewDiscRings amount time =
+generateNewDiscRing : Float -> [Disc]
+generateNewDiscRing time =
   let
-    calcCol v = hsva (v*123.234) 1 1 1
+    calcCol v = hsva (v*0.06) 1 1 1
     f i =
-      let
-        z = -100 + 2 * cos i
-          --calcPosOffset
-      in
         disc (13 * cos i)
-                 (13 * sin i)
-                 z
-                 (13 * cos i)
-                 (13 * sin i)
-                 0
-                 (calcCol i)
+             (13 * sin i)
+             -160
+             (13 * cos i)
+             (13 * sin i)
+              0
+             (calcCol i)
   in
-    map toFloat [0..amount] |> map ((+) time) |> map f
+    map toFloat [0..13] |> map ((+) time) |> map f
 
 stepDisc : Float -> Disc -> Disc
-stepDisc delta ({z} as disc) = { disc | z <- z + 0.05 * delta }
+stepDisc delta ({z} as disc) = { disc | z <- z + 0.03 * delta }
 
 stepDiscs : Float -> [Disc] -> [Disc]
 stepDiscs delta = map (stepDisc delta)
@@ -71,7 +67,8 @@ step ({time, discs, background} as state) delta =
   let
     oldDiscs = discs |> (stepDiscs delta) |> filter discInAllowedRange
     newAmount = max 0 (10 - length oldDiscs)
-    discs' = oldDiscs ++ generateNewDiscRings newAmount time
+    newDiscs = if (isEmpty oldDiscs ) || (last oldDiscs).z > -150 then generateNewDiscRing time else []
+    discs' = oldDiscs ++ newDiscs
   in
     tunnel { state | time <- time + delta
                    , background <- Effect.step background delta
@@ -84,11 +81,11 @@ display : State -> Form
 display ({time,background,discs} as state) =
   let
     zBufCmp = (\a b -> a.z > b.z)
-    discForms = map displayDisc discs |> sortBy zBufCmp
+    discsForm = map displayDisc discs |> displayPositionedForms
     moveForm {x,y,f} = f |> move (x,y)
   in
     [ Effect.display background
-    , map moveForm discForms |> group ]
+    , discsForm ]
     |> group
 
   --group [ rect 200 200 |> filled (rgb 0 255 255) ]

@@ -9,37 +9,35 @@ import Effect(Effect, effect)
 import Common(Vector,vector,Transform3D,applyTransform3D,rotateY,project2d,
               randoms,nonOverlappingSextuples,
               WithRadius,Positioned3,Moving3,Colored,
-              decomposeColor,addVec,move3,distTo,multVec,subVec)
+              decomposeColor,addVec,move3,distTo,multVec,subVec,
+              PositionedForm, positionedForm, displayPositionedForms)
 
-type State = {time:Float,balls:[Object]}
+type Ball = Positioned3 (Moving3 (Colored {}))
 
-type BallCore = Positioned3 (Moving3 (Colored {age:Float}))
+type State = {time:Float,balls:[Ball]}
 
-ballCore : Float -> Float -> Float
-        -> Float -> Float -> Float
-        -> Color -> BallCore
-ballCore x y z vx vy vz col =
-  {x=x,y=y,z=z,vx=vx,vy=vy,vz=vz,col=col,age=0}
-
-data Object = Ball BallCore | Line Vector Vector Color
+ball : Float -> Float -> Float
+    -> Float -> Float -> Float
+    -> Color -> Ball
+ball x y z vx vy vz col = {x=x,y=y,z=z,vx=vx,vy=vy,vz=vz,col=col}
 
 make : Effect
 make = particles {time=0, balls=[]}
 
-generateNewBalls : Int -> Float -> [Object]
+generateNewBalls : Int -> Float -> [Ball]
 generateNewBalls amount time =
   let
     randomFloats = randoms time (amount*6)
     sextuples = nonOverlappingSextuples randomFloats
-    f (x,y,z,vx,vy,vz) = Ball <|
-      ballCore (40 * x - 20) (40 * y - 20) (40 * z - 20)
-               (0.2 * vx - 0.1) (0.2 * vy - 0.1) (0.2 * vz - 0.1)
-               (rgba 255 192 128 0.4)
+    f (x,y,z,vx,vy,vz) =
+      ball (40 * x - 20) (40 * y - 20) (40 * z - 20)
+           (0.2 * vx - 0.1) (0.2 * vy - 0.1) (0.2 * vz - 0.1)
+           (hsv (2*x*y) 1 1)
   in
     map f sextuples
 
-displayBallShadow : BallCore -> Form
-displayBallShadow ({x,y,z} as bc) =
+displayBallShadow : Ball -> PositionedForm
+displayBallShadow ({x,y,z} as b) =
   let
     radius = 100 / (-z)
     sOff = 0.03*y * abs (y - origin.y)
@@ -49,37 +47,27 @@ displayBallShadow ({x,y,z} as bc) =
           [(0, rgba 0 0 0 (0.1+2*sharpness)),
            (1, rgba 0 0 0 0)]
   in
-    if z < -1 && pos2d.x >= -100 && pos2d.x <= 100 then
-      oval radius (0.3*radius) |> gradient grad |> move (pos2d.x,pos2d.y-(0.7*radius))
-      else rect 0 0 |> filled (rgb 0 0 0)
+    positionedForm (oval radius (0.3*radius) |> gradient grad) {x=pos2d.x,y=pos2d.y-(0.7*radius),z=z}
 
-displayBall : BallCore -> Form
-displayBall ({x,y,z,col} as bc) =
+displayBall : Ball -> PositionedForm
+displayBall ({x,y,z,col} as ball) =
   let
     (r,g,b,a) = decomposeColor col
     radius = 100 / (-z)
     grad = radial (0,0) 0 (0,0) radius
-          [(0  , rgba r g b 0.7),
+          [(0  , rgba r g b 0.9),
            (0.3, rgba r g b 0.7),
            (1  , rgba r g b 0.2)]
-    pos2d = project2d bc
+    pos2d = project2d ball
   in
-    if z < -1 && pos2d.x >= -100 && pos2d.x <= 100 then
-      circle radius |> gradient grad |> move (pos2d.x,pos2d.y)
-      else rect 0 0 |> filled (rgb 0 0 0)
+    positionedForm (circle radius |> gradient grad) {x=pos2d.x,y=pos2d.y,z=z}
 
-displayLine : Vector -> Vector -> Color -> Form
-displayLine s e col =
-  rect 0 0 |> filled (rgb 0 0 0)
 
-displayObj : Object -> Form
-displayObj obj = case obj of
-                   (Ball bc)      -> group [ displayBallShadow bc, displayBall bc]
-                   (Line s e col) -> displayLine s e col
-                   _              -> rect 0 0 |> filled (rgb 0 0 0)
+displayBallWithShadow : Ball -> [PositionedForm]
+displayBallWithShadow b = [ displayBallShadow b, displayBall b]
 
-stepBallUsual : Float -> BallCore -> Object
-stepBallUsual delta ({x,y,z,vx,vy,vz,col,age} as bc) =
+stepBallUsual : Float -> Ball -> Ball
+stepBallUsual delta ({x,y,z,vx,vy,vz,col} as b) =
   let
     p' = vector (x + vx)
                 (max (origin.y) (y + vy))
@@ -88,43 +76,35 @@ stepBallUsual delta ({x,y,z,vx,vy,vz,col,age} as bc) =
                       else (vy - 0.001 * delta)
     v' = vector vx vy' vz
   in
-    Ball <| { bc | x <- p'.x, y <- p'.y, z <- p'.z
-                 , vx <- v'.x, vy <- v'.y, vz <- v'.z
-                 , age <- age + delta }
+    { b | x <- p'.x, y <- p'.y, z <- p'.z
+       , vx <- v'.x, vy <- v'.y, vz <- v'.z }
 
-throwBall : BallCore -> BallCore
-throwBall ({vy} as bc) = { bc | vy <- 1.8 }
+throwBall : Ball -> Ball
+throwBall ({vy} as b) = { b | vy <- 1.8 }
 
-pullToRoot : Float -> BallCore -> BallCore
-pullToRoot delta ({x,y,z,vx,vy,vz} as bc) =
+pullToRoot : Float -> Ball -> Ball
+pullToRoot delta ({x,y,z,vx,vy,vz} as b) =
   let
-    diff = origin `subVec` bc
+    diff = origin `subVec` b
     pull = diff `multVec` (0.00001 * delta)
   in
-    { bc | vx <- vx + pull.x
-         , vy <- vy + pull.y
-         , vz <- vz + pull.z }
+    { b | vx <- vx + pull.x
+        , vy <- vy + pull.y
+        , vz <- vz + pull.z }
 
 origin = {x=0,y=-15,z=0}
 
-stepBall : Float -> BallCore -> Object
-stepBall delta bc =
+stepBall : Float -> Ball -> Ball
+stepBall delta b =
   let
-    throw = distTo bc origin < 3.0
+    throw = distTo b origin < 3.0
     stepF = (stepBallUsual delta) . (pullToRoot delta)
   in
-    if throw then throwBall bc |> stepF else stepF bc
+    if throw then throwBall b |> stepF else stepF b
 
-stepObj : Float -> Object -> Object
-stepObj delta obj = case obj of
-                      (Ball bc) -> stepBall delta bc
-                      _         -> obj
 
-transformObj : Transform3D -> Object -> Object
-transformObj m obj = case obj of
-                      (Ball bc) -> Ball (applyTransform3D m bc)
-                      _         -> obj
-
+transformBall : Transform3D -> Ball -> Ball
+transformBall m b = applyTransform3D m b
 
 particles : State -> Effect
 particles s = Effect {step = step s, display = display s, name = "Particles"}
@@ -132,7 +112,7 @@ particles s = Effect {step = step s, display = display s, name = "Particles"}
 step : State -> Float -> Effect
 step ({time, balls} as state) delta =
   let
-    oldBalls = balls |> map (stepObj delta)
+    oldBalls = balls |> map (stepBall delta)
     newAmount = max 0 (92 - length oldBalls)
     balls' = oldBalls ++ generateNewBalls newAmount time
   in
@@ -171,13 +151,13 @@ display : State -> Form
 display ({time,balls} as state) =
   let
     m = rotateY (0.0003*time)
-    rotatedBalls = map (transformObj m) balls
+    rotatedBalls = map (transformBall m) balls
     starForms = map (applyTransform3D m) staticStars |> map displayStar
     m2 = move3 (vector 0 0 (-30))
-    moved2Balls = map (transformObj m2) rotatedBalls
-    ballForms = map displayObj moved2Balls
+    moved2Balls = map (transformBall m2) rotatedBalls
+    ballForms = map displayBallWithShadow moved2Balls |> concat |> displayPositionedForms
   in
     [
       rect 200 200 |> filled (rgb 0 0 0)
-    ] ++ starForms ++ displayFloor :: ballForms
+    ] ++ starForms ++ displayFloor :: [ballForms]
     |> group
