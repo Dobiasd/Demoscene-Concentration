@@ -125,11 +125,16 @@ type Game = { state:State
             , wonEffect:Effect
             , time:Time }
 
+
+-- todo delete it ;)
+deleteme = Tunnel.make
+
 defaultGame : Game
 defaultGame =
-  { state = Start
+  { state = Won
   , cards = cards
-  , wonEffect = Cube.make effects (rgb 0 0 0)
+  , wonEffect = Cube.make effects (rgb 64 64 64)
+  --, wonEffect = Cube.make [deleteme,deleteme,deleteme,deleteme,deleteme,deleteme] (rgb 64 64 64)
   --, wonEffect = Lissajous.make
   --, wonEffect = Moire.make
   --, wonEffect = Particles.make

@@ -1,5 +1,7 @@
 module Common where
 
+import Transform2D(Transform2D,matrix)
+
 -- todo: handle 2d as special case of 3d
 type Named       a = { a | name:String }
 type Positioned  a = { a | x:Float, y:Float }
@@ -141,6 +143,36 @@ applyTransform3D
           , y <- (m21*x + m22*y + m23*z) + m24
           , z <- (m31*x + m32*y + m33*z) + m34 }
 
+getAffineTransformation :
+  (Float,Float) -> (Float,Float) -> (Float,Float) ->
+  (Float,Float) -> (Float,Float) -> (Float,Float) ->
+  (Transform2D, Transform3D)
+getAffineTransformation
+  (x11,x12) (x21,x22) (x31,x32)
+  (y11,y12) (y21,y22) (y31,y32) =
+  let
+    a1 = ((y11-y21)*(x12-x32)-(y11-y31)*(x12-x22))/
+         ((x11-x21)*(x12-x32)-(x11-x31)*(x12-x22))
+    a2 = ((y11-y21)*(x11-x31)-(y11-y31)*(x11-x21))/
+         ((x12-x22)*(x11-x31)-(x12-x32)*(x11-x21))
+    a3 = y11-a1*x11-a2*x12
+    a4 = ((y12-y22)*(x12-x32)-(y12-y32)*(x12-x22))/
+         ((x11-x21)*(x12-x32)-(x11-x31)*(x12-x22))
+    a5 = ((y12-y22)*(x11-x31)-(y12-y32)*(x11-x21))/
+         ((x12-x22)*(x11-x31)-(x12-x32)*(x11-x21))
+    a6 = y12-a4*x11-a5*x12
+  in
+    (matrix a1 a2 a4 a5 a3 a6,
+      transform3D a1 a2  0 a3
+                  a4 a5  0 a6
+                   0  0  1  0
+                   0  0  0  1)
+
+crossProduct : Vector -> Vector -> Vector
+crossProduct a b =
+  Vector (a.y * b.z - b.y * a.z)
+         (a.z * b.x - b.z * a.x)
+         (a.x * b.y - b.x * a.y)
 
 type Face = { tl:Vector, tr:Vector, bl:Vector }
 

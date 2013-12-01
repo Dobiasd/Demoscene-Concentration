@@ -6,11 +6,15 @@ module Cube where
 -}
 
 import Effect(Effect, effect)
+import Effect
 
 import Common(vector, transform3D,
               rotateX, rotateY, rotateZ,
               applyTransform3D, Face, faceBr,
-              cubeFaces, transformFaces)
+              cubeFaces, transformFaces,getAffineTransformation,
+              subVec, crossProduct)
+
+import Transform2D(Transform2D,matrix)
 
 type State = {time:Float, faceEffects:[Effect], wireCol:Color}
 
@@ -21,7 +25,11 @@ make : [Effect] -> Color -> Effect
 make effects wireCol = cube {time=0, faceEffects=effects, wireCol=wireCol}
 
 step : State -> Float -> Effect
-step ({time} as state) delta = cube { state | time <- time + delta }
+step ({time,faceEffects} as state) delta =
+  cube { state | time <- time + delta
+               , faceEffects <- if time < 10000 then
+                   map (\e -> Effect.step e delta) faceEffects
+                   else faceEffects }
 
 
 calcFaces : Float -> [Face]
@@ -38,23 +46,33 @@ displayFace wireCol ({tl,tr,bl} as face) form =
   let
     br = faceBr face
     vtp {x,y} = (x,y)
-    width = 3
-    lsGray = solid wireCol
-    grayLSWide = { lsGray | width <- width, join <- Smooth, cap <- Round }
+    width = 8
+    lsjustCol = solid wireCol
+    lSWide = { lsjustCol | width <- width, join <- Smooth, cap <- Round }
     outline = path [vtp tr, vtp tl, vtp bl, vtp br, vtp tr]
+    (m2d,m3d) = getAffineTransformation
+          (-100,100) (100,100) (-100,-100)
+          (tl.x,tl.y) (tr.x,tr.y) (bl.x,bl.y)
+    transformedForm = groupTransform m2d [form]
+    vRight = tr `subVec` tl
+    vDown = bl `subVec` tl
+    normale = vDown `crossProduct` vRight
+    backside = normale.z < 0
+    dummyForm = rect 0 0 |> filled (rgba 0 0 0 0)
   in
-    outline |> traced grayLSWide
+    if backside then dummyForm else
+      group [ transformedForm, outline |> traced lSWide ]
 
 {-| Returns a rotating 3d cube effect filled form
 depending on the current time. -}
 display : State -> Form
-display ({time, wireCol} as state) =
+display ({time, wireCol, faceEffects} as state) =
   let
-    faces = calcFaces time
-    dummyForm = rect 200 200 |> filled (rgb 0 255 0)
-    forms = [dummyForm,dummyForm,dummyForm,dummyForm,dummyForm,dummyForm]
+    faces = calcFaces (time/2)
+    forms = map Effect.display faceEffects
+    --dummyForm = asText 123 |> toForm
+    --forms = [dummyForm, dummyForm, dummyForm, dummyForm, dummyForm, dummyForm]
     facesWithForms = zip faces forms
     resultForms = map (uncurry (displayFace wireCol)) facesWithForms
-    --resultForms = [(uncurry displayFace) (head facesWithForms)]
   in
-    group resultForms |> scale 0.5
+    group resultForms |> scale (1/sqrt(3))
