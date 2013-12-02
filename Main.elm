@@ -46,6 +46,9 @@ framesPerSecond = 60
 
 timeTextHeight = 5
 timeTextPosY = 100
+fpsTextHeight = 5
+fpsTextPosY = -80
+
 
 
 -- /--------\
@@ -123,7 +126,8 @@ data State = Start | Play | Won
 type Game = { state:State
             , cards:Cards
             , wonEffect:Effect
-            , time:Time }
+            , time:Time
+            , currentFPS:Int }
 
 
 -- todo delete it ;)
@@ -141,7 +145,8 @@ defaultGame =
   --, wonEffect = Tunnel.make
   --, wonEffect = Sinescroller.make
   --, wonEffect = Starfield.make Starfield.BW 0.1 128
-  , time = 0 }
+  , time = 0
+  , currentFPS = 0 }
 
 
 -- /---------\
@@ -240,12 +245,15 @@ stepWon delta ({wonEffect} as game) =
 
 stepDelta : Float -> Game -> Game
 stepDelta delta ({cards, state, time} as game) =
-  case state of
-    Won -> stepWon delta game
-    _   -> { game | cards <- stepCards delta cards,
-                    time <-  case state of
-                               Play -> time + delta
-                               _ -> time }
+  let game' =
+    case state of
+      Won -> stepWon delta game
+      _   -> { game | cards <- stepCards delta cards
+                    , time <- case state of
+                                Play -> time + delta
+                                _ -> time }
+  in
+    { game' | currentFPS <- round(1000/delta) }
 
 stepGame : Input -> Game -> Game
 stepGame ({action}) ({state, time} as game) =
@@ -279,6 +287,14 @@ displayCards time cards =
   map (displayCard time) cards |> group
 
 
+txt : (Text -> Text) -> String -> Element
+txt f = text . f . monospace . Text.color lightBlue . toText
+
+displayFPS : Game -> Form
+displayFPS {currentFPS} =
+  txt (Text.height fpsTextHeight) (show <| currentFPS)
+                     |> toForm |> move (0, fpsTextPosY)
+
 displayWon : Game -> Form
 displayWon ({wonEffect} as game) = Effect.display wonEffect
 
@@ -286,8 +302,6 @@ displayWon ({wonEffect} as game) = Effect.display wonEffect
 displayNotYetDone : Game -> Form
 displayNotYetDone ({time,cards} as game) =
   let
-    txt : (Text -> Text) -> String -> Element
-    txt f = text . f . monospace . Text.color lightBlue . toText
     timeTextForm = txt (Text.height timeTextHeight) (show <| time / 1000)
                      |> toForm |> move (0, timeTextPosY)
   in
@@ -299,9 +313,12 @@ displayNotYetDone ({time,cards} as game) =
 
 display : Game -> Form
 display ({state} as game) =
-  case state of
-    Won -> displayWon game
-    _   -> displayNotYetDone game
+  group [
+    case state of
+      Won -> displayWon game
+      _   -> displayNotYetDone game
+  , displayFPS game ]
+
 
 {-| Draw game maximized into the window. -}
 displayFullScreen : (Int,Int) -> Game -> Element
