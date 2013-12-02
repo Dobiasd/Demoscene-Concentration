@@ -47,7 +47,8 @@ framesPerSecond = 60
 timeTextHeight = 5
 timeTextPosY = 100
 fpsTextHeight = 5
-fpsTextPosY = -80
+fpsTextPosY = -90
+fpsTextPosX = -98
 
 
 
@@ -292,8 +293,8 @@ txt f = text . f . monospace . Text.color lightBlue . toText
 
 displayFPS : Game -> Form
 displayFPS {currentFPS} =
-  txt (Text.height fpsTextHeight) (show <| currentFPS)
-                     |> toForm |> move (0, fpsTextPosY)
+  txt (Text.height fpsTextHeight) ("FPS: " ++ (show <| currentFPS))
+                     |> toForm |> move (fpsTextPosX, fpsTextPosY)
 
 displayWon : Game -> Form
 displayWon ({wonEffect} as game) = Effect.display wonEffect
