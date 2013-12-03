@@ -10,7 +10,7 @@ module EulerSpiral where
 --       shadows.
 
 import Common(Positioned,Vector,vector,angle2D,vector2DFromAngle,
-              multVec,addVec,subVec)
+              multVec,addVec,subVec,numberedPairs,uncurry3)
 import Effect(Effect, effect)
 import Effect
 import Starfield
@@ -56,23 +56,28 @@ getPointRange points =
   in
     ((minX,maxX),(minY,maxY))
 
-displayLines : [Vector] -> Form
-displayLines points =
+displayLine : Float -> Int -> Vector -> Vector -> Form
+displayLine time num s e =
   let
-    width = 1
-    --lS1 = solid (hsva (2.6 + cos num) 1 1 0.1)
-    lS1 = solid black
+    width = 2
+    --lS1 = solid (hsva ((cos . ((/)10) . toFloat) num) 1 1 1)
+    lS1 = solid (hsva (toFloat num / 10 + time / 1000) 1 1 1)
+    --lS1 = solid black
     lS1Wide = { lS1 | width <- width, join <- Smooth, cap <- Round }
     pointToPair {x,y} = (x,y)
-    outline = map pointToPair points |> path
+    outline = [pointToPair s, pointToPair e] |> path
   in
     outline |> traced lS1Wide
+
+displayLines : [Vector] -> Float -> Form
+displayLines points time =
+    group <| map (uncurry3 (displayLine time)) <| numberedPairs <| reverse points
 
 {-| Returns a euler spiral effect filled form depending on the current time. -}
 display : State -> Form
 display ({time,background,points} as state) =
   let
-    rawForm = displayLines points
+    rawForm = displayLines points time
     ((minX,maxX),(minY,maxY)) = getPointRange points
     cX = (minX + maxX) / 2
     cY = (minY + maxY) / 2

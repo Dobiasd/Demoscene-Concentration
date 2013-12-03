@@ -42,6 +42,20 @@ uncurry3 f (a,b,c) = f a b c
 decomposeColor : Color -> (Int,Int,Int,Float)
 decomposeColor (Color r g b a) = (r,g,b,a)
 
+
+pairs : [a] -> [(a,a)]
+pairs xs = zip xs (tail xs)
+
+numberedPairs : [a] -> [(Int,a,a)]
+numberedPairs xs =
+  let
+    ps = pairs xs
+    l = length ps - 1
+    nums = [0..l]
+  in
+    zipWith (\i (a,b) -> (i,a,b)) nums ps
+
+
 {- [1,2,3,4,5,6,7,8] -> [(1,2,3),(4,5,6)] -}
 nonOverlappingTriples : [a] -> [(a,a,a)]
 nonOverlappingTriples l =
