@@ -19,7 +19,7 @@ import Common(Point, Positioned, Boxed, Box, point, box)
 import Card
 import Card(Card)
 import Cube
-import Lissajous
+import EulerSpiral
 import Moire
 import Plasma
 import Particles
@@ -106,7 +106,7 @@ cardBoxes =
   in
     map (((+) yOff ) . (*) distY) [0..rows-1] |> map cardBoxRow |> concat
 
-effects = [ Lissajous.make
+effects = [ EulerSpiral.make
           , Plasma.make
           , Particles.make
           , Sinescroller.make
@@ -138,9 +138,9 @@ defaultGame : Game
 defaultGame =
   { state = Won
   , cards = cards
-  , wonEffect = Cube.make effects (rgb 64 64 64)
+  --, wonEffect = Cube.make effects (rgb 64 64 64)
   --, wonEffect = Cube.make [deleteme,deleteme,deleteme,deleteme,deleteme,deleteme] (rgb 64 64 64)
-  --, wonEffect = Lissajous.make
+  , wonEffect = EulerSpiral.make
   --, wonEffect = Moire.make
   --, wonEffect = Particles.make
   --, wonEffect = Tunnel.make

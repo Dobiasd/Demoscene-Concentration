@@ -89,6 +89,12 @@ dist {x,y,z} = sqrt (x^2 + y^2 + z^2)
 distTo : Positioned3 a -> Positioned3 b -> Float
 distTo a b = dist <| a `subVec` b
 
+angle2D : Positioned3 a -> Float
+angle2D {x,y} = atan2 x y
+
+vector2DFromAngle : Float -> Vector
+vector2DFromAngle angle = vector (sin angle) (cos angle) 0
+
 type Transform3D = { m11:Float, m12:Float, m13:Float, m14:Float
                    , m21:Float, m22:Float, m23:Float, m24:Float
                    , m31:Float, m32:Float, m33:Float, m34:Float
