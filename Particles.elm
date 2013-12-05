@@ -8,11 +8,11 @@ module Particles where
 import Effect(Effect, effect)
 import Common(Vector,vector,Transform3D,applyTransform3D,rotateY,project2d,
               randoms,nonOverlappingSextuples,
-              WithRadius,Positioned3,Moving3,Colored,
+              WithRadius,Positioned,Moving,Colored,
               decomposeColor,addVec,move3,distTo,multVec,subVec,
               PositionedForm, positionedForm, displayPositionedForms, isPosOK)
 
-type Ball = Positioned3 (Moving3 (Colored {}))
+type Ball = Positioned (Moving (Colored {}))
 
 type State = {time:Float,balls:[Ball]}
 

@@ -5,14 +5,12 @@ module Starfield where
 @docs starfield
 -}
 
--- todo: configurable speed and color
-
 import Effect(Effect, effect)
 import Common(Vector, vector, nonOverlappingQuadruples, dist, randoms,
-              Positioned3,Colored,Point,point,project2d,
+              Positioned,Colored,Point,point,project2d,
               decomposeColor)
 
-type Star = Positioned3 (Colored {})
+type Star = Positioned (Colored {})
 
 star : Vector -> Color -> Star
 star pos col = { pos | col = col }
@@ -56,7 +54,7 @@ generateNewStars mode amount time =
     map f triples
 
 stepStar : Float -> Star -> Star
-stepStar delta ({z} as star) = { star | z <- z + 0.05 * delta }
+stepStar d ({z} as star) = { star | z <- z + d }
 
 stepStars : Float -> [Star] -> [Star]
 stepStars delta = map (stepStar delta)

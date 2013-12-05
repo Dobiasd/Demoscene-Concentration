@@ -8,7 +8,7 @@ module Sinescroller where
 import Cube
 import Effect(Effect, effect)
 import Effect
-import Common(Colored,Positioned,Point,point,zip3,uncurry3)
+import Common(Colored,Positioned,Point,point2D,zip3,uncurry3)
 
 import String
 
@@ -39,7 +39,7 @@ charPos time textPos =
     timeFactY = 0.002
     textPosFact = -0.2
   in
-    point
+    point2D
       (toFloat textPos * charDist - time * timeFactX)
       (70 * sin (toFloat textPos * textPosFact + timeFactY*time))
 
@@ -49,7 +49,8 @@ charCol time {x,y} = hsv (0.001 * time + 0.03 * x) 1 1
 type ScrollerChar = Colored ( Positioned {s:String} )
 
 scrollerChar : String -> Point -> Color -> ScrollerChar
-scrollerChar s pos col = {s=s, x=pos.x, y=pos.y, col=col}
+scrollerChar s pos col = {s=s, x=pos.x, y=pos.y, z=0, col=col}
+
 
 floatMod : Float -> Float -> Float
 floatMod numerator divisor =

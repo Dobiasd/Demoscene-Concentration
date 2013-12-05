@@ -4,28 +4,28 @@ import Transform2D(Transform2D,matrix)
 
 -- todo: handle 2d as special case of 3d
 type Named       a = { a | name:String }
-type Positioned  a = { a | x:Float, y:Float }
-type Moving      a = { a | vx:Float, vy:Float }
-type Sized       a = { a | w:Float, h:Float }
+type Positioned  a = { a | x:Float, y:Float, z:Float }
+type Moving      a = { a | vx:Float, vy:Float, vz:Float }
+type Sized       a = { a | w:Float, h:Float, d:Float }
 type WithRadius  a = { a | r:Float }
 type WithNormal  a = { a | nx:Float, ny:Float, nz:Float }
 type Colored     a = { a | col:Color }
 type Boxed       a = Sized (Positioned a)
-type Positioned3 a = Positioned { a | z:Float }
-type Moving3     a = Moving { a | vz:Float }
 
 type Point = Positioned {}
-type Point3 = Positioned3 {}
 type Box = Boxed {}
 
-point : Float -> Float -> Point
-point x y = {x=x, y=y}
+point2D : Float -> Float -> Point
+point2D x y = point x y 0
 
-point3 : Float -> Float -> Float -> Point3
-point3 x y z = {x=x, y=y, z=z}
+point : Float -> Float -> Float -> Point
+point x y z = {x=x, y=y, z=z}
 
-box : Float -> Float -> Float -> Float -> Box
-box x y w h = {x=x, y=y, w=w, h=h }
+box2D : Float -> Float -> Float -> Float -> Box
+box2D x y w h = box x y 0 w h 0
+
+box : Float -> Float -> Float -> Float -> Float -> Float -> Box
+box x y z w h d = {x=x, y=y, z=z, w=w, h=h, d=d }
 
 {-| [a,b] [1,2] [x,y] -> [(a,1,x),(b,2,y)] -}
 zip3 : [a] -> [b] -> [c] -> [(a,b,c)]
@@ -97,13 +97,13 @@ type Vector = {x:Float, y:Float, z:Float}
 vector : Float -> Float -> Float -> Vector
 vector x y z = { x=x, y=y, z=z }
 
-dist : Positioned3 a -> Float
+dist : Positioned a -> Float
 dist {x,y,z} = sqrt (x^2 + y^2 + z^2)
 
-distTo : Positioned3 a -> Positioned3 b -> Float
+distTo : Positioned a -> Positioned b -> Float
 distTo a b = dist <| a `subVec` b
 
-angle2D : Positioned3 a -> Float
+angle2D : Positioned a -> Float
 angle2D {x,y} = atan2 x y
 
 vector2DFromAngle : Float -> Vector
@@ -152,7 +152,7 @@ move3 {x,y,z} = transform3D 1 0 0 x
                             0 0 1 z
                             0 0 0 1
 
-applyTransform3D : Transform3D -> Positioned3 a -> Positioned3 a
+applyTransform3D : Transform3D -> Positioned a -> Positioned a
 applyTransform3D
     { m11, m12, m13, m14
     , m21, m22, m23, m24
@@ -199,16 +199,16 @@ type Face = { tl:Vector, tr:Vector, bl:Vector }
 face : Vector -> Vector -> Vector -> Face
 face tl tr bl = { tl=tl, tr=tr, bl=bl }
 
-addVec : Vector -> Positioned3 a -> Positioned3 a
+addVec : Vector -> Positioned a -> Positioned a
 addVec b ({x,y,z} as p) =
   {p | x <- (x + b.x)
      , y <- (y + b.y)
      , z <- (z + b.z)}
 
-subVec : Positioned3 a -> Positioned3 b -> Vector
+subVec : Positioned a -> Positioned b -> Vector
 subVec a b = Vector (a.x - b.x) (a.y - b.y) (a.z - b.z)
 
-multVec : Positioned3 a -> Float -> Positioned3 a
+multVec : Positioned a -> Float -> Positioned a
 multVec ({x,y,z} as a) f = { a | x <- x * f
                                , y <- y * f
                                , z <- z * f }
@@ -245,29 +245,29 @@ transformFace matrix {tl,tr,bl} =
 transformFaces : Transform3D -> [Face] -> [Face]
 transformFaces matrix = map (transformFace matrix)
 
-project2d : Positioned3 a -> Point3
-project2d {x,y,z} = point3 (100*x / (-z)) (100*y / (-z)) z
+project2d : Positioned a -> Point
+project2d {x,y,z} = point (100*x / (-z)) (100*y / (-z)) z
 
-normalize : Positioned3 a -> Positioned3 a
+normalize : Positioned a -> Positioned a
 normalize v = v `multVec` (1 / dist v)
 
-type Disc = WithRadius ( Colored ( Positioned3 ( WithNormal {} ) ) )
+type Disc = WithRadius ( Colored ( Positioned ( WithNormal {} ) ) )
 
 disc : Float -> Float -> Float -> Float -> Float -> Float -> Color -> Disc
 disc x y z nx ny nz c = {x=x, y=y, z=z, col=c, r=300, nx=nx,ny=ny,nz=nz}
 
-type PositionedForm = Positioned3 {f:Form}
+type PositionedForm = Positioned {f:Form}
 
-positionedForm : Form -> Positioned3 a -> PositionedForm
+positionedForm : Form -> Positioned a -> PositionedForm
 positionedForm f {x,y,z} = { f=f, x=x, y=y, z=z }
 
-scalarProd : Positioned3 a -> Positioned3 b -> Float
+scalarProd : Positioned a -> Positioned b -> Float
 scalarProd v1 v2 = v1.x * v2.x + v1.y * v2.y + v1.z * v2.z
 
 displayPositionedForm : PositionedForm -> Form
 displayPositionedForm {f,x,y} = f |> move (x, y)
 
-isPosOK : Positioned3 a -> Bool
+isPosOK : Positioned a -> Bool
 isPosOK {x,y,z} = z < -1 && x >= -100 && x <= 100 && y >= -100 && y <= 100
 
 displayPositionedForms : [PositionedForm] -> Form

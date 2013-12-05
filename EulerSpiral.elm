@@ -5,9 +5,6 @@ module EulerSpiral where
 @docs eulerSpiral
 -}
 
--- todo: like vector ball in second reality,
---       very slow and dark starfield in background
---       shadows.
 
 import Common(Positioned,Vector,vector,angle2D,vector2DFromAngle,
               multVec,addVec,subVec,numberedPairs,uncurry3)
@@ -84,8 +81,7 @@ display ({time,background,points} as state) =
     w = maxX - minX
     h = maxY - minY
     maxEdge = max w h
-    scaleFactor = 180 / maxEdge
+    scaleF = 180 / maxEdge
   in
-    rawForm |> move (-cX*scaleFactor, -cY*scaleFactor) |> scale scaleFactor
-  --Effect.display background
-  --group [ rect 200 200 |> filled (rgb 255 0 255) ]
+    group [ rect 200 200 |> filled (rgb 0 0 0)
+          , rawForm |> move (-cX*scaleF, -cY*scaleF) |> scale scaleF ]

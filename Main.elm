@@ -14,7 +14,7 @@ import Window
 import Effect(Effect)
 import Effect
 
-import Common(Point, Positioned, Boxed, Box, point, box)
+import Common(Point, Positioned, Boxed, Box, point2D, box2D)
 
 import Card
 import Card(Card)
@@ -71,7 +71,7 @@ steps = lift Step speed
 flips : Signal Action
 flips =
   let
-    f t winDims = Tap (point (toFloat t.x) (toFloat t.y)) winDims
+    f t winDims = Tap (point2D (toFloat t.x) (toFloat t.y)) winDims
   in
     f <~ Touch.taps ~ Window.dimensions |> sampleOn Touch.taps |> dropRepeats
 
@@ -96,7 +96,7 @@ cardBoxRow y =
     cardWidth = 55
     cardHeight = 55
   in
-    map (\x -> box (distX * x + xOff) y cardWidth cardHeight) [0..cols-1]
+    map (\x -> box2D (distX * x + xOff) y cardWidth cardHeight) [0..cols-1]
 
 cardBoxes =
   let
@@ -138,9 +138,9 @@ defaultGame : Game
 defaultGame =
   { state = Won
   , cards = cards
-  --, wonEffect = Cube.make effects (rgb 64 64 64)
+  , wonEffect = Cube.make effects (rgb 64 64 64)
   --, wonEffect = Cube.make [deleteme,deleteme,deleteme,deleteme,deleteme,deleteme] (rgb 64 64 64)
-  , wonEffect = EulerSpiral.make
+  --, wonEffect = EulerSpiral.make
   --, wonEffect = Moire.make
   --, wonEffect = Particles.make
   --, wonEffect = Tunnel.make
@@ -166,7 +166,7 @@ winPosToGamePos pos size =
     (middleX, middleY) = (sizeX / 2, sizeY / 2)
     factor = gameScale size (gameWidth,gameHeight)
   in
-    point ((winX - middleX) / factor) ((middleY - winY) / factor)
+    point2D ((winX - middleX) / factor) ((middleY - winY) / factor)
 
 {-| Calculate factor by which the game is scaled visually onto the screen. -}
 gameScale : (Int,Int) -> (Float,Float) -> Float
