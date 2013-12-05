@@ -14,7 +14,7 @@ import Window
 import Effect(Effect)
 import Effect
 
-import Common(Point, Positioned, Boxed, Box, point2D, box2D)
+import Common(Point, Positioned, Boxed, Box, point2D, box2D, roundTo)
 
 import Card
 import Card(Card)
@@ -45,9 +45,9 @@ framesPerSecond = 60
 -- \--------------------/
 
 timeTextHeight = 5
-timeTextPosY = 100
-fpsTextHeight = 5
-fpsTextPosY = -90
+timeTextPosY = 99
+fpsTextHeight = 3
+fpsTextPosY = 100
 fpsTextPosX = -98
 
 
@@ -136,7 +136,7 @@ deleteme = Tunnel.make
 
 defaultGame : Game
 defaultGame =
-  { state = Won
+  { state = Start
   , cards = cards
   , wonEffect = Cube.make effects (rgb 64 64 64)
   --, wonEffect = Cube.make [deleteme,deleteme,deleteme,deleteme,deleteme,deleteme] (rgb 64 64 64)
@@ -204,9 +204,10 @@ allEqual : Cards -> Bool
 allEqual cards =
   let
     es = map .effect cards
+    equalName (Effect e1) (Effect e2) = e1.name == e2.name
   in
     if length es < 2 then True
-      else all (Effect.equalType (head es)) (tail es)
+      else all (equalName (head es)) (tail es)
 
 -- todo: simplify
 stepTap : Point -> Game -> Game
@@ -270,22 +271,12 @@ stepGame ({action}) ({state, time} as game) =
 -- | display |
 -- \---------/
 
-displayCard : Time -> Card -> Form
-displayCard time card =
-  let
-    texture = case card.status of
-                  Card.FaceDown -> group [ Card.backside time, Card.border ]
-                  --FaceDown -> card.effect.display
-                  Card.FaceUp -> group [ Effect.display card.effect, Card.border ]
-                  --Done -> group [f card.effect, doneOverlay time]
-                  Card.Done -> rect 0 0 |> filled (rgb 0 0 0)
-  in
-    texture |> move (card.x, card.y) |> scale (card.w / 200)
+
 
 
 displayCards : Time -> Cards -> Form
 displayCards time cards =
-  map (displayCard time) cards |> group
+  map (Card.display time) cards |> group
 
 
 txt : (Text -> Text) -> String -> Element
@@ -303,14 +294,12 @@ displayWon ({wonEffect} as game) = Effect.display wonEffect
 displayNotYetDone : Game -> Form
 displayNotYetDone ({time,cards} as game) =
   let
-    timeTextForm = txt (Text.height timeTextHeight) (show <| time / 1000)
+    timeRounded = (toFloat . round) (time / 100) / 10
+    timeTextForm = txt (Text.height timeTextHeight) (show timeRounded)
                      |> toForm |> move (0, timeTextPosY)
   in
-    group
-      [
-        displayCards time cards
-        , timeTextForm
-      ]
+    group [ displayCards time cards
+          , timeTextForm ]
 
 display : Game -> Form
 display ({state} as game) =

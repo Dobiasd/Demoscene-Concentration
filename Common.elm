@@ -2,7 +2,6 @@ module Common where
 
 import Transform2D(Transform2D,matrix)
 
--- todo: handle 2d as special case of 3d
 type Named       a = { a | name:String }
 type Positioned  a = { a | x:Float, y:Float, z:Float }
 type Moving      a = { a | vx:Float, vy:Float, vz:Float }
@@ -293,7 +292,6 @@ displayDisc ({x,y,z,nx,ny,nz,col,r} as disc) =
     centeredForm = oval r2d discHeight |> filled col |> rotate -angle
   in
     positionedForm centeredForm {x=c2d.x,y=c2d.y,z=z}
-
 
 
 

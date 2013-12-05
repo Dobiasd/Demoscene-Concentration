@@ -9,7 +9,7 @@ module Tunnel where
 import Effect(Effect, effect)
 import Effect
 import Starfield
-import Common(Disc,randoms,nonOverlappingQuadruples,
+import Common(Disc,randoms,
               disc,vector,project2d,dist,displayDisc,
               sortBy,point2D,Point,displayPositionedForms,
               isPosOK)
