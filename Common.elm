@@ -41,6 +41,28 @@ uncurry3 f (a,b,c) = f a b c
 decomposeColor : Color -> (Int,Int,Int,Float)
 decomposeColor (Color r g b a) = (r,g,b,a)
 
+init : [a] -> [a]
+init l = case l of
+           [x] -> []
+           (x::xs) -> x :: init xs
+
+splitAt : Int -> [a] -> ([a], [a])
+splitAt n l = case (n, l) of
+                (0, xs)     -> ([], xs)
+                (_, [])     -> ([], [])
+                (n, (x::xs)) ->
+                  let (xs', xs'') = splitAt (n - 1) xs
+                  in (x::xs', xs'')
+
+
+shuffle : [Int] -> [a] -> [a]
+shuffle (i::is) l =
+  case l of
+    (x::xs) ->
+      let (firsts, rest) = splitAt (i `mod` length l + 1) l
+      in (last firsts) :: shuffle is (init firsts ++ rest)
+    x -> x
+
 
 pairs : [a] -> [(a,a)]
 pairs xs = zip xs (tail xs)
