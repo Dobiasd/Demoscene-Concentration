@@ -14,15 +14,15 @@ import String
 
 charDist = 14
 
-type State = {time:Float, cube:Effect}
+type State = {message:String, time:Float, cube:Effect}
 
-message = "Greetings go out to everybody loving the demoscene and functional programming. ;-)   -   daiw.de"
+defMessage = "Greetings go out to everybody loving the demoscene and functional programming. ;-)   -   daiw.de"
 
 sinescroller : State -> Effect
 sinescroller s = Effect {step=step s, display=display s, name="Sinescroller"}
 
-make : Effect
-make = sinescroller {time=0, cube=Cube.make [] (rgba 255 255 255 0.07)}
+make : String -> Effect
+make message = sinescroller {message=message, time=0, cube=Cube.make [] (rgba 255 255 255 0.07)}
 
 step : State -> Float -> Effect
 step ({time, cube} as state) delta =
@@ -75,7 +75,7 @@ displayScrollerChar {s,x,y,col} =
 {-| Returns a sine scroller effect filled form
 depending on the current state. -}
 display : State -> Form
-display ({time,cube} as state) =
+display ({time,cube,message} as state) =
   let
     len = String.length message
     poss = map (charPos time) [0..len]

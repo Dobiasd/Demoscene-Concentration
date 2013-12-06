@@ -317,17 +317,28 @@ displayDisc ({x,y,z,nx,ny,nz,col,r} as disc) =
 
 
 
--- [1..1000]
+-- [0, 999]
 randomInt : Int -> (Int,Int)
 randomInt i =
   let
     j   = 701 * i  `mod` 10001
-    ans = (j - 1) `mod` 1000 + 1
+    ans = (j - 1) `mod` 1000
   in
     (j, ans)
 
-random : Float -> (Float,Float)
-random seed =
+
+randomInts : Int -> Int -> [Int]
+randomInts seed amount =
+  let
+    go _ (seed, l) =
+      let (nextSeed, val) = randomInt seed
+      in (nextSeed, val::l)
+  in
+    foldr go (seed+123, []) [1..amount] |> snd
+
+-- [0.0, 1.0)
+randomFloat : Float -> (Float,Float)
+randomFloat seed =
   let
     intSeed = round (10000 * seed)
     (newIntSeed, intVal) = randomInt intSeed
@@ -337,11 +348,11 @@ random seed =
     (newFloatSeed, floatVal)
 
 
-randoms : Float -> Int -> [Float]
-randoms seed amount =
+randomFloats : Float -> Int -> [Float]
+randomFloats seed amount =
   let
     go _ (seed, l) =
-      let (nextSeed, val) = random seed
+      let (nextSeed, val) = randomFloat seed
       in (nextSeed, val::l)
   in
     foldr go (seed+1.23, []) [1..amount] |> snd

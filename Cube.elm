@@ -27,10 +27,7 @@ make effects wireCol = cube {time=0, faceEffects=effects, wireCol=wireCol}
 step : State -> Float -> Effect
 step ({time,faceEffects} as state) delta =
   cube { state | time <- time + delta
-               , faceEffects <- if time < 10000 then
-                   map (\e -> Effect.step e delta) faceEffects
-                   else faceEffects }
-
+               , faceEffects <-  map (\e -> Effect.step e delta) faceEffects }
 
 calcFaces : Float -> [Face]
 calcFaces time =
@@ -70,8 +67,6 @@ display ({time, wireCol, faceEffects} as state) =
   let
     faces = calcFaces (time/2)
     forms = map Effect.display faceEffects
-    --dummyForm = asText 123 |> toForm
-    --forms = [dummyForm, dummyForm, dummyForm, dummyForm, dummyForm, dummyForm]
     facesWithForms = zip faces forms
     resultForms = map (uncurry (displayFace wireCol)) facesWithForms
   in

@@ -7,7 +7,7 @@ module Particles where
 
 import Effect(Effect, effect)
 import Common(Vector,vector,Transform3D,applyTransform3D,rotateY,project2d,
-              randoms,nonOverlappingSextuples,
+              randomFloats,nonOverlappingSextuples,
               WithRadius,Positioned,Moving,Colored,
               decomposeColor,addVec,move3,distTo,multVec,subVec,
               PositionedForm, positionedForm, displayPositionedForms, isPosOK)
@@ -27,8 +27,8 @@ make = particles {time=0, balls=[]}
 generateNewBalls : Int -> Float -> [Ball]
 generateNewBalls amount time =
   let
-    randomFloats = randoms time (amount*6)
-    sextuples = nonOverlappingSextuples randomFloats
+    randoms = randomFloats time (amount*6)
+    sextuples = nonOverlappingSextuples randoms
     f (x,y,z,vx,vy,vz) =
       ball (40 * x - 20) (40 * y - 20) (40 * z - 20)
            (0.2 * vx - 0.1) (0.2 * vy - 0.1) (0.2 * vz - 0.1)
@@ -80,7 +80,7 @@ stepBallUsual delta ({x,y,z,vx,vy,vz,col} as b) =
        , vx <- v'.x, vy <- v'.y, vz <- v'.z }
 
 throwBall : Ball -> Ball
-throwBall ({vy} as b) = { b | vy <- 2.3 }
+throwBall ({vy} as b) = { b | vy <- 2.0 }
 
 pullToRoot : Float -> Ball -> Ball
 pullToRoot delta ({x,y,z,vx,vy,vz} as b) =

@@ -6,7 +6,7 @@ module Starfield where
 -}
 
 import Effect(Effect, effect)
-import Common(Vector, vector, nonOverlappingQuadruples, dist, randoms,
+import Common(Vector, vector, nonOverlappingQuadruples, dist, randomFloats,
               Positioned,Colored,Point,point,project2d,
               decomposeColor)
 
@@ -41,8 +41,8 @@ starInAllowedRange ({x,y,z} as star) =
 generateNewStars : Mode -> Int -> Float -> [Star]
 generateNewStars mode amount time =
   let
-    randomFloats = randoms time (amount*4)
-    triples = nonOverlappingQuadruples randomFloats
+    randoms = randomFloats time (amount*4)
+    triples = nonOverlappingQuadruples randoms
     calcCol v = case mode of
                   BW -> rgb 255 255 255
                   Colored -> hsv (v*123.234) 1 1
