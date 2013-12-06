@@ -16,7 +16,7 @@ display time card =
     texture = case card.status of
                   FaceDown -> backside
                   FaceUp -> group [ Effect.display card.effect, border ]
-                  Done -> group [ Effect.display card.effect, border ]
+                  Done -> group [ Effect.display card.effect, border, doneOverlay ]
   in
     texture |> move (card.x, card.y) |> scale (card.w / 200)
 
@@ -35,8 +35,8 @@ border =
 backside : Form
 backside = group [ border, elmLogo ]
 
-doneOverlay : Time -> Form
-doneOverlay _ = rect 200 200 |> filled (rgba 0 0 0 0.5)
+doneOverlay : Form
+doneOverlay = rect 200 200 |> filled (rgba 0 0 0 0.5)
 
 make effect box =
   let

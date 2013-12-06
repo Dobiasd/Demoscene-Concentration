@@ -6,7 +6,11 @@ module Plasma where
 -}
 
 import Effect(Effect, effect)
+import Common(uncurry4, randomFloats, nonOverlappingQuadruples)
+
 pixels = 8
+speed = 0.0004
+
 type State = {time:Float}
 
 plasma : State -> Effect
@@ -23,7 +27,7 @@ display : State -> Form
 display ({time} as state) =
   let
     poss = rectPositions pixels pixels
-    colR (x,y) = bilinearInterpolatedRect (x,y+1) (x+1,y)
+    colR (x,y) = pseudoBilinearInterpolatedRect (x,y+1) (x+1,y)
       (plasmaCol (x)   (y+1) time)
       (plasmaCol (x)   (y)   time)
       (plasmaCol (x+1) (y)   time)
@@ -55,38 +59,16 @@ plasmaColConf : Float -> Float -> Float -> Float -> PlasmaColConf
 plasmaColConf sf xf yf tf = { sf=sf, xf=xf, yf=yf, tf=tf }
 
 
-rConf : [ PlasmaColConf ]
-rConf = [ plasmaColConf -4   3  -4   1
-        , plasmaColConf  6   6   1   5
-        , plasmaColConf  2   5  -7  -8
-        , plasmaColConf -3   5   3  -7
-        , plasmaColConf  5   1  -7   2
-        , plasmaColConf -4   8  -1  -3
-        , plasmaColConf -5   7   4   7
-        , plasmaColConf  3   8  -5   1
-        ]
+genPlasmaColConfs : Float -> Int -> [ PlasmaColConf ]
+genPlasmaColConfs seed amount =
+  let
+    randoms = randomFloats seed (amount*4) |> map (\x -> 16 * x - 8)
+  in
+    map (uncurry4 plasmaColConf) (nonOverlappingQuadruples randoms)
 
-gConf : [ PlasmaColConf ]
-gConf = [ plasmaColConf  4  -2  -3  -2
-        , plasmaColConf  2   1  -2   5
-        , plasmaColConf -6   2  -6  -6
-        , plasmaColConf -4   6   6  -3
-        , plasmaColConf -6   6  -5  -3
-        , plasmaColConf  4  -8   4  -5
-        , plasmaColConf  1   3   6   1
-        , plasmaColConf  5   6  -2  -5
-        ]
-
-bConf : [ PlasmaColConf ]
-bConf = [ plasmaColConf  6  -7   6   1
-        , plasmaColConf -7  -2  -8   7
-        , plasmaColConf  2   7  -1   8
-        , plasmaColConf -3  -4   4  -1
-        , plasmaColConf  3  -4   8   7
-        , plasmaColConf -4   8   0   6
-        , plasmaColConf  4  -1   5  -3
-        , plasmaColConf  1   5  -4  -3
-        ]
+rConf = genPlasmaColConfs 1 8
+gConf = genPlasmaColConfs 2 8
+bConf = genPlasmaColConfs 3 8
 
 colValFromConf : Float -> Float -> Float -> PlasmaColConf -> Float
 colValFromConf x y t conf =
@@ -100,28 +82,26 @@ colValFromConfs : Float -> Float -> Float -> [PlasmaColConf] -> Float
 colValFromConfs x y t confs =
   (sum <| map (colValFromConf x y t) confs) / divisorForColConfs confs
 
+calcPixelCol : Float -> Float -> Float -> [PlasmaColConf] -> Int
+calcPixelCol x y t confs =
+  let
+    clampCol = clamp 0 255
+    center = 32
+    factor = 224
+    rawCol = colValFromConfs x y t confs
+  in
+    round (center + factor * rawCol) |> clampCol
+
 plasmaCol : Float -> Float -> Float -> Color
 plasmaCol xIn yIn tIn =
   let
-    x = xIn / (1.0 * pixels)
-    y = yIn / (1.0 * pixels)
-    t = tIn * 0.0004
-    rRaw = colValFromConfs x y t rConf
-    gRaw = colValFromConfs x y t gConf
-    bRaw = colValFromConfs x y t bConf
-    correctCol = clamp 0 255
-    center = 32
-    factor = 224
+    colFunc = calcPixelCol (xIn / pixels) (yIn / pixels) (tIn * speed)
   in
-    rgb
-      (round (center + factor * rRaw) |> correctCol)
-      (round (center + factor * gRaw) |> correctCol)
-      (round (center + factor * bRaw) |> correctCol)
+    rgb (colFunc rConf) (colFunc gConf) (colFunc bConf)
 
-
-bilinearInterpolatedRect : (Float,Float) -> (Float,Float) ->
+pseudoBilinearInterpolatedRect : (Float,Float) -> (Float,Float) ->
   Color -> Color -> Color -> Color -> Form
-bilinearInterpolatedRect
+pseudoBilinearInterpolatedRect
     ((tlx,tly) as tl)
     ((brx,bry) as br)
     ((Color rtl gtl btl atl) as ctl)

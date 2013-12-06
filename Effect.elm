@@ -4,7 +4,7 @@ module Effect where
 [article](https://github.com/Dobiasd/articles/blob/master/from_oop_to_fp_-_inheritance_and_the_expression_problem.md).
 
 Every effect has to implement the convention to return its displayed form
-from in the range of [-100,+100] for both dimensions.
+in the range of [-100,+100] for both dimensions.
 -}
 
 import Common(Named)
