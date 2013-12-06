@@ -5,21 +5,23 @@ import Common(Point, Positioned, Boxed)
 import Effect(Effect)
 import Effect
 
+
 data Status = FaceDown | FaceUp | Done
 
-type Card = Boxed {effect:Effect, status:Status}
+type Card = Boxed {effect:Effect, status:Status, doneTime:Time}
 
 display : Time -> Card -> Form
 display time card =
   let
     texture = case card.status of
                   FaceDown -> backside
-                  --FaceDown -> card.effect.display
                   FaceUp -> group [ Effect.display card.effect, border ]
-                  --Done -> group [f card.effect, doneOverlay time]
-                  Done -> rect 0 0 |> filled (rgb 0 0 0)
+                  Done -> group [ Effect.display card.effect, border ]
   in
     texture |> move (card.x, card.y) |> scale (card.w / 200)
+
+isGone : Card -> Bool
+isGone {doneTime} = doneTime > 1000
 
 border : Form
 border =
@@ -39,11 +41,17 @@ doneOverlay _ = rect 200 200 |> filled (rgba 0 0 0 0.5)
 make effect box =
   let
     boxedEffect = { box | effect=effect }
+    boxedEffectWithStatus = { boxedEffect | status=FaceDown }
   in
-    { boxedEffect | status=FaceDown }
+    { boxedEffectWithStatus | doneTime=0 }
 
 step : Float -> Card -> Card
-step delta ({status, effect} as card) =
-  case status of
-    FaceUp -> { card | effect <- Effect.step effect delta }
-    _ -> card
+step delta ({status, effect, doneTime} as card) =
+  let
+    doneTime' = if status == Done then doneTime + delta else doneTime
+    effect' = Effect.step effect delta
+  in
+    case status of
+      FaceDown -> card
+      _ -> { card | effect <- Effect.step effect delta
+                  , doneTime <- doneTime' }

@@ -185,9 +185,9 @@ goflipCardsHit tapPos ({status} as card) acc =
   let
     hit = tapPos `inBox` card
     status' = if not hit then status else case status of
-                                            Card.Done -> Card.Done
                                             Card.FaceUp -> Card.FaceDown
                                             Card.FaceDown -> Card.FaceUp
+                                            _ -> status
     card' = { card | status <- status' }
   in
     card'::acc
@@ -227,7 +227,7 @@ generateWonEffect time =
 stepPlayFlipCards : Point -> Cards -> Cards
 stepPlayFlipCards gameTapPos cards =
   let
-    (cardsDone, cardsNotDone) = partition (((==) Card.Done) . (.status)) cards
+    cardsNotDone = filter (not . ((==) Card.Done) . (.status)) cards
     cardsNotDoneFaceDown = map (\c -> {c | status <- Card.FaceDown}) cardsNotDone
     faceUpCount = cards |> filter (((==) Card.FaceUp) . (.status)) |> length
   in
@@ -240,7 +240,7 @@ splitCardsByStatus status = partition (((==) status) . (.status))
 stepTapPlay : Point -> Game -> Game
 stepTapPlay gameTapPos ({state,cards,time} as game) =
   let
-    (cardsDone, cardsNotDone) = splitCardsByStatus Card.Done cards
+    cardsDone = filter (((==) Card.Done) . (.status)) cards
     cardsNotDone' = stepPlayFlipCards gameTapPos cards
     (cardsNotDoneUp', cardsNotDoneDown') = splitCardsByStatus Card.FaceUp cardsNotDone'
     foundPair = length cardsNotDoneUp' == 2 && allEqual cardsNotDoneUp'
@@ -254,7 +254,6 @@ stepTapPlay gameTapPos ({state,cards,time} as game) =
            , wonEffect <- generateWonEffect time }
 
 
-
 stepTap : Point -> Game -> Game
 stepTap gameTapPos ({state,cards} as game) =
   case state of
@@ -263,9 +262,8 @@ stepTap gameTapPos ({state,cards} as game) =
     _ -> game
 
 
-
 stepCards : Float -> Cards -> Cards
-stepCards delta cards = map (Card.step delta) cards
+stepCards delta cards = map (Card.step delta) cards |> filter (not . Card.isGone)
 
 stepWon : Float -> Game -> Game
 stepWon delta ({wonEffect} as game) =
@@ -279,7 +277,7 @@ stepDelta delta ({cards, state, time} as game) =
       _   -> { game | cards <- stepCards delta cards
                     , time <- case state of
                                 Play -> time + delta
-                                _ -> time }
+                                _    -> time }
   in
     { game' | currentFPS <- round(1000/delta) }
 
