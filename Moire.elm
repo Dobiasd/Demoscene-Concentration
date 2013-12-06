@@ -16,7 +16,7 @@ moire : State -> Effect
 moire s = Effect {step = step s, display = display s, name = "Moire"}
 
 make : Effect
-make = moire {time=0, background=Starfield.make Starfield.Colored 1.1 128}
+make = moire {time=0, background=Starfield.make Starfield.Colored 0.9 128}
 
 step : State -> Float -> Effect
 step ({time, background} as state) delta =
@@ -42,12 +42,11 @@ displayLine : Float -> Line -> Form
 displayLine num (s, e) =
   let
     width = 8
-    --lS1 = solid (rgba 127 127 255 0.1)
-    lS1 = solid (hsva (2.6 + cos num) 1 1 0.1)
-    lS1Wide = { lS1 | width <- width, join <- Smooth, cap <- Round }
+    lS = solid (hsva (2.6 + cos num) 1 1 0.1)
+    lSWide = { lS | width <- width, join <- Smooth, cap <- Round }
     outline = path [(s.x,s.y), (e.x,e.y)]
   in
-    outline |> traced lS1Wide
+    outline |> traced lSWide
 
 
 displayLines : [Line] -> Float -> Form
@@ -59,15 +58,13 @@ displayLines pattern angle =
   in
     map (uncurry displayLine) (zip nums lines) |> group
 
-{-| Returns a moire effect filled form depending on the current time. -}
+
 display : State -> Form
 display ({time, background} as state) =
   let
     angles = map ((*)(time/20000)) [1..15]
-    patterns = map (displayLines pattern) angles
+    patterns = map (displayLines pattern) angles |> group
   in
-    [
-      rect 200 200 |> filled (rgb 0 0 0)
-    , Effect.display background
-    ] ++ patterns
-    |> group
+    group [ rect 200 200 |> filled (rgb 0 0 0)
+          , Effect.display background
+          , patterns ]

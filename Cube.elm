@@ -8,10 +8,9 @@ module Cube where
 import Effect(Effect, effect)
 import Effect
 
-import Common(vector, transform3D,
-              rotateX, rotateY, rotateZ,
-              applyTransform3D, Face, faceBr,
-              cubeFaces, transformFaces, getAffineTransformation,
+import Common(vector, Vector, transform3D,
+              rotateX, rotateY, rotateZ, addVec, Transform3D,
+              applyTransform3D, getAffineTransformation,
               subVec, crossProduct, dummyForm)
 
 import Transform2D(Transform2D,matrix)
@@ -33,6 +32,45 @@ step : State -> Float -> Effect
 step ({time,faceEffects} as state) delta =
   cube { state | time <- time + delta
                , faceEffects <-  map (\e -> Effect.step e delta) faceEffects }
+
+type Face = { tl:Vector, tr:Vector, bl:Vector }
+
+face : Vector -> Vector -> Vector -> Face
+face tl tr bl = { tl=tl, tr=tr, bl=bl }
+
+
+
+faceBr : Face -> Vector
+faceBr {tl,tr,bl} = (tr `subVec` tl) `addVec` bl
+
+cubeFaces = [ Face (Vector (-100) ( 100) ( 100))
+                   (Vector ( 100) ( 100) ( 100))
+                   (Vector (-100) (-100) ( 100))
+            , Face (Vector ( 100) ( 100) (-100))
+                   (Vector (-100) ( 100) (-100))
+                   (Vector ( 100) (-100) (-100))
+            , Face (Vector ( 100) ( 100) ( 100))
+                   (Vector ( 100) ( 100) (-100))
+                   (Vector ( 100) (-100) ( 100))
+            , Face (Vector (-100) ( 100) (-100))
+                   (Vector (-100) ( 100) ( 100))
+                   (Vector (-100) (-100) (-100))
+            , Face (Vector (-100) ( 100) (-100))
+                   (Vector ( 100) ( 100) (-100))
+                   (Vector (-100) ( 100) ( 100))
+            , Face (Vector (-100) (-100) ( 100))
+                   (Vector ( 100) (-100) ( 100))
+                   (Vector (-100) (-100) (-100))
+            ]
+
+
+transformFace : Transform3D -> Face -> Face
+transformFace matrix {tl,tr,bl} =
+  let f = applyTransform3D matrix
+  in face (f tl) (f tr) (f bl)
+
+transformFaces : Transform3D -> [Face] -> [Face]
+transformFaces matrix = map (transformFace matrix)
 
 calcFaces : Float -> [Face]
 calcFaces time =
@@ -68,8 +106,6 @@ displayFace wireCol ({tl,tr,bl} as face) form =
     if faceShowsBackside face then dummyForm else
       group [ transformedForm, outline |> traced lSWide ]
 
-{-| Returns a rotating 3d cube effect filled form
-depending on the current time. -}
 display : State -> Form
 display ({time, wireCol, faceEffects} as state) =
   let

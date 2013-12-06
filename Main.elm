@@ -27,10 +27,9 @@ import Particles
 import Sinescroller
 import Tunnel
 
--- todo: still show cards a second or so after a pair is found
---       cardstate Done + Gone
---       gamestate Won + End
 -- todo: move all into src directory. move effects into effects directory.
+
+
 
 -- /---------------------\
 -- | model configuration |
@@ -39,6 +38,8 @@ import Tunnel
 {-| The game field extends from -100 to +100 in x and y coordinates. -}
 (gameWidth,gameHeight) = (200,200)
 framesPerSecond = 60
+
+
 
 
 -- /--------------------\
@@ -50,6 +51,7 @@ timeTextPosY = 99
 fpsTextHeight = 3
 fpsTextPosY = 100
 fpsTextPosX = -98
+
 
 
 
@@ -79,13 +81,13 @@ flips =
 actions = merge steps flips
 
 
+
+
 -- /-------\
 -- | model |
 -- \-------/
 
-
 type Cards = [Card.Card]
-
 
 {-| Creation of one single row of cards with equidistant gaps. -}
 cardBoxRow : Float -> [Box]
@@ -97,7 +99,7 @@ cardBoxRow y =
     cardWidth = 55
     cardHeight = 55
   in
-    map (\x -> box2D (distX * x + xOff) y cardWidth cardHeight) [0..cols-1]
+    map (\x -> box2D (distX * x + xOff) (y-2) cardWidth cardHeight) [0..cols-1]
 
 cardBoxes =
   let
@@ -128,13 +130,11 @@ generateCards time =
 
 data State = Start | Play | Won
 
-
 type Game = { state:State
             , cards:Cards
             , wonEffect:Effect
             , time:Time
             , currentFPS:Int }
-
 
 defaultGame : Game
 defaultGame =
@@ -145,28 +145,12 @@ defaultGame =
   , currentFPS = 0 }
 
 
+
+
+
 -- /---------\
 -- | updates |
 -- \---------/
-
-{-| Since the game is always scaled maximally into the window
-(keeping its aspect ratio), the mouse and touch positions
-have to be converted to game positions. -}
-winPosToGamePos : Positioned a -> (Int,Int) -> Point
-winPosToGamePos pos size =
-  let
-    intPairToFloatPair (a, b) = (toFloat a, toFloat b)
-    (winX, winY) = (pos.x, pos.y)
-    (sizeX, sizeY) = intPairToFloatPair size
-    (middleX, middleY) = (sizeX / 2, sizeY / 2)
-    factor = gameScale size (gameWidth,gameHeight)
-  in
-    point2D ((winX - middleX) / factor) ((middleY - winY) / factor)
-
-{-| Calculate factor by which the game is scaled visually onto the screen. -}
-gameScale : (Int,Int) -> (Float,Float) -> Float
-gameScale (winW, winH) (gameW,gameH) =
-  min (toFloat winW / gameW) (toFloat winH / gameH)
 
 gameState : Signal Game
 gameState = foldp stepGame defaultGame input
@@ -204,8 +188,6 @@ allEqual cards =
     if length es < 2 then True
       else all (equalName (head es)) (tail es)
 
-
-
 stepTapStart : Point -> Game -> Game
 stepTapStart ({x,y} as gameTapPos) ({state,cards} as game) =
   let
@@ -214,14 +196,12 @@ stepTapStart ({x,y} as gameTapPos) ({state,cards} as game) =
     stepTap gameTapPos { game | state <- Play,
                                 cards <- shuffledCards }
 
-
 generateWonEffect : Time -> Effect
 generateWonEffect time =
   let
     message = "Time: " ++ show (roundTime time) ++ " seconds"
   in
     Cube.make (Sinescroller.make message :: wonEffects) (rgb 64 64 64)
-
 
 stepPlayFlipCards : Point -> Cards -> Cards
 stepPlayFlipCards gameTapPos cards =
@@ -294,8 +274,24 @@ stepGame ({action}) ({state, time} as game) =
 -- | display |
 -- \---------/
 
+{-| Since the game is always scaled maximally into the window
+(keeping its aspect ratio), the mouse and touch positions
+have to be converted to game positions. -}
+winPosToGamePos : Positioned a -> (Int,Int) -> Point
+winPosToGamePos pos size =
+  let
+    intPairToFloatPair (a, b) = (toFloat a, toFloat b)
+    (winX, winY) = (pos.x, pos.y)
+    (sizeX, sizeY) = intPairToFloatPair size
+    (middleX, middleY) = (sizeX / 2, sizeY / 2)
+    factor = gameScale size (gameWidth,gameHeight)
+  in
+    point2D ((winX - middleX) / factor) ((middleY - winY) / factor)
 
-
+{-| Calculate factor by which the game is scaled visually onto the screen. -}
+gameScale : (Int,Int) -> (Float,Float) -> Float
+gameScale (winW, winH) (gameW,gameH) =
+  min (toFloat winW / gameW) (toFloat winH / gameH)
 
 displayCards : Time -> Cards -> Form
 displayCards time cards =

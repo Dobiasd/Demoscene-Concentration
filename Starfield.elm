@@ -49,7 +49,7 @@ generateNewStars mode amount time =
     f (x,y,z,c) = star (vector (100*x - 50)
                                (100*y - 50)
                                (80*z  - 180))
-                     (calcCol c)
+                       (calcCol c)
   in
     map f triples
 
@@ -76,13 +76,12 @@ displayStar ({x,y,z,col} as star) =
     radius = 100 / (-z)
     intensity = 1 / (sqrt(sqrt(sqrt(-z))))
     grad = radial (0,0) 0 (0,0) radius
-          [(0 ,rgba r g b intensity),
-           (1 ,rgba r g b 0)]
+                  [ (0 ,rgba r g b intensity)
+                  , (1 ,rgba r g b 0) ]
     pos2d = project2d star
   in
     circle radius |> gradient grad |> move (pos2d.x,pos2d.y)
 
-{-| Returns a starfield effect filled form depending on the current time. -}
 display : State -> Form
 display ({time, stars} as state) =
   let

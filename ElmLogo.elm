@@ -27,6 +27,4 @@ elmLogo =
            |> filled (rgb 138 212 55) |> move (-150, -150)
     t = Transform2D.matrix 1 0 0 -1 0 0
   in
-    groupTransform t [
-      p1, p2, p3, p4, p5, p6, p7
-    ] |> scale (2.0/3.0)
+    groupTransform t [ p1, p2, p3, p4, p5, p6, p7 ] |> scale (2.0/3.0)

@@ -36,7 +36,7 @@ backside : Form
 backside = group [ border, elmLogo ]
 
 doneOverlay : Form
-doneOverlay = rect 200 200 |> filled (rgba 0 0 0 0.5)
+doneOverlay = rect 200 200 |> filled (rgba 0 0 0 0.4)
 
 make effect box =
   let
@@ -45,11 +45,11 @@ make effect box =
   in
     { boxedEffectWithStatus | doneTime=0 }
 
+
 step : Float -> Card -> Card
 step delta ({status, effect, doneTime} as card) =
   let
     doneTime' = if status == Done then doneTime + delta else doneTime
-    effect' = Effect.step effect delta
   in
     case status of
       FaceDown -> card

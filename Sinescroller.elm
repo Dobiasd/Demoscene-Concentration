@@ -60,8 +60,6 @@ displayScrollerChar {s,x,y,col} =
   in
     txt col s |> toForm |> move (x,y)
 
-{-| Returns a sine scroller effect filled form
-depending on the current state. -}
 display : State -> Form
 display ({time,cube,message} as state) =
   let

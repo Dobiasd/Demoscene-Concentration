@@ -11,8 +11,10 @@ import Effect
 import Starfield
 import Common(Disc,randoms,
               disc,vector,project2d,dist,displayDisc,
-              sortBy,point2D,Point,displayPositionedForms,
-              isPosOK)
+              sortBy,point2D,Point,displayPositionedForm,
+              displayPositionedForms, PositionedForm, isPosOK,
+              normalize, scalarProd, positionedForm, WithRadius,
+              Colored, Positioned, WithNormal)
 
 type State = {time:Float, background:Effect, discs:[Disc]}
 
@@ -25,6 +27,25 @@ make = tunnel { time=0
               , discs=[] }
 
 minDist = 2
+
+type Disc = WithRadius ( Colored ( Positioned ( WithNormal {} ) ) )
+
+disc : Float -> Float -> Float -> Float -> Float -> Float -> Color -> Disc
+disc x y z nx ny nz c = {x=x, y=y, z=z, col=c, r=300, nx=nx,ny=ny,nz=nz}
+
+displayDisc : Disc -> PositionedForm
+displayDisc ({x,y,z,nx,ny,nz,col,r} as disc) =
+  let
+    c2d = project2d disc
+    r2d = r / (-z)
+    normToCam = normalize disc
+    normale = normalize {x=nx,y=ny,z=nz}
+    proj = normale `scalarProd` normToCam
+    discHeight = proj * r2d
+    angle = atan2 normale.x normale.y
+    centeredForm = oval r2d discHeight |> filled col |> rotate -angle
+  in
+    positionedForm centeredForm {x=c2d.x,y=c2d.y,z=z}
 
 discInAllowedRange : Disc -> Bool
 discInAllowedRange ({x,y,z} as disc) =
@@ -71,9 +92,6 @@ step ({time, discs, background} as state) delta =
                    , background <- Effect.step background delta
                    , discs <- discs' }
 
-
-
-{-| Returns a tunnel effect filled form depending on the current time. -}
 display : State -> Form
 display ({time,background,discs} as state) =
   let

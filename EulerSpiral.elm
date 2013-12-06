@@ -25,21 +25,17 @@ make = eulerSpiral { time=0, background=Starfield.make Starfield.BW 0.3 64
 addPoint : [Vector] -> Int -> [Vector]
 addPoint ((a::b::_) as points) stepCount =
   let
-    d = a `subVec` b
-    angle : Float
-    angle = angle2D d
+    angle = angle2D <| a `subVec` b
     angle' = angle + toFloat stepCount / 8.34567
-    d' = vector2DFromAngle angle'
-    d'' = d' `multVec` 4
-    p' = a `addVec` d''
+    d = vector2DFromAngle angle'
+    d' = d `multVec` 4
+    p = a `addVec` d'
   in
-    p'::points |> take 512
-
+    p::points |> take 512
 
 step : State -> Float -> Effect
 step ({time,background,points,stepCount} as state) delta =
   eulerSpiral { state | time <- time + delta
-                      --, background <- Effect.step background delta
                       , points <- addPoint points stepCount
                       , stepCount <- stepCount + 1}
 
@@ -57,9 +53,7 @@ displayLine : Float -> Int -> Vector -> Vector -> Form
 displayLine time num s e =
   let
     width = 2
-    --lS1 = solid (hsva ((cos . ((/)10) . toFloat) num) 1 1 1)
     lS1 = solid (hsva (toFloat num / 10 + time / 1000) 1 1 1)
-    --lS1 = solid black
     lS1Wide = { lS1 | width <- width, join <- Smooth, cap <- Round }
     pointToPair {x,y} = (x,y)
     outline = [pointToPair s, pointToPair e] |> path
@@ -70,7 +64,6 @@ displayLines : [Vector] -> Float -> Form
 displayLines points time =
     group <| map (uncurry3 (displayLine time)) <| numberedPairs <| reverse points
 
-{-| Returns a euler spiral effect filled form depending on the current time. -}
 display : State -> Form
 display ({time,background,points} as state) =
   let

@@ -44,8 +44,8 @@ displayBallShadow ({x,y,z} as b) =
     sharpness = clamp 0.1 0.3 (0.3 - abs (y - origin.y) / 60)
     pos2d = project2d {x=x+sOff,y=origin.y,z=z-sOff/2}
     grad = radial (0,0) 0 (0,0) radius
-          [(0, rgba 0 0 0 (0.1+2*sharpness)),
-           (1, rgba 0 0 0 0)]
+                  [ (0, rgba 0 0 0 (0.1+2*sharpness))
+                  , (1, rgba 0 0 0 0) ]
   in
     positionedForm (oval radius (0.3*radius) |> gradient grad) {x=pos2d.x,y=pos2d.y-(0.7*radius),z=z}
 
@@ -55,9 +55,9 @@ displayBall ({x,y,z,col} as ball) =
     (r,g,b,a) = decomposeColor col
     radius = 100 / (-z)
     grad = radial (0,0) 0 (0,0) radius
-          [(0  , rgba r g b 0.9),
-           (0.3, rgba r g b 0.7),
-           (1  , rgba r g b 0.2)]
+                  [ (0  , rgba r g b 0.9)
+                  , (0.3, rgba r g b 0.7)
+                  , (1  , rgba r g b 0.2) ]
     pos2d = project2d ball
   in
     positionedForm (circle radius |> gradient grad) {x=pos2d.x,y=pos2d.y,z=z}
@@ -76,8 +76,8 @@ stepBallUsual delta ({x,y,z,vx,vy,vz,col} as b) =
                       else (vy - 0.001 * delta)
     v' = vector vx vy' vz
   in
-    { b | x <- p'.x, y <- p'.y, z <- p'.z
-       , vx <- v'.x, vy <- v'.y, vz <- v'.z }
+    { b | x  <- p'.x,  y <- p'.y,  z <- p'.z
+        , vx <- v'.x, vy <- v'.y, vz <- v'.z }
 
 throwBall : Ball -> Ball
 throwBall ({vy} as b) = { b | vy <- 2.0 }
@@ -102,7 +102,6 @@ stepBall delta b =
   in
     if throw then throwBall b |> stepF else stepF b
 
-
 transformBall : Transform3D -> Ball -> Ball
 transformBall m b = applyTransform3D m b
 
@@ -123,8 +122,8 @@ displayFloor : Form
 displayFloor =
   let
     grad = linear (0,40) (0,-40)
-         [(0, rgb 0  41  67),
-          (1, rgb 0 171 235)]
+         [ (0, rgb 0  41  67)
+         , (1, rgb 0 171 235) ]
     floorForm = rect 200 80 |> gradient grad |> move (0,-60)
   in
     floorForm
@@ -145,8 +144,6 @@ staticStars =
   in
     map f [0..128]
 
-
-{-| Returns a particle effect filled form depending on the current time. -}
 display : State -> Form
 display ({time,balls} as state) =
   let

@@ -17,6 +17,9 @@ type Box = Boxed {}
 point2D : Float -> Float -> Point
 point2D x y = point x y 0
 
+point2DtoPair : Positioned a -> (Float,Float)
+point2DtoPair pt = (pt.x, pt.y)
+
 point : Float -> Float -> Float -> Point
 point x y z = {x=x, y=y, z=z}
 
@@ -25,6 +28,14 @@ box2D x y w h = box x y 0 w h 0
 
 box : Float -> Float -> Float -> Float -> Float -> Float -> Box
 box x y z w h d = {x=x, y=y, z=z, w=w, h=h, d=d }
+
+
+
+
+
+
+
+
 
 {-| [a,b] [1,2] [x,y] -> [(a,1,x),(b,2,y)] -}
 zip3 : [a] -> [b] -> [c] -> [(a,b,c)]
@@ -40,9 +51,6 @@ uncurry3 f (a,b,c) = f a b c
 
 uncurry4 : (a -> b -> c -> d -> e) -> (a,b,c,d) -> e
 uncurry4 f (a,b,c,d) = f a b c d
-
-decomposeColor : Color -> (Int,Int,Int,Float)
-decomposeColor (Color r g b a) = (r,g,b,a)
 
 floatMod : Float -> Float -> Float
 floatMod numerator divisor =
@@ -63,18 +71,6 @@ splitAt n l = case (n, l) of
                 (n, (x::xs)) ->
                   let (xs', xs'') = splitAt (n - 1) xs
                   in (x::xs', xs'')
-
-
-shuffle : [Int] -> [a] -> [a]
-shuffle (i::is) l =
-  case l of
-    (x::xs) ->
-      let (firsts, rest) = splitAt (i `mod` length l + 1) l
-      in (last firsts) :: shuffle is (init firsts ++ rest)
-    x -> x
-
-dummyForm = rect 0 0 |> filled (rgba 0 0 0 0)
-
 
 pairs : [a] -> [(a,a)]
 pairs xs = zip xs (tail xs)
@@ -103,13 +99,12 @@ nonOverlappingQuadruples l =
     (x1::x2::x3::x4::xs) -> (x1,x2,x3,x4) :: nonOverlappingQuadruples xs
     _                    -> []
 
-
+{- [1,2,3,4,5,6,7,8,9,10,11,12,13,14] -> [(1,2,3,4,5,6),(7,8,9,10,11,12)] -}
 nonOverlappingSextuples : [a] -> [(a,a,a,a,a,a)]
 nonOverlappingSextuples l =
   case l of
     (x1::x2::x3::x4::x5::x6::xs) -> (x1,x2,x3,x4,x5,x6) :: nonOverlappingSextuples xs
     _                            -> []
-
 
 quicksort : (a -> a -> Bool) -> [a] -> [a]
 quicksort cmp l =
@@ -123,6 +118,18 @@ quicksort cmp l =
         (quicksort cmp lesser) ++ [p] ++ (quicksort cmp greater)
 
 sortBy = quicksort
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 type Vector = {x:Float, y:Float, z:Float}
@@ -227,11 +234,6 @@ crossProduct a b =
          (a.z * b.x - b.z * a.x)
          (a.x * b.y - b.x * a.y)
 
-type Face = { tl:Vector, tr:Vector, bl:Vector }
-
-face : Vector -> Vector -> Vector -> Face
-face tl tr bl = { tl=tl, tr=tr, bl=bl }
-
 addVec : Vector -> Positioned a -> Positioned a
 addVec b ({x,y,z} as p) =
   {p | x <- (x + b.x)
@@ -246,37 +248,7 @@ multVec ({x,y,z} as a) f = { a | x <- x * f
                                , y <- y * f
                                , z <- z * f }
 
-faceBr : Face -> Vector
-faceBr {tl,tr,bl} = (tr `subVec` tl) `addVec` bl
 
-cubeFaces = [ Face (Vector (-100) ( 100) ( 100))
-                   (Vector ( 100) ( 100) ( 100))
-                   (Vector (-100) (-100) ( 100))
-            , Face (Vector ( 100) ( 100) (-100))
-                   (Vector (-100) ( 100) (-100))
-                   (Vector ( 100) (-100) (-100))
-            , Face (Vector ( 100) ( 100) ( 100))
-                   (Vector ( 100) ( 100) (-100))
-                   (Vector ( 100) (-100) ( 100))
-            , Face (Vector (-100) ( 100) (-100))
-                   (Vector (-100) ( 100) ( 100))
-                   (Vector (-100) (-100) (-100))
-            , Face (Vector (-100) ( 100) (-100))
-                   (Vector ( 100) ( 100) (-100))
-                   (Vector (-100) ( 100) ( 100))
-            , Face (Vector (-100) (-100) ( 100))
-                   (Vector ( 100) (-100) ( 100))
-                   (Vector (-100) (-100) (-100))
-            ]
-
-
-transformFace : Transform3D -> Face -> Face
-transformFace matrix {tl,tr,bl} =
-  let f = applyTransform3D matrix
-  in face (f tl) (f tr) (f bl)
-
-transformFaces : Transform3D -> [Face] -> [Face]
-transformFaces matrix = map (transformFace matrix)
 
 project2d : Positioned a -> Point
 project2d {x,y,z} = point (100*x / (-z)) (100*y / (-z)) z
@@ -284,18 +256,24 @@ project2d {x,y,z} = point (100*x / (-z)) (100*y / (-z)) z
 normalize : Positioned a -> Positioned a
 normalize v = v `multVec` (1 / dist v)
 
-type Disc = WithRadius ( Colored ( Positioned ( WithNormal {} ) ) )
+scalarProd : Positioned a -> Positioned b -> Float
+scalarProd v1 v2 = v1.x * v2.x + v1.y * v2.y + v1.z * v2.z
 
-disc : Float -> Float -> Float -> Float -> Float -> Float -> Color -> Disc
-disc x y z nx ny nz c = {x=x, y=y, z=z, col=c, r=300, nx=nx,ny=ny,nz=nz}
+
+
+
+
+
 
 type PositionedForm = Positioned {f:Form}
 
+dummyForm = rect 0 0 |> filled (rgba 0 0 0 0)
+
+decomposeColor : Color -> (Int,Int,Int,Float)
+decomposeColor (Color r g b a) = (r,g,b,a)
+
 positionedForm : Form -> Positioned a -> PositionedForm
 positionedForm f {x,y,z} = { f=f, x=x, y=y, z=z }
-
-scalarProd : Positioned a -> Positioned b -> Float
-scalarProd v1 v2 = v1.x * v2.x + v1.y * v2.y + v1.z * v2.z
 
 displayPositionedForm : PositionedForm -> Form
 displayPositionedForm {f,x,y} = f |> move (x, y)
@@ -310,22 +288,9 @@ displayPositionedForms fs =
     |> filter isPosOK
     |> map displayPositionedForm |> group
 
-point2DtoPair : Positioned a -> (Float,Float)
-point2DtoPair pt = (pt.x, pt.y)
 
-displayDisc : Disc -> PositionedForm
-displayDisc ({x,y,z,nx,ny,nz,col,r} as disc) =
-  let
-    c2d = project2d disc
-    r2d = r / (-z)
-    normToCam = normalize disc
-    normale = normalize {x=nx,y=ny,z=nz}
-    proj = normale `scalarProd` normToCam
-    discHeight = proj * r2d
-    angle = atan2 normale.x normale.y
-    centeredForm = oval r2d discHeight |> filled col |> rotate -angle
-  in
-    positionedForm centeredForm {x=c2d.x,y=c2d.y,z=z}
+
+
 
 
 
@@ -337,7 +302,6 @@ randomInt i =
     ans = (j - 1) `mod` 1000
   in
     (j, ans)
-
 
 randomInts : Int -> Int -> [Int]
 randomInts seed amount =
@@ -368,3 +332,11 @@ randomFloats seed amount =
       in (nextSeed, val::l)
   in
     foldr go (seed+1.23, []) [1..amount] |> snd
+
+shuffle : [Int] -> [a] -> [a]
+shuffle (i::is) l =
+  case l of
+    (x::xs) ->
+      let (firsts, rest) = splitAt (i `mod` length l + 1) l
+      in (last firsts) :: shuffle is (init firsts ++ rest)
+    x -> x
