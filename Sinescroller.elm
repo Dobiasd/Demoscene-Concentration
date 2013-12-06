@@ -8,15 +8,16 @@ module Sinescroller where
 import Cube
 import Effect(Effect, effect)
 import Effect
-import Common(Colored,Positioned,Point,point2D,zip3,uncurry3)
+import Common(Colored,Positioned,Point,point2D,zip3,uncurry3,floatMod)
 
 import String
 
 charDist = 14
+timeFactX = 0.1
+timeFactY = 0.002
+textPosFact = -0.2
 
 type State = {message:String, time:Float, cube:Effect}
-
-defMessage = "Greetings go out to everybody loving the demoscene and functional programming. ;-)   -   daiw.de"
 
 sinescroller : State -> Effect
 sinescroller s = Effect {step=step s, display=display s, name="Sinescroller"}
@@ -34,14 +35,9 @@ deconcat = String.foldr (\c acc -> String.fromList [c] :: acc) []
 
 charPos : Float -> Int -> Point
 charPos time textPos =
-  let
-    timeFactX = 0.1
-    timeFactY = 0.002
-    textPosFact = -0.2
-  in
-    point2D
-      (toFloat textPos * charDist - time * timeFactX)
-      (70 * sin (toFloat textPos * textPosFact + timeFactY*time))
+  point2D
+    (toFloat textPos * charDist - time * timeFactX)
+    (70 * sin (toFloat textPos * textPosFact + timeFactY*time))
 
 charCol : Float -> Positioned a -> Color
 charCol time {x,y} = hsv (0.001 * time + 0.03 * x) 1 1
@@ -50,14 +46,6 @@ type ScrollerChar = Colored ( Positioned {s:String} )
 
 scrollerChar : String -> Point -> Color -> ScrollerChar
 scrollerChar s pos col = {s=s, x=pos.x, y=pos.y, z=0, col=col}
-
-
-floatMod : Float -> Float -> Float
-floatMod numerator divisor =
-  let
-    q = numerator / divisor |> floor |> toFloat
-  in
-    numerator - q * divisor
 
 wrapCharPos : Float -> ScrollerChar -> ScrollerChar
 wrapCharPos minX ({x} as sc) =
@@ -78,15 +66,13 @@ display : State -> Form
 display ({time,cube,message} as state) =
   let
     len = String.length message
-    poss = map (charPos time) [0..len]
-    cols = map (charCol time) poss
-    charStrings = deconcat message
-    chars = scrollerChars charStrings poss cols
+    positions = map (charPos time) [0..len]
+    colors = map (charCol time) positions
+    chars = scrollerChars (deconcat message) positions colors
     wrappedChars = map (wrapCharPos <| -charDist * (14 + toFloat len)) chars
     goodChars = filter (\{x} -> x > -93 && x < 93) wrappedChars
-    forms = map displayScrollerChar goodChars
+    charsForm = map displayScrollerChar goodChars |> group
   in
-     [rect 200 200 |> filled (rgb 0 0 0)]
-     ++ [(Effect.display cube)]
-     ++ forms
-     |> group
+    group [ rect 200 200 |> filled (rgb 0 0 0)
+          , Effect.display cube
+          , charsForm ]

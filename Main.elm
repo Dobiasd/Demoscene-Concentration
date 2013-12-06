@@ -110,13 +110,12 @@ cardBoxes =
 effects = [ EulerSpiral.make
           , Plasma.make
           , Particles.make
-          , Sinescroller.make Sinescroller.defMessage
+          , Sinescroller.make "Greetings go out to everybody loving the demoscene and functional programming. ;-)   -   daiw.de"
           , Moire.make
           , Tunnel.make ]
 
 
 wonEffects = filter (\(Effect e) -> e.name /= "Sinescroller") effects
-
 
 generateCards : Time -> Cards
 generateCards time =

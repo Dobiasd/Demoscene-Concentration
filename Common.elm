@@ -44,6 +44,13 @@ uncurry4 f (a,b,c,d) = f a b c d
 decomposeColor : Color -> (Int,Int,Int,Float)
 decomposeColor (Color r g b a) = (r,g,b,a)
 
+floatMod : Float -> Float -> Float
+floatMod numerator divisor =
+  let
+    q = numerator / divisor |> floor |> toFloat
+  in
+    numerator - q * divisor
+
 init : [a] -> [a]
 init l = case l of
            [x] -> []
@@ -65,6 +72,8 @@ shuffle (i::is) l =
       let (firsts, rest) = splitAt (i `mod` length l + 1) l
       in (last firsts) :: shuffle is (init firsts ++ rest)
     x -> x
+
+dummyForm = rect 0 0 |> filled (rgba 0 0 0 0)
 
 
 pairs : [a] -> [(a,a)]
