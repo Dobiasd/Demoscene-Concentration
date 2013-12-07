@@ -15,7 +15,7 @@ import Effects.Effect
 type State = {time:Float, points:[Vector], stepCount:Int}
 
 eulerSpiral : State -> Effect
-eulerSpiral s = Effect {step = step s, display = display s, name = "Lissajous"}
+eulerSpiral s = Effect {step=step s, display=display s, name="Lissajous"}
 
 make : Effect
 make = eulerSpiral { time=0
@@ -60,14 +60,14 @@ displayLine time num s e =
   in
     outline |> traced lS1Wide
 
-displayLines : [Vector] -> Float -> Form
+displayLines : [Vector] -> Float -> [Form]
 displayLines points time =
-    group <| map (uncurry3 (displayLine time)) <| numberedPairs <| reverse points
+  reverse points |> numberedPairs |> map (uncurry3 (displayLine time))
 
 display : State -> Form
 display ({time,points} as state) =
   let
-    rawForm = displayLines points time
+    rawForm = displayLines points time |> group
     ((minX,maxX),(minY,maxY)) = getPointRange points
     cX = (minX + maxX) / 2
     cY = (minY + maxY) / 2

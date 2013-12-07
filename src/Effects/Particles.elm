@@ -10,7 +10,7 @@ import Common.Vector(Vector,vector,Transform3D,applyTransform3D,
                      rotateY,project2d,addVec,move3,
                      distTo,multVec,subVec)
 import Common.Random(randomFloats)
-import Common.Algorithms(nonOverlappingSextuples)
+import Common.Algorithms(nonOverlappingTriples,nonOverlappingPairs)
 import Common.Types(WithRadius,Positioned,Moving,Colored)
 import Common.Display(PositionedForm,positionedForm,
                       displayPositionedForms,isPosOK,decomposeColor)
@@ -31,8 +31,8 @@ generateNewBalls : Int -> Float -> [Ball]
 generateNewBalls amount time =
   let
     randoms = randomFloats time (amount*6)
-    sextuples = nonOverlappingSextuples randoms
-    f (x,y,z,vx,vy,vz) =
+    sextuples = randoms |> nonOverlappingTriples |> nonOverlappingPairs
+    f ((x,y,z),(vx,vy,vz)) =
       ball (40 * x - 20) (40 * y - 20) (40 * z - 20)
            (0.2 * vx - 0.1) (0.2 * vy - 0.1) (0.2 * vz - 0.1)
            (hsv (2*x*y) 1 1)
@@ -50,7 +50,8 @@ displayBallShadow ({x,y,z} as b) =
                   [ (0, rgba 0 0 0 (0.1+2*sharpness))
                   , (1, rgba 0 0 0 0) ]
   in
-    positionedForm (oval radius (0.3*radius) |> gradient grad) {x=pos2d.x,y=pos2d.y-(0.7*radius),z=z}
+    positionedForm (oval radius (0.3*radius) |> gradient grad)
+                   {x=pos2d.x,y=pos2d.y-(0.7*radius),z=z}
 
 displayBall : Ball -> PositionedForm
 displayBall ({x,y,z,col} as ball) =
@@ -63,7 +64,8 @@ displayBall ({x,y,z,col} as ball) =
                   , (1  , rgba r g b 0.2) ]
     pos2d = project2d ball
   in
-    positionedForm (circle radius |> gradient grad) {x=pos2d.x,y=pos2d.y,z=z}
+    positionedForm (circle radius |> gradient grad)
+                   {x=pos2d.x,y=pos2d.y,z=z}
 
 
 displayBallWithShadow : Ball -> [PositionedForm]
@@ -134,7 +136,8 @@ displayStar star =
   let
     {x,y} = project2d star
   in
-    positionedForm (circle 0.6 |> filled white |> move (x,y)) {x=x,y=y,z=star.z}
+    positionedForm (circle 0.6 |> filled white |> move (x,y))
+                   {x=x,y=y,z=star.z}
 
 staticStars : [Vector]
 staticStars =
@@ -150,12 +153,13 @@ display ({time,balls} as state) =
   let
     m = rotateY (0.0003*time)
     rotatedBalls = map (transformBall m) balls
-    starForms = map (applyTransform3D m) staticStars |> map displayStar |> filter isPosOK |> map .f
+    starForms = map (applyTransform3D m) staticStars |> map displayStar |>
+                  filter isPosOK |> map .f
     m2 = move3 (vector 0 0 (-30))
     moved2Balls = map (transformBall m2) rotatedBalls
-    ballForms = map displayBallWithShadow moved2Balls |> concat |> displayPositionedForms
+    ballForms = map displayBallWithShadow moved2Balls |> concat |>
+                  displayPositionedForms
   in
-    [
-      rect 200 200 |> filled (rgb 0 0 0)
-    ] ++ starForms ++ displayFloor :: [ballForms]
-    |> group
+    [ rect 200 200 |> filled (rgb 0 0 0) ]
+      ++ starForms ++ displayFloor :: [ballForms]
+      |> group

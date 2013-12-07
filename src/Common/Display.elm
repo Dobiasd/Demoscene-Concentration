@@ -28,9 +28,6 @@ gameScale : (Int,Int) -> (Float,Float) -> Float
 gameScale (winW, winH) (gameW,gameH) =
   min (toFloat winW / gameW) (toFloat winH / gameH)
 
--- todo take out? use maybes instead?
-dummyForm = rect 0 0 |> filled (rgba 0 0 0 0)
-
 decomposeColor : Color -> (Int,Int,Int,Float)
 decomposeColor (Color r g b a) = (r,g,b,a)
 

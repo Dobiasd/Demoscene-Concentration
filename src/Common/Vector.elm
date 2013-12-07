@@ -5,9 +5,9 @@ module Common.Vector where
 import Transform2D(Transform2D,matrix)
 import Common.Types(Positioned,Point,point)
 
--- todo: why does this lead to: Could not find 'Vector' when solving type constraints.
---type Vector = Positioned {}1
-type Vector = {x:Float, y:Float, z:Float }
+--todo: why does this lead to: Could not find 'Vector' when solving type constraints.
+--type Vector = Positioned {}
+type Vector = {x:Float, y:Float, z:Float}
 
 vector : Float -> Float -> Float -> Vector
 vector x y z = { x=x, y=y, z=z }

@@ -43,7 +43,6 @@ displayLine num (s, e) =
   let
     width = 8
     lS = solid (hsva (2.6 + cos num) 1 1 0.1)
-    --lSWide = { lS | width <- width, join <- Smooth, cap <- Round }
     lSWide = { lS | width <- width }
     outline = path [(s.x,s.y), (e.x,e.y)]
   in

@@ -5,6 +5,7 @@ module Effects.Cube where
 @docs cube
 -}
 
+import Maybe
 import Effects.Effect(Effect, effect)
 import Effects.Effect as Effect
 
@@ -91,21 +92,21 @@ faceShowsBackside {tl,tr,bl} =
   in
     normale.z < 0
 
-displayFace : Color -> Face -> Form -> Form
+displayFace : Color -> Face -> Form -> Maybe Form
 displayFace wireCol ({tl,tr,bl} as face) form =
   let
     br = faceBr face
     vtp {x,y} = (x,y)
     lsjustCol = solid wireCol
-    lSWide = { lsjustCol | width <- borderWidth, join <- Smooth, cap <- Round }
+    lSWide = {lsjustCol | width <- borderWidth, join <- Smooth, cap <- Round}
     outline = path [vtp tr, vtp tl, vtp bl, vtp br, vtp tr]
     (m2d,m3d) = getAffineTransformation
           (-100,100) (100,100) (-100,-100)
           (tl.x,tl.y) (tr.x,tr.y) (bl.x,bl.y)
     transformedForm = groupTransform m2d [form]
   in
-    if faceShowsBackside face then dummyForm else
-      group [ transformedForm, outline |> traced lSWide ]
+    if faceShowsBackside face then Nothing else
+      Just (group [ transformedForm, outline |> traced lSWide ])
 
 display : State -> Form
 display ({time, wireCol, faceEffects} as state) =
@@ -113,6 +114,6 @@ display ({time, wireCol, faceEffects} as state) =
     faces = calcFaces (time/2)
     forms = map Effect.display faceEffects
     facesWithForms = zip faces forms
-    resultForms = map (uncurry (displayFace wireCol)) facesWithForms
+    resultForms = justs <| map (uncurry (displayFace wireCol)) facesWithForms
   in
     group resultForms |> scale (1/sqrt(3))

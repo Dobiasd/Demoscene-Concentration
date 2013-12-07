@@ -49,6 +49,12 @@ numberedPairs xs =
   in
     zipWith (\i (a,b) -> (i,a,b)) nums ps
 
+{- [1,2,3,4,5] -> [(1,2),(3,4)] -}
+nonOverlappingPairs : [a] -> [(a,a)]
+nonOverlappingPairs l =
+  case l of
+    (x1::x2::xs) -> (x1,x2) :: nonOverlappingPairs xs
+    _            -> []
 
 {- [1,2,3,4,5,6,7,8] -> [(1,2,3),(4,5,6)] -}
 nonOverlappingTriples : [a] -> [(a,a,a)]
@@ -63,13 +69,6 @@ nonOverlappingQuadruples l =
   case l of
     (x1::x2::x3::x4::xs) -> (x1,x2,x3,x4) :: nonOverlappingQuadruples xs
     _                    -> []
-
-{- [1,2,3,4,5,6,7,8,9,10,11,12,13,14] -> [(1,2,3,4,5,6),(7,8,9,10,11,12)] -}
-nonOverlappingSextuples : [a] -> [(a,a,a,a,a,a)]
-nonOverlappingSextuples l =
-  case l of
-    (x1::x2::x3::x4::x5::x6::xs) -> (x1,x2,x3,x4,x5,x6) :: nonOverlappingSextuples xs
-    _                            -> []
 
 quicksort : (a -> a -> Bool) -> [a] -> [a]
 quicksort cmp l =

@@ -276,8 +276,6 @@ stepGame ({action}) ({state, time} as game) =
 -- | display |
 -- \---------/
 
-
-
 displayCards : Time -> Cards -> Form
 displayCards time cards =
   map (Card.display time) cards |> group
