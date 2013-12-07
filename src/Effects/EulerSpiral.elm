@@ -11,7 +11,6 @@ import Common(Positioned,Vector,vector,angle2D,vector2DFromAngle,
 import Effects.Effect(Effect, effect)
 import Effects.Effect
 
-
 type State = {time:Float, points:[Vector], stepCount:Int}
 
 eulerSpiral : State -> Effect
