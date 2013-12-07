@@ -22,7 +22,7 @@ ball : Float -> Float -> Float
 ball x y z vx vy vz col = {x=x,y=y,z=z,vx=vx,vy=vy,vz=vz,col=col}
 
 make : Effect
-make = particles {time=0, balls=[]}
+make = particles {time=0, balls=generateNewBalls 64 1.23}
 
 generateNewBalls : Int -> Float -> [Ball]
 generateNewBalls amount time =
@@ -111,9 +111,7 @@ particles s = Effect {step = step s, display = display s, name = "Particles"}
 step : State -> Float -> Effect
 step ({time, balls} as state) delta =
   let
-    oldBalls = balls |> map (stepBall delta)
-    newAmount = max 0 (92 - length oldBalls)
-    balls' = oldBalls ++ generateNewBalls newAmount time
+    balls' = balls |> map (stepBall delta)
   in
     particles { state | time <- time + delta
                       , balls <- balls' }
@@ -139,10 +137,10 @@ staticStars : [Vector]
 staticStars =
   let
     f i = vector (     100 * (cos (1234 * i)))
-                 ( 30 + 30 * (cos (2345 * i)))
+                 ( 25 + 20 * (cos (2345 * i)))
                  (     100 * (cos (3456 * i)))
   in
-    map f [0..128]
+    map f [0..64]
 
 display : State -> Form
 display ({time,balls} as state) =

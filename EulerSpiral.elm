@@ -54,7 +54,7 @@ displayLine time num s e =
   let
     width = 2
     lS1 = solid (hsva (toFloat num / 10 + time / 1000) 1 1 1)
-    lS1Wide = { lS1 | width <- width, join <- Smooth, cap <- Round }
+    lS1Wide = { lS1 | width <- width, cap <- Round }
     pointToPair {x,y} = (x,y)
     outline = [pointToPair s, pointToPair e] |> path
   in
