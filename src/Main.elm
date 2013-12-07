@@ -27,7 +27,6 @@ import Particles
 import Sinescroller
 import Tunnel
 
--- todo: move all into src directory. move effects into effects directory.
 
 
 
