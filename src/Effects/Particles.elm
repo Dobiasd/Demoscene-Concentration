@@ -6,11 +6,14 @@ module Effects.Particles where
 -}
 
 import Effects.Effect(Effect, effect)
-import Common(Vector,vector,Transform3D,applyTransform3D,rotateY,project2d,
-              randomFloats,nonOverlappingSextuples,
-              WithRadius,Positioned,Moving,Colored,
-              decomposeColor,addVec,move3,distTo,multVec,subVec,
-              PositionedForm, positionedForm, displayPositionedForms, isPosOK)
+import Common.Vector(Vector,vector,Transform3D,applyTransform3D,
+                     rotateY,project2d,addVec,move3,
+                     distTo,multVec,subVec)
+import Common.Random(randomFloats)
+import Common.Algorithms(nonOverlappingSextuples)
+import Common.Types(WithRadius,Positioned,Moving,Colored)
+import Common.Display(PositionedForm,positionedForm,
+                      displayPositionedForms,isPosOK,decomposeColor)
 
 type Ball = Positioned (Moving (Colored {}))
 

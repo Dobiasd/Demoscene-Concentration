@@ -14,8 +14,10 @@ import Window
 import Effects.Effect(Effect)
 import Effects.Effect as Effect
 
-import Common(Point, Positioned, Boxed, Box, point2D, box2D, roundTo,
-              shuffle, randomInts)
+import Common.Types(Point, Positioned, Boxed, Box, point2D, box2D)
+import Common.Algorithms(roundTo)
+import Common.Random(randomInts,shuffle)
+import Common.Display(winPosToGamePos,displayFullScreen)
 
 import Card
 import Card(Card)
@@ -35,7 +37,7 @@ import Effects.Tunnel as Tunnel
 -- \---------------------/
 
 {-| The game field extends from -100 to +100 in x and y coordinates. -}
-(gameWidth,gameHeight) = (200,200)
+
 framesPerSecond = 60
 
 
@@ -274,24 +276,7 @@ stepGame ({action}) ({state, time} as game) =
 -- | display |
 -- \---------/
 
-{-| Since the game is always scaled maximally into the window
-(keeping its aspect ratio), the mouse and touch positions
-have to be converted to game positions. -}
-winPosToGamePos : Positioned a -> (Int,Int) -> Point
-winPosToGamePos pos size =
-  let
-    intPairToFloatPair (a, b) = (toFloat a, toFloat b)
-    (winX, winY) = (pos.x, pos.y)
-    (sizeX, sizeY) = intPairToFloatPair size
-    (middleX, middleY) = (sizeX / 2, sizeY / 2)
-    factor = gameScale size (gameWidth,gameHeight)
-  in
-    point2D ((winX - middleX) / factor) ((middleY - winY) / factor)
 
-{-| Calculate factor by which the game is scaled visually onto the screen. -}
-gameScale : (Int,Int) -> (Float,Float) -> Float
-gameScale (winW, winH) (gameW,gameH) =
-  min (toFloat winW / gameW) (toFloat winH / gameH)
 
 displayCards : Time -> Cards -> Form
 displayCards time cards =
@@ -332,12 +317,4 @@ display ({state} as game) =
   , displayFPS game ]
 
 
-{-| Draw game maximized into the window. -}
-displayFullScreen : (Int,Int) -> Game -> Element
-displayFullScreen (w,h) game =
-  let
-    factor = gameScale (w,h) (gameWidth,gameHeight)
-  in
-    collage w h [ display game |> scale factor ]
-
-main = displayFullScreen <~ Window.dimensions ~ gameState
+main = (displayFullScreen display) <~ gameState ~ Window.dimensions

@@ -6,7 +6,8 @@ module Effects.Plasma where
 -}
 
 import Effects.Effect(Effect, effect)
-import Common(uncurry4, randomFloats, nonOverlappingQuadruples)
+import Common.Algorithms(uncurry4, nonOverlappingQuadruples)
+import Common.Random(randomFloats)
 
 pixels = 8
 speed = 0.0004

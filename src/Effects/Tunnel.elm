@@ -5,16 +5,14 @@ module Effects.Tunnel where
 @docs tunnel
 -}
 
-
 import Effects.Effect(Effect, effect)
 import Effects.Effect as Effect
 import Effects.Starfield as Starfield
-import Common(Disc,randoms,
-              disc,vector,project2d,dist,displayDisc,
-              sortBy,point2D,Point,displayPositionedForm,
-              displayPositionedForms, PositionedForm, isPosOK,
-              normalize, scalarProd, positionedForm, WithRadius,
-              Colored, Positioned, WithNormal)
+import Common.Vector(vector,project2d,dist,point2D,normalize,scalarProd)
+import Common.Algorithms(sortBy)
+import Common.Display(displayPositionedForms,
+                      PositionedForm, isPosOK, positionedForm)
+import Common.Types(WithRadius,WithNormal,Colored,Positioned,Point,point2D)
 
 type State = {time:Float, background:Effect, discs:[Disc]}
 

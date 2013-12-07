@@ -8,7 +8,8 @@ module Effects.Sinescroller where
 import Effects.Cube as Cube
 import Effects.Effect(Effect, effect)
 import Effects.Effect as Effect
-import Common(Colored,Positioned,Point,point2D,zip3,uncurry3,floatMod)
+import Common.Types(Point,Colored,Positioned,point2D)
+import Common.Algorithms(uncurry3,floatMod,zip3)
 
 import String
 

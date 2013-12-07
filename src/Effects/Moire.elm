@@ -7,7 +7,7 @@ module Effects.Moire where
 
 import Effects.Effect(Effect,effect)
 import Effects.Effect as Effect
-import Common(Vector,vector,Transform3D,applyTransform3D,rotateZ)
+import Common.Vector(Vector,vector,Transform3D,applyTransform3D,rotateZ)
 import Effects.Starfield as Starfield
 
 type State = {time:Float, background:Effect}

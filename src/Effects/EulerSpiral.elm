@@ -6,9 +6,10 @@ module Effects.EulerSpiral where
 -}
 
 
-import Common(Positioned,Vector,vector,angle2D,vector2DFromAngle,
-              multVec,addVec,subVec,numberedPairs,uncurry3)
-import Effects.Effect(Effect, effect)
+import Common.Vector(Positioned,Vector,vector,angle2D,vector2DFromAngle,
+              multVec,addVec,subVec)
+import Common.Algorithms(numberedPairs,uncurry3)
+import Effects.Effect(Effect,effect)
 import Effects.Effect
 
 type State = {time:Float, points:[Vector], stepCount:Int}

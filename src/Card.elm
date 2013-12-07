@@ -1,7 +1,8 @@
 module Card where
 
 import Effects.ElmLogo(elmLogo)
-import Common(Point, Positioned, Boxed)
+import Common.Types(Positioned, Boxed)
+import Common.Vector(Point, Positioned, Boxed)
 import Effects.Effect(Effect)
 import Effects.Effect as Effect
 

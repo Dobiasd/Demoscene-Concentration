@@ -6,9 +6,11 @@ module Effects.Starfield where
 -}
 
 import Effects.Effect(Effect, effect)
-import Common(Vector, vector, nonOverlappingQuadruples, dist, randomFloats,
-              Positioned,Colored,Point,point,project2d,
-              decomposeColor)
+import Common.Vector(Vector, vector, dist, Point,point,project2d)
+import Common.Algorithms(nonOverlappingQuadruples)
+import Common.Random(randomFloats)
+import Common.Types(Positioned,Colored)
+import Common.Display(decomposeColor)
 
 type Star = Positioned (Colored {})
 

@@ -8,10 +8,11 @@ module Effects.Cube where
 import Effects.Effect(Effect, effect)
 import Effects.Effect as Effect
 
-import Common(vector, Vector, transform3D,
-              rotateX, rotateY, rotateZ, addVec, Transform3D,
-              applyTransform3D, getAffineTransformation,
-              subVec, crossProduct, dummyForm)
+import Common.Vector(vector,Vector,transform3D,
+              rotateX,rotateY,rotateZ,addVec,Transform3D,
+              applyTransform3D,getAffineTransformation,
+              subVec,crossProduct)
+import Common.Display(dummyForm)
 
 import Transform2D(Transform2D,matrix)
 
