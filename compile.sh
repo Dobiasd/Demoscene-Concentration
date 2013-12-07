@@ -1,5 +1,6 @@
 rm -r build
 rm -r cache
-elm -m --runtime=elm-runtime.js Main.elm
+elm -m --src-dir=./src --runtime=elm-runtime.js src/Main.elm
 cp $HOME/.cabal/share/Elm-0.10/elm-runtime.js ./build
-mv ./build/Main.html ./build/index.html
+mv ./build/src/Main.html ./build/index.html
+rm -r ./build/src
