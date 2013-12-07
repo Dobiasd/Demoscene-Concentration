@@ -1,11 +1,11 @@
-module Plasma where
+module Effects.Plasma where
 
 {-| Generates a plasma effect.
 
 @docs plasma
 -}
 
-import Effect(Effect, effect)
+import Effects.Effect(Effect, effect)
 import Common(uncurry4, randomFloats, nonOverlappingQuadruples)
 
 pixels = 8

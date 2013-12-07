@@ -1,4 +1,4 @@
-module EulerSpiral where
+module Effects.EulerSpiral where
 
 {-| Generates a euler spiral effect.
 
@@ -8,17 +8,17 @@ module EulerSpiral where
 
 import Common(Positioned,Vector,vector,angle2D,vector2DFromAngle,
               multVec,addVec,subVec,numberedPairs,uncurry3)
-import Effect(Effect, effect)
-import Effect
-import Starfield
+import Effects.Effect(Effect, effect)
+import Effects.Effect
 
-type State = {time:Float, background:Effect, points:[Vector], stepCount:Int}
+
+type State = {time:Float, points:[Vector], stepCount:Int}
 
 eulerSpiral : State -> Effect
 eulerSpiral s = Effect {step = step s, display = display s, name = "Lissajous"}
 
 make : Effect
-make = eulerSpiral { time=0, background=Starfield.make Starfield.BW 0.3 64
+make = eulerSpiral { time=0
                    , points=[vector 0 0 0, vector 10 0 0]
                    , stepCount=0 }
 
@@ -34,7 +34,7 @@ addPoint ((a::b::_) as points) stepCount =
     p::points |> take 512
 
 step : State -> Float -> Effect
-step ({time,background,points,stepCount} as state) delta =
+step ({time,points,stepCount} as state) delta =
   eulerSpiral { state | time <- time + delta
                       , points <- addPoint points stepCount
                       , stepCount <- stepCount + 1}
@@ -65,7 +65,7 @@ displayLines points time =
     group <| map (uncurry3 (displayLine time)) <| numberedPairs <| reverse points
 
 display : State -> Form
-display ({time,background,points} as state) =
+display ({time,points} as state) =
   let
     rawForm = displayLines points time
     ((minX,maxX),(minY,maxY)) = getPointRange points

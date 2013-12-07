@@ -1,11 +1,11 @@
-module Starfield where
+module Effects.Starfield where
 
 {-| Generates a starfield effect.
 
 @docs starfield
 -}
 
-import Effect(Effect, effect)
+import Effects.Effect(Effect, effect)
 import Common(Vector, vector, nonOverlappingQuadruples, dist, randomFloats,
               Positioned,Colored,Point,point,project2d,
               decomposeColor)

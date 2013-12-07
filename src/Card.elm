@@ -1,9 +1,9 @@
 module Card where
 
-import ElmLogo(elmLogo)
+import Effects.ElmLogo(elmLogo)
 import Common(Point, Positioned, Boxed)
-import Effect(Effect)
-import Effect
+import Effects.Effect(Effect)
+import Effects.Effect as Effect
 
 
 data Status = FaceDown | FaceUp | Done
@@ -20,8 +20,11 @@ display time card =
   in
     texture |> move (card.x, card.y) |> scale (card.w / 200)
 
+
+goneAfterTime = 1000
+
 isGone : Card -> Bool
-isGone {doneTime} = doneTime > 1000
+isGone {doneTime} = doneTime > goneAfterTime
 
 border : Form
 border =
@@ -53,5 +56,7 @@ step delta ({status, effect, doneTime} as card) =
   in
     case status of
       FaceDown -> card
-      _ -> { card | effect <- Effect.step effect delta
+      _ -> { card | effect <- if doneTime > goneAfterTime
+                                then effect
+                                else Effect.step effect delta
                   , doneTime <- doneTime' }

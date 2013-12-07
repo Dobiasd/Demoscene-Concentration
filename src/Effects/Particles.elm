@@ -1,11 +1,11 @@
-module Particles where
+module Effects.Particles where
 
 {-| Generates a particle effect.
 
 @docs particles
 -}
 
-import Effect(Effect, effect)
+import Effects.Effect(Effect, effect)
 import Common(Vector,vector,Transform3D,applyTransform3D,rotateY,project2d,
               randomFloats,nonOverlappingSextuples,
               WithRadius,Positioned,Moving,Colored,

@@ -1,4 +1,4 @@
-module Effect where
+module Effects.Effect where
 
 {-| Implements base class style function dispatching according to this
 [article](https://github.com/Dobiasd/articles/blob/master/from_oop_to_fp_-_inheritance_and_the_expression_problem.md).

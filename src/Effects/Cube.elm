@@ -1,12 +1,12 @@
-module Cube where
+module Effects.Cube where
 
 {-| Generates a rotating 3d cube
 
 @docs cube
 -}
 
-import Effect(Effect, effect)
-import Effect
+import Effects.Effect(Effect, effect)
+import Effects.Effect as Effect
 
 import Common(vector, Vector, transform3D,
               rotateX, rotateY, rotateZ, addVec, Transform3D,

@@ -1,4 +1,4 @@
-module ElmLogo where
+module Effects.ElmLogo where
 
 import Transform2D
 

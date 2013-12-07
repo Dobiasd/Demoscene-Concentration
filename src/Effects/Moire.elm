@@ -1,14 +1,14 @@
-module Moire where
+module Effects.Moire where
 
 {-| Generates a moire effect.
 
 @docs moire
 -}
 
-import Effect(Effect,effect)
-import Effect
+import Effects.Effect(Effect,effect)
+import Effects.Effect as Effect
 import Common(Vector,vector,Transform3D,applyTransform3D,rotateZ)
-import Starfield
+import Effects.Starfield as Starfield
 
 type State = {time:Float, background:Effect}
 

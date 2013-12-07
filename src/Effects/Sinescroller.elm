@@ -1,13 +1,13 @@
-module Sinescroller where
+module Effects.Sinescroller where
 
 {-| Generates a sine scroller effect.
 
 @docs sinescroller
 -}
 
-import Cube
-import Effect(Effect, effect)
-import Effect
+import Effects.Cube as Cube
+import Effects.Effect(Effect, effect)
+import Effects.Effect as Effect
 import Common(Colored,Positioned,Point,point2D,zip3,uncurry3,floatMod)
 
 import String

@@ -11,21 +11,21 @@ needed time inversly indicates the players performance. ;-)
 import Touch
 import Window
 
-import Effect(Effect)
-import Effect
+import Effects.Effect(Effect)
+import Effects.Effect as Effect
 
 import Common(Point, Positioned, Boxed, Box, point2D, box2D, roundTo,
               shuffle, randomInts)
 
 import Card
 import Card(Card)
-import Cube
-import EulerSpiral
-import Moire
-import Plasma
-import Particles
-import Sinescroller
-import Tunnel
+import Effects.Cube as Cube
+import Effects.EulerSpiral as EulerSpiral
+import Effects.Moire as Moire
+import Effects.Plasma as Plasma
+import Effects.Particles as Particles
+import Effects.Sinescroller as Sinescroller
+import Effects.Tunnel as Tunnel
 
 
 
@@ -146,7 +146,6 @@ defaultGame =
 
 
 
-
 -- /---------\
 -- | updates |
 -- \---------/
@@ -198,7 +197,7 @@ stepTapStart ({x,y} as gameTapPos) ({state,cards} as game) =
 generateWonEffect : Time -> Effect
 generateWonEffect time =
   let
-    message = "Time: " ++ show (roundTime time) ++ " seconds"
+    message = show (roundTime time) ++ " seconds"
   in
     Cube.make (Sinescroller.make message :: wonEffects) (rgb 64 64 64)
 
@@ -216,7 +215,7 @@ splitCardsByStatus : Card.Status -> Cards -> (Cards,Cards)
 splitCardsByStatus status = partition (((==) status) . (.status))
 
 stepTapPlay : Point -> Game -> Game
-stepTapPlay gameTapPos ({state,cards,time} as game) =
+stepTapPlay gameTapPos ({cards,time} as game) =
   let
     cardsDone = filter (((==) Card.Done) . (.status)) cards
     cardsNotDone' = stepPlayFlipCards gameTapPos cards
@@ -225,10 +224,8 @@ stepTapPlay gameTapPos ({state,cards,time} as game) =
     cardsNotDoneUpDone' = map (\c -> {c | status <- Card.Done}) cardsNotDoneUp'
     cards' = cardsDone ++ cardsNotDoneDown'
              ++ if foundPair then cardsNotDoneUpDone' else cardsNotDoneUp'
-    state' = if all (((==) Card.Done) . .status) cards' then Won else Play
   in
-    { game | state <- state'
-           , cards <- cards'
+    { game | cards <- cards'
            , wonEffect <- generateWonEffect time }
 
 
@@ -249,13 +246,17 @@ stepWon delta ({wonEffect} as game) =
 
 stepDelta : Float -> Game -> Game
 stepDelta delta ({cards, state, time} as game) =
-  let game' =
-    case state of
+  let
+    allDone = all (((==) Card.Done) . .status) cards
+    time' = case state of
+              Play -> if allDone then time
+                                 else time + delta
+              _    -> time
+    game' = case state of
       Won -> stepWon delta game
       _   -> { game | cards <- stepCards delta cards
-                    , time <- case state of
-                                Play -> time + delta
-                                _    -> time }
+                    , time  <- time'
+                    , state <- if isEmpty cards then Won else state }
   in
     { game' | currentFPS <- round(1000/delta) }
 

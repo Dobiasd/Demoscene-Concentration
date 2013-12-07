@@ -1,4 +1,4 @@
-module Tunnel where
+module Effects.Tunnel where
 
 {-| Generates a tunnel effect.
 
@@ -6,9 +6,9 @@ module Tunnel where
 -}
 
 
-import Effect(Effect, effect)
-import Effect
-import Starfield
+import Effects.Effect(Effect, effect)
+import Effects.Effect as Effect
+import Effects.Starfield as Starfield
 import Common(Disc,randoms,
               disc,vector,project2d,dist,displayDisc,
               sortBy,point2D,Point,displayPositionedForm,
