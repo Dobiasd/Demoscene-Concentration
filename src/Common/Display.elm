@@ -40,6 +40,31 @@ displayPositionedForm {f,x,y} = f |> move (x, y)
 isPosOK : Positioned a -> Bool
 isPosOK {x,y,z} = z < -1 && x >= -100 && x <= 100 && y >= -100 && y <= 100
 
+
+type FPSCounter = { time:Time
+                  , lastVal:Int
+                  , counter:Int }
+
+makeFPSCounter : FPSCounter
+makeFPSCounter = { time = 0
+                 , lastVal = 0
+                 , counter = 0}
+
+
+stepFPSCounter : Time -> FPSCounter -> FPSCounter
+stepFPSCounter delta ({time,lastVal,counter} as fpsCounter) =
+  let
+    time' = time + delta
+    counter' = counter + 1
+  in
+    if time' < 1000 then { fpsCounter | time <- time'
+                                      , counter <- counter + 1 }
+                    else { fpsCounter | time <- time' - 1000
+                                      , lastVal <- counter
+                                      , counter <- 0 }
+
+
+
 displayPositionedForms : [PositionedForm] -> Form
 displayPositionedForms fs =
     fs

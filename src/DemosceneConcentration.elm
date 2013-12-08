@@ -17,8 +17,8 @@ import Effects.Effect as Effect
 import Common.Types(Point, Positioned, Boxed, Box, point2D, box2D)
 import Common.Algorithms(roundTo)
 import Common.Random(randomInts,shuffle)
-import Common.Display(winPosToGamePos,displayFullScreen)
-
+import Common.Display(winPosToGamePos,displayFullScreen,
+                      FPSCounter,makeFPSCounter,stepFPSCounter)
 import Card
 import Card(Card)
 import Effects.Cube as Cube
@@ -131,11 +131,16 @@ generateCards time =
 
 data State = Start | Play | Won
 
+
+
+
+
+
 type Game = { state:State
             , cards:Cards
             , wonEffect:Effect
             , time:Time
-            , currentFPS:Int }
+            , fpsCounter:FPSCounter }
 
 defaultGame : Game
 defaultGame =
@@ -143,7 +148,7 @@ defaultGame =
   , cards = generateCards 0
   , wonEffect = Cube.make wonEffects (rgb 64 64 64)
   , time = 0
-  , currentFPS = 0 }
+  , fpsCounter = makeFPSCounter }
 
 
 
@@ -247,7 +252,7 @@ stepWon delta ({wonEffect} as game) =
   { game | wonEffect <- Effect.step wonEffect delta }
 
 stepDelta : Float -> Game -> Game
-stepDelta delta ({cards, state, time} as game) =
+stepDelta delta ({cards, state, time, fpsCounter} as game) =
   let
     allDone = all (((==) Card.Done) . .status) cards
     time' = case state of
@@ -260,7 +265,7 @@ stepDelta delta ({cards, state, time} as game) =
                     , time  <- time'
                     , state <- if isEmpty cards then Won else state }
   in
-    { game' | currentFPS <- round(1000/delta) }
+    { game' | fpsCounter <- stepFPSCounter delta fpsCounter }
 
 stepGame : Input -> Game -> Game
 stepGame ({action}) ({state, time} as game) =
@@ -284,9 +289,9 @@ displayCards time cards =
 txt : (Text -> Text) -> String -> Element
 txt f = text . f . monospace . Text.color lightBlue . toText
 
-displayFPS : Game -> Form
-displayFPS {currentFPS} =
-  txt (Text.height fpsTextHeight) ("FPS: " ++ (show <| currentFPS))
+displayFPS : FPSCounter -> Form
+displayFPS {lastVal} =
+  txt (Text.height fpsTextHeight) ("FPS: " ++ (show <| lastVal))
                      |> toForm |> move (fpsTextPosX, fpsTextPosY)
 
 displayWon : Game -> Form
@@ -307,12 +312,10 @@ displayNotYetDone ({time,cards} as game) =
           , timeTextForm ]
 
 display : Game -> Form
-display ({state} as game) =
-  group [
-    case state of
-      Won -> displayWon game
-      _   -> displayNotYetDone game
-  , displayFPS game ]
-
+display ({state,fpsCounter} as game) =
+  group [ case state of
+            Won -> displayWon game
+            _   -> displayNotYetDone game
+        , displayFPS fpsCounter ]
 
 main = (displayFullScreen display) <~ gameState ~ Window.dimensions
