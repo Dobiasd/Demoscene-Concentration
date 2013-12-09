@@ -83,10 +83,12 @@ colValFromConfs : Float -> Float -> Float -> [PlasmaColConf] -> Float
 colValFromConfs x y t confs =
   (sum <| map (colValFromConf x y t) confs) / divisorForColConfs confs
 
+clampCol : Int -> Int
+clampCol = clamp 0 255
+
 calcPixelCol : Float -> Float -> Float -> [PlasmaColConf] -> Int
 calcPixelCol x y t confs =
   let
-    clampCol = clamp 0 255
     center = 32
     factor = 224
     rawCol = colValFromConfs x y t confs

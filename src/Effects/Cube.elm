@@ -92,8 +92,8 @@ faceShowsBackside {tl,tr,bl} =
   in
     normale.z < 0
 
-displayFace : Color -> Face -> Form -> Maybe Form
-displayFace wireCol ({tl,tr,bl} as face) form =
+renderFace : Color -> Face -> Form -> Form
+renderFace wireCol ({tl,tr,bl} as face) form =
   let
     br = faceBr face
     vtp {x,y} = (x,y)
@@ -105,8 +105,12 @@ displayFace wireCol ({tl,tr,bl} as face) form =
           (tl.x,tl.y) (tr.x,tr.y) (bl.x,bl.y)
     transformedForm = groupTransform m2d [form]
   in
-    if faceShowsBackside face then Nothing else
-      Just (group [ transformedForm, outline |> traced lSWide ])
+    group [ transformedForm, outline |> traced lSWide ]
+
+displayFace : Color -> Face -> Form -> Maybe Form
+displayFace wireCol face form =
+  if faceShowsBackside face then Nothing
+                            else Just <| renderFace wireCol face form
 
 display : State -> Form
 display ({time, wireCol, faceEffects} as state) =

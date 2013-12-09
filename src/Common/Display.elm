@@ -67,10 +67,10 @@ stepFPSCounter delta ({time,lastVal,counter} as fpsCounter) =
 
 displayPositionedForms : [PositionedForm] -> Form
 displayPositionedForms fs =
-    fs
-    |> sortBy (\a b -> a.z > b.z)
-    |> filter isPosOK
-    |> map displayPositionedForm |> group
+  fs
+  |> sortBy (\a b -> a.z > b.z)
+  |> filter isPosOK
+  |> map displayPositionedForm |> group
 
 {-| Draw game maximized into the window. -}
 displayFullScreen : (a -> Form) -> a -> (Int,Int) -> Element

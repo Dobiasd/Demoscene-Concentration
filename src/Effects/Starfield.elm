@@ -66,7 +66,7 @@ step ({time, stars, speed, mode, amount} as state) delta =
   let
     oldStars = stars |> (stepStars (speed * delta)) |> filter starInAllowedRange
     newAmount = max 0 (amount - length oldStars)
-    stars' = oldStars ++ (generateNewStars mode) newAmount time
+    stars' = (generateNewStars mode) newAmount time ++ oldStars
   in
     starfield { state | time <- time + delta
                       , stars <- stars' }

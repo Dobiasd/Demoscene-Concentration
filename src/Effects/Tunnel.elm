@@ -53,24 +53,26 @@ calcPosOffset : Float -> Float -> Point
 calcPosOffset time z =
   point2D (z * cos time) (z * sin time)
 
+generateNewRingDisc : Time -> Float -> Disc
+generateNewRingDisc time num =
+  let
+    calcCol v = hsva (v*0.06) 1 1 1
+    r = 12
+    x = r * cos (num+time)
+    y = r * sin (num+time)
+    z = -110
+    off = 15
+    xOff = off * (cos (0.00104*time) + cos (0.00056*time))
+    yOff = off * (cos (0.00045*time) + cos (0.00087*time))
+  in
+    disc (x+xOff) (y+yOff) z x y 0 (calcCol (num+time))
+
 generateNewDiscRing : Float -> [Disc]
 generateNewDiscRing time =
   let
-    calcCol v = hsva (v*0.06) 1 1 1
     n = 11
-    generateDisc i =
-      let
-        r = 12
-        x = r * cos (i+time)
-        y = r * sin (i+time)
-        z = -110
-        off = 15
-        xOff = off * (cos (0.00104*time) + cos (0.00056*time))
-        yOff = off * (cos (0.00045*time) + cos (0.00087*time))
-      in
-        disc (x+xOff) (y+yOff) z x y 0 (calcCol (i+time))
   in
-    map toFloat [0..n] |> map ((+) time) |> map generateDisc
+    map toFloat [0..n] |> map ((+) time) |> map (generateNewRingDisc time)
 
 stepDisc : Float -> Disc -> Disc
 stepDisc delta ({z} as disc) = { disc | z <- z + 0.05 * delta }
@@ -83,8 +85,15 @@ step ({time, discs, background} as state) delta =
   let
     oldDiscs = discs |> (stepDiscs delta) |> filter discInAllowedRange
     newAmount = max 0 (10 - length oldDiscs)
-    newDiscs = if (isEmpty oldDiscs ) || (last oldDiscs).z > -105 then generateNewDiscRing time else []
-    discs' = oldDiscs ++ newDiscs
+    newDiscs = if (isEmpty oldDiscs ) || (last oldDiscs).z > -105
+                 then generateNewDiscRing time
+                 else []
+    -- New are more further away from the camera than old discs.
+    -- Since the drawing step will sort the discs
+    -- from far to near, it a helpfull to attach the new discs to
+    -- the front of the list rather than to the back
+    -- to reduce the amount of work for the sorting algorithm.
+    discs' = newDiscs ++ oldDiscs
   in
     tunnel { state | time <- time + delta
                    , background <- Effect.step background delta
@@ -93,9 +102,7 @@ step ({time, discs, background} as state) delta =
 display : State -> Form
 display ({time,background,discs} as state) =
   let
-    zBufCmp = (\a b -> a.z > b.z)
     discsForm = map displayDisc discs |> displayPositionedForms
-    moveForm {x,y,f} = f |> move (x,y)
   in
     group [ Effect.display background
           , discsForm ]

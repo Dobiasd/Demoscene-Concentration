@@ -24,7 +24,9 @@ sinescroller : State -> Effect
 sinescroller s = Effect {step=step s, display=display s, name="Sinescroller"}
 
 make : String -> Effect
-make message = sinescroller {message=message, time=0, cube=Cube.make [] (rgba 255 255 255 0.07)}
+make message = sinescroller {message=message
+                           , time=0
+                           , cube=Cube.make [] (rgba 255 255 255 0.07)}
 
 step : State -> Float -> Effect
 step ({time, cube} as state) delta =
@@ -54,12 +56,11 @@ wrapCharPos minX ({x} as sc) =
 
 scrollerChars a b c = (map (uncurry3 scrollerChar)) (zip3 a b c)
 
+txt : Color -> String -> Element
+txt c = text . (Text.height 28) . monospace . Text.color c . toText
+
 displayScrollerChar : ScrollerChar -> Form
-displayScrollerChar {s,x,y,col} =
-  let
-    txt c = text . (Text.height 28) . monospace . Text.color c . toText
-  in
-    txt col s |> toForm |> move (x,y)
+displayScrollerChar {s,x,y,col} = txt col s |> toForm |> move (x,y)
 
 display : State -> Form
 display ({time,cube,message} as state) =
