@@ -31,12 +31,6 @@ gameScale (winW, winH) (gameW,gameH) =
 decomposeColor : Color -> (Int,Int,Int,Float)
 decomposeColor (Color r g b a) = (r,g,b,a)
 
-positionedForm : Form -> Positioned a -> PositionedForm
-positionedForm f {x,y,z} = { f=f, x=x, y=y, z=z }
-
-displayPositionedForm : PositionedForm -> Form
-displayPositionedForm {f,x,y} = f |> move (x, y)
-
 isPosOK : Positioned a -> Bool
 isPosOK {x,y,z} = z < -1 && x >= -100 && x <= 100 && y >= -100 && y <= 100
 
@@ -63,7 +57,11 @@ stepFPSCounter delta ({time,lastVal,counter} as fpsCounter) =
                                       , lastVal <- counter
                                       , counter <- 0 }
 
+positionedForm : Form -> Positioned a -> PositionedForm
+positionedForm f {x,y,z} = { f=f, x=x, y=y, z=z }
 
+displayPositionedForm : PositionedForm -> Form
+displayPositionedForm {f,x,y} = f |> move (x, y)
 
 displayPositionedForms : [PositionedForm] -> Form
 displayPositionedForms fs =
