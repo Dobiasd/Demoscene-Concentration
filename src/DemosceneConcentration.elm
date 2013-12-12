@@ -1,26 +1,31 @@
 module DemosceneConcentration where
 
-{-| The classical memory game with old school demoscene effects.
+{-| The classical memory game with simple old school demoscene effects.
 
-The game begins when the player turns over
-the first card. Maximally two cards at a time can be turned over.
-If a pair it found, it stays image up. After all pairs are found the
+The game begins when the player turns over the first card.
+Maximally two cards at a time can be turned over.
+If a pair it found, it is removed. After all pairs are found the
 needed time inversly indicates the players performance. ;-)
+
+Every card carries an effect with it, which is only updated
+when the front side is shown.
 -}
+
 
 import Touch
 import Window
 
-import Effects.Effect(Effect)
-import Effects.Effect as Effect
-
-import Common.Types(Point, Positioned, Boxed, Box, point2D, box2D)
+import Common.Types(Point,Positioned,Boxed,Box,point2D,box2D,inBox)
 import Common.Algorithms(roundTo)
 import Common.Random(randomInts,shuffle)
 import Common.Display(winPosToGamePos,displayFullScreen,
                       FPSCounter,makeFPSCounter,stepFPSCounter)
 import Card
-import Card(Card)
+import Card(Card,Cards,allEqual,splitCardsByStatus)
+
+import Effects.Effect(Effect)
+import Effects.Effect as Effect
+
 import Effects.Cube as Cube
 import Effects.EulerSpiral as EulerSpiral
 import Effects.Moire as Moire
@@ -30,41 +35,21 @@ import Effects.Sinescroller as Sinescroller
 import Effects.Tunnel as Tunnel
 
 
-
-
--- /---------------------\
--- | model configuration |
--- \---------------------/
-
-{-| The game field extends from -100 to +100 in x and y coordinates. -}
-
-framesPerSecond = 60
-
-
-
-
--- /--------------------\
--- | view configuration |
--- \--------------------/
-
-timeTextHeight = 5
-timeTextPosY = 99
-fpsTextHeight = 3
-fpsTextPosY = 100
-fpsTextPosX = -98
-
-
-
-
 -- /--------\
 -- | inputs |
 -- \--------/
 
-data Action = Tap Point (Int,Int) | Step Float
+{-| Input actions can indicate a user input for the game locic
+or a time step for the animations. -}
+
 type Input = { action:Action }
 
+data Action = Tap Point (Int,Int) | Step Float
+
+actions = merge steps flips
+
 speed : Signal Time
-speed = fps framesPerSecond
+speed = fps 60
 
 input : Signal Input
 input = (Input <~ actions)
@@ -79,37 +64,40 @@ flips =
   in
     f <~ Touch.taps ~ Window.dimensions |> sampleOn Touch.taps |> dropRepeats
 
-actions = merge steps flips
-
-
-
 
 -- /-------\
 -- | model |
 -- \-------/
 
-type Cards = [Card.Card]
+{-| The game field extends from -100 to +100 in x and y coordinates. -}
 
-{-| Creation of one single row of cards with equidistant gaps. -}
-cardBoxRow : Float -> [Box]
-cardBoxRow y =
+{-| Create one single row of boxes with equidistant gaps. -}
+boxRow : Float -> [Box]
+boxRow y =
   let
     cols = 4
     distX = 60
     xOff = -distX * (toFloat cols - 1) / 2
     cardWidth = 55
     cardHeight = 55
+    createBox x = box2D (distX * x + xOff) (y-2) cardWidth cardHeight
   in
-    map (\x -> box2D (distX * x + xOff) (y-2) cardWidth cardHeight) [0..cols-1]
+    map createBox [0..cols-1]
 
+{-| Create boxes nicely spaced boxes representing the cards
+positions and sized. -}
+cardBoxes : [Box]
 cardBoxes =
   let
     rows = 3
     distY = 65
     yOff = -distY * (toFloat rows - 1) / 2
   in
-    map (((+) yOff ) . (*) distY) [0..rows-1] |> map cardBoxRow |> concat
+    map (((+) yOff ) . (*) distY) [0..rows-1] |> map boxRow |> concat
 
+{-| The Effects we want to use for our cards.
+Every one will of occur two times. -}
+effects : [Effect]
 effects = [ EulerSpiral.make
           , Plasma.make
           , Particles.make
@@ -117,40 +105,34 @@ effects = [ EulerSpiral.make
           , Moire.make
           , Tunnel.make ]
 
-
-wonEffects = filter (\(Effect e) -> e.name /= "Sinescroller") effects
-
-generateCards : Time -> Cards
-generateCards time =
+{-| Generate the list of shuffled cards on the table. -}
+generateCards : Float -> Cards
+generateCards seed =
   let
-    numbers = randomInts (round time) (length cardBoxes + 1)
+    numbers = randomInts (round seed) (length cardBoxes + 1)
     shuffledBoxes = shuffle numbers cardBoxes
   in
-    zipWith (\effect box -> Card.make effect box) (effects ++ effects) shuffledBoxes
+    zipWith (\effect box -> Card.make effect box)
+            (effects ++ effects)
+            shuffledBoxes
 
-
-data State = Start | Play | Won
-
-
-
-
-
-
+{-| The whole game state. -}
 type Game = { state:State
             , cards:Cards
             , wonEffect:Effect
             , time:Time
             , fpsCounter:FPSCounter }
 
+data State = Start | Play | Won
+
+{-| Initial game. -}
 defaultGame : Game
 defaultGame =
   { state = Start
-  , cards = generateCards 0
-  , wonEffect = Cube.make wonEffects (rgb 64 64 64)
+  , cards = generateCards 0 -- Will be shuffled later.
+  , wonEffect = Cube.make [] (rgb 0 0 0) -- Will be filled later.
   , time = 0
   , fpsCounter = makeFPSCounter }
-
-
 
 
 -- /---------\
@@ -160,39 +142,27 @@ defaultGame =
 gameState : Signal Game
 gameState = foldp stepGame defaultGame input
 
-inBox : Positioned a -> Boxed b -> Bool
-inBox pos box =
-  let
-    xDist = abs (pos.x - box.x)
-    yDist = abs (pos.y - box.y)
-  in
-    xDist <= box.w/2 && yDist <= box.h/2
-
-goflipCardsHit : Point -> Card -> Cards -> Cards
-goflipCardsHit tapPos ({status} as card) acc =
-  let
-    hit = tapPos `inBox` card
-    status' = if not hit then status else case status of
-                                            Card.FaceUp -> Card.FaceDown
-                                            Card.FaceDown -> Card.FaceUp
-                                            _ -> status
-    card' = { card | status <- status' }
-  in
-    card'::acc
-
+{-| If one card was hit by a tap, flip it.
+Otherwise leave everything as it is. -}
 flipCardsHit : Point -> Cards -> Cards
 flipCardsHit tapPos cards =
+  let
+    goflipCardsHit : Point -> Card -> Cards -> Cards
+    goflipCardsHit tapPos ({status} as card) acc =
+      let
+        hit = tapPos `inBox` card
+        status' = if not hit then status else case status of
+                                                Card.FaceUp -> Card.FaceDown
+                                                Card.FaceDown -> Card.FaceUp
+                                                _ -> status
+        card' = { card | status <- status' }
+      in
+        card'::acc
+  in
     foldr (goflipCardsHit tapPos) [] cards
 
-allEqual : Cards -> Bool
-allEqual cards =
-  let
-    es = map .effect cards
-    equalName (Effect e1) (Effect e2) = e1.name == e2.name
-  in
-    if length es < 2 then True
-      else all (equalName (head es)) (tail es)
-
+{-| If the game is not started yet and the player tabs the screen
+the cards are shuffled initially. -}
 stepTapStart : Point -> Game -> Game
 stepTapStart ({x,y} as gameTapPos) ({state,cards} as game) =
   let
@@ -201,41 +171,61 @@ stepTapStart ({x,y} as gameTapPos) ({state,cards} as game) =
     stepTap gameTapPos { game | state <- Play,
                                 cards <- shuffledCards }
 
+{-| Generate the final effect to be shown when the game is solved. -}
+-- The Sinescroller is removed here, because its Text will display the
+-- needed time. Since this is possible only after the game is finished,
+-- it will be added then.
 generateWonEffect : Time -> Effect
 generateWonEffect time =
   let
     message = show (roundTime time) ++ " seconds"
+    wonEffects = filter (\(Effect e) -> e.name /= "Sinescroller") effects
   in
     Cube.make (Sinescroller.make message :: wonEffects) (rgb 64 64 64)
 
+{-| If the game is running and the player tabs the screen
+some cards will possibly get flipped. -}
 stepPlayFlipCards : Point -> Cards -> Cards
-stepPlayFlipCards gameTapPos cards =
+stepPlayFlipCards tapPos cards =
   let
+    -- Only the cards that are not yet done play a role in flipping.
     cardsNotDone = filter (not . ((==) Card.Done) . (.status)) cards
-    cardsNotDoneFaceDown = map (\c -> {c | status <- Card.FaceDown}) cardsNotDone
+    -- Put given cards face down.
+    putFaceDown = map (\c -> {c | status <- Card.FaceDown})
+    -- How many cards are there face up?
     faceUpCount = cards |> filter (((==) Card.FaceUp) . (.status)) |> length
   in
-   flipCardsHit gameTapPos <| if faceUpCount == 2 then cardsNotDoneFaceDown
-                                                  else cardsNotDone
+    -- If two cards are face up, they are turned down again
+    -- before another card can be turned up.
+    flipCardsHit tapPos <| if faceUpCount == 2 then putFaceDown cardsNotDone
+                                               else cardsNotDone
 
-splitCardsByStatus : Card.Status -> Cards -> (Cards,Cards)
-splitCardsByStatus status = partition (((==) status) . (.status))
-
+{-| The game is running and the player tabs the screen.
+If a card is tabbed it will be turned.
+If one not hit card is already face up, nothing happens with it.
+If two not hit cards are face up, they are turned face down.
+If a pair is found, both involved cards are set to done. -}
 stepTapPlay : Point -> Game -> Game
 stepTapPlay gameTapPos ({cards,time} as game) =
   let
-    cardsDone = filter (((==) Card.Done) . (.status)) cards
+    -- Return only already done cards.
+    getDoneCards = filter (((==) Card.Done) . (.status))
+    -- Not done cards after possible flips.
     cardsNotDone' = stepPlayFlipCards gameTapPos cards
-    (cardsNotDoneUp', cardsNotDoneDown') = splitCardsByStatus Card.FaceUp cardsNotDone'
-    foundPair = length cardsNotDoneUp' == 2 && allEqual cardsNotDoneUp'
-    cardsNotDoneUpDone' = map (\c -> {c | status <- Card.Done}) cardsNotDoneUp'
-    cards' = cardsDone ++ cardsNotDoneDown'
-             ++ if foundPair then cardsNotDoneUpDone' else cardsNotDoneUp'
+    -- In game cards splitted by state.
+    (cardsNotDoneUp', cardsNotDoneDown') = splitCardsByStatus Card.FaceUp
+                                                              cardsNotDone'
+    -- Did the player uncover a pair?
+    foundPair = length cardsNotDoneUp' == 2 && Card.allEqual cardsNotDoneUp'
+    putCardsFaceDown = map (\c -> {c | status <- Card.Done})
+    cards' = getDoneCards cards ++ cardsNotDoneDown'
+             ++ if foundPair then putCardsFaceDown cardsNotDoneUp'
+                             else cardsNotDoneUp'
   in
     { game | cards <- cards'
            , wonEffect <- generateWonEffect time }
 
-
+{-| Dispatch user input by game state. -}
 stepTap : Point -> Game -> Game
 stepTap gameTapPos ({state,cards} as game) =
   case state of
@@ -243,22 +233,27 @@ stepTap gameTapPos ({state,cards} as game) =
     Play -> stepTapPlay gameTapPos game
     _ -> game
 
-
+{-| Update card's animation and remove gone cards. -}
 stepCards : Float -> Cards -> Cards
-stepCards delta cards = map (Card.step delta) cards |> filter (not . Card.isGone)
+stepCards delta cards =
+  map (Card.step delta) cards |> filter (not . Card.isGone)
 
+{-| Update wonEffect (only used when game is already solved). -}
 stepWon : Float -> Game -> Game
 stepWon delta ({wonEffect} as game) =
   { game | wonEffect <- Effect.step wonEffect delta }
 
+{-| Calculate state for next frame. -}
 stepDelta : Float -> Game -> Game
 stepDelta delta ({cards, state, time, fpsCounter} as game) =
   let
+    -- If all cards are done the stopwatch is stopped.
     allDone = all (((==) Card.Done) . .status) cards
     time' = case state of
               Play -> if allDone then time
                                  else time + delta
               _    -> time
+    -- Step game according to state
     game' = case state of
       Won -> stepWon delta game
       _   -> { game | cards <- stepCards delta cards
@@ -267,6 +262,7 @@ stepDelta delta ({cards, state, time, fpsCounter} as game) =
   in
     { game' | fpsCounter <- stepFPSCounter delta fpsCounter }
 
+{-| Dispatch by inpout. -}
 stepGame : Input -> Game -> Game
 stepGame ({action}) ({state, time} as game) =
   case action of
@@ -274,29 +270,34 @@ stepGame ({action}) ({state, time} as game) =
     Tap tapPos winDims -> stepTap (winPosToGamePos tapPos winDims) game
 
 
-
-
-
 -- /---------\
 -- | display |
 -- \---------/
 
+{-| Dispatch by input. -}
 displayCards : Time -> Cards -> Form
 displayCards time cards =
   map (Card.display time) cards |> group
 
-
+{-| Render text using a given transformation function. -}
 txt : (Text -> Text) -> String -> Element
 txt f = text . f . monospace . Text.color lightBlue . toText
 
+{-| Show number of calculated frames during last passed second. -}
 displayFPS : FPSCounter -> Form
 displayFPS {lastVal} =
-  txt (Text.height fpsTextHeight) ("FPS: " ++ (show <| lastVal))
-                     |> toForm |> move (fpsTextPosX, fpsTextPosY)
+  let
+    (fpsTextPosX,fpsTextPosY) = (-98,100)
+    fpsTextHeight = 3
+  in
+    txt (Text.height fpsTextHeight) ("FPS: " ++ (show <| lastVal))
+      |> toForm |> move (fpsTextPosX, fpsTextPosY)
 
+{-| Show the final Effect -}
 displayWon : Game -> Form
 displayWon ({wonEffect} as game) = Effect.display wonEffect
 
+{-| Round time for decisecond precision. -}
 roundTime : Time -> Time
 roundTime time = (toFloat . round) (time / 100) / 10
 
@@ -304,13 +305,15 @@ roundTime time = (toFloat . round) (time / 100) / 10
 displayNotYetDone : Game -> Form
 displayNotYetDone ({time,cards} as game) =
   let
-
+    timeTextHeight = 5
+    timeTextPosY = 99
     timeTextForm = txt (Text.height timeTextHeight) (show <| roundTime time)
                      |> toForm |> move (0, timeTextPosY)
   in
     group [ displayCards time cards
           , timeTextForm ]
 
+{-| Display game or final effect. FPS are displayed in both cases. -}
 display : Game -> Form
 display ({state,fpsCounter} as game) =
   group [ case state of

@@ -11,6 +11,8 @@ data Status = FaceDown | FaceUp | Done
 
 type Card = Boxed {effect:Effect, status:Status, doneTime:Time}
 
+type Cards = [Card]
+
 display : Time -> Card -> Form
 display time card =
   let
@@ -61,3 +63,15 @@ step delta ({status, effect, doneTime} as card) =
                                 then effect
                                 else Effect.step effect delta
                   , doneTime <- doneTime' }
+
+allEqual : Cards -> Bool
+allEqual cards =
+  let
+    es = map .effect cards
+    equalName (Effect e1) (Effect e2) = e1.name == e2.name
+  in
+    if length es < 2 then True
+      else all (equalName (head es)) (tail es)
+
+splitCardsByStatus : Status -> Cards -> (Cards,Cards)
+splitCardsByStatus status = partition (((==) status) . (.status))
