@@ -1,5 +1,8 @@
 module Common.Types where
 
+{-| Commonly used types.
+-}
+
 type Named       a = { a | name:String }
 type Positioned  a = { a | x:Float, y:Float, z:Float }
 type Moving      a = { a | vx:Float, vy:Float, vz:Float }

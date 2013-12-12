@@ -1,13 +1,12 @@
 module Common.Display where
 
-{-| -}
+{-| Exports functions and types that can come in handy when displaying stuff.
+-}
 
 import Common.Types(Positioned,Point,point2D)
 import Common.Algorithms(sortBy)
 
 (gameWidth,gameHeight) = (200,200)
-
-type PositionedForm = Positioned {f:Form}
 
 {-| Since the game is always scaled maximally into the window
 (keeping its aspect ratio), the mouse and touch positions
@@ -28,13 +27,17 @@ gameScale : (Int,Int) -> (Float,Float) -> Float
 gameScale (winW, winH) (gameW,gameH) =
   min (toFloat winW / gameW) (toFloat winH / gameH)
 
+{-| Split a color into its components. -}
 decomposeColor : Color -> (Int,Int,Int,Float)
 decomposeColor (Color r g b a) = (r,g,b,a)
 
+{-| Check if a position is inside the allowed box of
+(-100,-100),(100,100)). -}
 isPosOK : Positioned a -> Bool
 isPosOK {x,y,z} = z < -1 && x >= -100 && x <= 100 && y >= -100 && y <= 100
 
-
+{-| Counts frames and remembers how much where there during the last
+passed second. -}
 type FPSCounter = { time:Time
                   , lastVal:Int
                   , counter:Int }
@@ -44,7 +47,8 @@ makeFPSCounter = { time = 0
                  , lastVal = 0
                  , counter = 0}
 
-
+{-| Update the FPSCounter.
+Saves the current count and resets the counter if a new second began. -}
 stepFPSCounter : Time -> FPSCounter -> FPSCounter
 stepFPSCounter delta ({time,lastVal,counter} as fpsCounter) =
   let
@@ -57,17 +61,22 @@ stepFPSCounter delta ({time,lastVal,counter} as fpsCounter) =
                                       , lastVal <- counter
                                       , counter <- 0 }
 
+{-| A form with a position for later sorting/filtering. -}
+type PositionedForm = Positioned {f:Form}
 positionedForm : Form -> Positioned a -> PositionedForm
 positionedForm f {x,y,z} = { f=f, x=x, y=y, z=z }
 
 displayPositionedForm : PositionedForm -> Form
 displayPositionedForm {f,x,y} = f |> move (x, y)
 
+{-| Filter out forms with invalid positions,
+sort forms by their z coordinates (since we have no z buffer)
+and display them. -}
 displayPositionedForms : [PositionedForm] -> Form
 displayPositionedForms fs =
   fs
-  |> sortBy (\a b -> a.z > b.z)
   |> filter isPosOK
+  |> sortBy (\a b -> a.z > b.z)
   |> map displayPositionedForm |> group
 
 {-| Draw game maximized into the window. -}

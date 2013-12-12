@@ -1,10 +1,11 @@
 module Common.Random where
 
-{-| -}
+{-| Some very primitive pseudo random generation.
+  -}
 
 import Common.Algorithms(splitAt,init)
 
--- [0, 999]
+{-| Generate new seed and random number in [0, 999] with given seed. -}
 randomInt : Int -> (Int,Int)
 randomInt i =
   let
@@ -13,6 +14,7 @@ randomInt i =
   in
     (j, ans)
 
+{-| Make amount numbers in [0, 999]. -}
 randomInts : Int -> Int -> [Int]
 randomInts seed amount =
   let
@@ -22,7 +24,7 @@ randomInts seed amount =
   in
     foldr go (seed+123, []) [1..amount] |> snd
 
--- [0.0, 1.0)
+{-| Generate new seed and random number in [0.0, 1.0) with given seed. -}
 randomFloat : Float -> (Float,Float)
 randomFloat seed =
   let
@@ -33,7 +35,7 @@ randomFloat seed =
   in
     (newFloatSeed, floatVal)
 
-
+{-| Make amount numbers in [0.0, 1.0). -}
 randomFloats : Float -> Int -> [Float]
 randomFloats seed amount =
   let
@@ -43,8 +45,11 @@ randomFloats seed amount =
   in
     foldr go (seed+1.23, []) [1..amount] |> snd
 
+{-| Suffle a list using random numbers
+The length of the list of random numbers has to be at least
+as long as the list that shall be shuffled. -}
 shuffle : [Int] -> [a] -> [a]
-shuffle (i::is) l =
+shuffle ((i::is) as randoms) l =
   case l of
     (x::xs) ->
       let (firsts, rest) = splitAt (i `mod` length l + 1) l
