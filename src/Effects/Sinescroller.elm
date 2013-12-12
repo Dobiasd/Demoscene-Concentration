@@ -1,8 +1,6 @@
 module Effects.Sinescroller where
 
 {-| Generates a sine scroller effect.
-
-@docs sinescroller
 -}
 
 import Effects.Cube as Cube

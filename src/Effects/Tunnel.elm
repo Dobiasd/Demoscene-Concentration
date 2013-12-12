@@ -1,8 +1,6 @@
 module Effects.Tunnel where
 
 {-| Generates a tunnel effect.
-
-@docs tunnel
 -}
 
 import Effects.Effect(Effect, effect)

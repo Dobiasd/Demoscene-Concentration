@@ -1,19 +1,17 @@
 module Effects.Particles where
 
 {-| Generates a particle effect.
-
-@docs particles
 -}
 
 import Effects.Effect(Effect, effect)
-import Common.Vector(Vector,vector,Transform3D,applyTransform3D,
-                     rotateY,project2d,addVec,move3,
-                     distTo,multVec,subVec)
 import Common.Random(randomFloats)
 import Common.Algorithms(nonOverlappingTriples,nonOverlappingPairs)
 import Common.Types(WithRadius,Positioned,Moving,Colored)
 import Common.Display(PositionedForm,positionedForm,
                       displayPositionedForms,isPosOK,decomposeColor)
+import Common.Vector(Vector,vector,Transform3D,applyTransform3D,
+                     rotateY,project2d,addVec,move3,
+                     distTo,multVec,subVec)
 
 type Ball = Positioned (Moving (Colored {}))
 
@@ -66,7 +64,6 @@ displayBall ({x,y,z,col} as ball) =
   in
     positionedForm (circle radius |> gradient grad)
                    {x=pos2d.x,y=pos2d.y,z=z}
-
 
 displayBallWithShadow : Ball -> [PositionedForm]
 displayBallWithShadow b = [ displayBallShadow b, displayBall b]

@@ -1,8 +1,6 @@
 module Effects.Starfield where
 
 {-| Generates a starfield effect.
-
-@docs starfield
 -}
 
 import Effects.Effect(Effect, effect)

@@ -1,8 +1,6 @@
 module Effects.Plasma where
 
 {-| Generates a plasma effect.
-
-@docs plasma
 -}
 
 import Effects.Effect(Effect, effect)
@@ -52,13 +50,10 @@ rectPositions w h =
   in
     map row ys |> concat
 
-
 type PlasmaColConf = { sf:Float, xf:Float, yf:Float, tf:Float }
-
 
 plasmaColConf : Float -> Float -> Float -> Float -> PlasmaColConf
 plasmaColConf sf xf yf tf = { sf=sf, xf=xf, yf=yf, tf=tf }
-
 
 genPlasmaColConfs : Float -> Int -> [ PlasmaColConf ]
 genPlasmaColConfs seed amount =
