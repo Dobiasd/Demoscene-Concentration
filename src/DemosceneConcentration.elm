@@ -76,10 +76,10 @@ boxRow : Float -> [Box]
 boxRow y =
   let
     cols = 4
-    distX = 60
+    distX = 50
     xOff = -distX * (toFloat cols - 1) / 2
-    cardWidth = 55
-    cardHeight = 55
+    cardWidth = 45
+    cardHeight = 45
     createBox x = box2D (distX * x + xOff) (y-2) cardWidth cardHeight
   in
     map createBox [0..cols-1]
@@ -90,7 +90,7 @@ cardBoxes : [Box]
 cardBoxes =
   let
     rows = 3
-    distY = 65
+    distY = 55
     yOff = -distY * (toFloat rows - 1) / 2
   in
     map (((+) yOff ) . (*) distY) [0..rows-1] |> map boxRow |> concat
@@ -287,8 +287,8 @@ txt f = text . f . monospace . Text.color lightBlue . toText
 displayFPS : FPSCounter -> Form
 displayFPS {lastVal} =
   let
-    (fpsTextPosX,fpsTextPosY) = (-98,100)
-    fpsTextHeight = 3
+    (fpsTextPosX,fpsTextPosY) = (-84,95)
+    fpsTextHeight = 7
   in
     txt (Text.height fpsTextHeight) ("FPS: " ++ (show <| lastVal))
       |> toForm |> move (fpsTextPosX, fpsTextPosY)
@@ -305,8 +305,8 @@ roundTime time = (toFloat . round) (time / 100) / 10
 displayNotYetDone : Game -> Form
 displayNotYetDone ({time,cards} as game) =
   let
-    timeTextHeight = 5
-    timeTextPosY = 99
+    timeTextHeight = 10
+    timeTextPosY = 90
     timeTextForm = txt (Text.height timeTextHeight) (show <| roundTime time)
                      |> toForm |> move (0, timeTextPosY)
   in
