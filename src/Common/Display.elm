@@ -24,7 +24,7 @@ winPosToGamePos pos size =
 
 {-| Calculate factor by which the game is scaled visually onto the screen. -}
 gameScale : (Int,Int) -> (Float,Float) -> Float
-gameScale (winW, winH) (gameW,gameH) =
+gameScale (winW, winH) (gameW, gameH) =
   min (toFloat winW / gameW) (toFloat winH / gameH)
 
 {-| Split a color into its components. -}
