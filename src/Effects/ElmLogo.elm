@@ -1,13 +1,11 @@
 module Effects.ElmLogo where
 
-import Transform2D
-
 {-| Generates a the Elm logo.
-
-@docs elmLogo
 -}
 
-{-| Returns the Elm logo as a 200x200 Form. -}
+import Transform2D
+
+{-| Returns the Elm logo as a centered 200x200 Form. -}
 elmLogo : Form
 elmLogo =
   let
@@ -25,6 +23,6 @@ elmLogo =
            |> filled (rgb 239 165 0) |> move (-150, -150)
     p7 = polygon [(209.5, 92.5), (152.5, 148.5), (208, 204), (265, 148)]
            |> filled (rgb 138 212 55) |> move (-150, -150)
-    t = Transform2D.matrix 1 0 0 -1 0 0
+    mat = Transform2D.matrix 1 0 0 -1 0 0
   in
-    groupTransform t [ p1, p2, p3, p4, p5, p6, p7 ] |> scale (2.0/3.0)
+    groupTransform mat [ p1, p2, p3, p4, p5, p6, p7 ] |> scale (2.0/3.0)

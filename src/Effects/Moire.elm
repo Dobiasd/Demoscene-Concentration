@@ -1,8 +1,6 @@
 module Effects.Moire where
 
 {-| Generates a moire effect.
-
-@docs moire
 -}
 
 import Effects.Effect(Effect,effect)
@@ -48,7 +46,6 @@ displayLine num (s, e) =
   in
     outline |> traced lSWide
 
-
 displayLines : [Line] -> Float -> Form
 displayLines pattern angle =
   let
@@ -57,7 +54,6 @@ displayLines pattern angle =
     nums = map toFloat [0..(length(lines))]
   in
     map (uncurry displayLine) (zip nums lines) |> group
-
 
 display : State -> Form
 display ({time, background} as state) =

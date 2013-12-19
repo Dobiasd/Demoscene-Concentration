@@ -1,14 +1,12 @@
 module Effects.EulerSpiral where
 
 {-| Generates a euler spiral effect.
-
-@docs eulerSpiral
 -}
 
 
+import Common.Algorithms(numberedPairs,uncurry3)
 import Common.Vector(Positioned,Vector,vector,angle2D,vector2DFromAngle,
               multVec,addVec,subVec)
-import Common.Algorithms(numberedPairs,uncurry3)
 import Effects.Effect(Effect,effect)
 import Effects.Effect
 

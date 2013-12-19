@@ -1,5 +1,8 @@
 module Common.Types where
 
+{-| Commonly used types.
+-}
+
 type Named       a = { a | name:String }
 type Positioned  a = { a | x:Float, y:Float, z:Float }
 type Moving      a = { a | vx:Float, vy:Float, vz:Float }
@@ -26,3 +29,12 @@ box2D x y w h = box x y 0 w h 0
 
 box : Float -> Float -> Float -> Float -> Float -> Float -> Box
 box x y z w h d = {x=x, y=y, z=z, w=w, h=h, d=d }
+
+{-| Check if a position in inside a box. -}
+inBox : Positioned a -> Boxed b -> Bool
+inBox pos box =
+  let
+    xDist = abs (pos.x - box.x)
+    yDist = abs (pos.y - box.y)
+  in
+    xDist <= box.w/2 && yDist <= box.h/2

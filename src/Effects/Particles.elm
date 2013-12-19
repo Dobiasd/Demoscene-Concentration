@@ -1,19 +1,17 @@
 module Effects.Particles where
 
 {-| Generates a particle effect.
-
-@docs particles
 -}
 
 import Effects.Effect(Effect, effect)
-import Common.Vector(Vector,vector,Transform3D,applyTransform3D,
-                     rotateY,project2d,addVec,move3,
-                     distTo,multVec,subVec)
 import Common.Random(randomFloats)
 import Common.Algorithms(nonOverlappingTriples,nonOverlappingPairs)
 import Common.Types(WithRadius,Positioned,Moving,Colored)
 import Common.Display(PositionedForm,positionedForm,
                       displayPositionedForms,isPosOK,decomposeColor)
+import Common.Vector(Vector,vector,Transform3D,applyTransform3D,
+                     rotateY,project2d,addVec,move3,
+                     distTo,multVec,subVec)
 
 type Ball = Positioned (Moving (Colored {}))
 
@@ -25,10 +23,10 @@ ball : Float -> Float -> Float
 ball x y z vx vy vz col = {x=x,y=y,z=z,vx=vx,vy=vy,vz=vz,col=col}
 
 make : Effect
-make = particles {time=0, balls=generateNewBalls 64 1.23}
+make = particles {time=0, balls=generateBalls 64 1.23}
 
-generateNewBalls : Int -> Float -> [Ball]
-generateNewBalls amount time =
+generateBalls : Int -> Float -> [Ball]
+generateBalls amount time =
   let
     randoms = randomFloats time (amount*6)
     sextuples = randoms |> nonOverlappingTriples |> nonOverlappingPairs
@@ -39,13 +37,15 @@ generateNewBalls amount time =
   in
     map f sextuples
 
-displayBallShadow : Ball -> PositionedForm
-displayBallShadow ({x,y,z} as b) =
+displayBallShadow : Float -> Ball -> PositionedForm
+displayBallShadow angle ({x,y,z} as b) =
   let
     radius = 100 / (-z)
-    sOff = 0.03*y * abs (y - origin.y)
+    sOff = let distToFloor = abs (y - origin.y) in 0.4 * distToFloor
+    xOff = sOff * sin angle
+    yOff = sOff * cos angle
     sharpness = clamp 0.1 0.3 (0.3 - abs (y - origin.y) / 60)
-    pos2d = project2d {x=x+sOff,y=origin.y,z=z-sOff/2}
+    pos2d = project2d {x=x+xOff,y=origin.y,z=z+yOff}
     grad = radial (0,0) 0 (0,0) radius
                   [ (0, rgba 0 0 0 (0.1+2*sharpness))
                   , (1, rgba 0 0 0 0) ]
@@ -67,9 +67,9 @@ displayBall ({x,y,z,col} as ball) =
     positionedForm (circle radius |> gradient grad)
                    {x=pos2d.x,y=pos2d.y,z=z}
 
-
-displayBallWithShadow : Ball -> [PositionedForm]
-displayBallWithShadow b = [ displayBallShadow b, displayBall b]
+displayBallWithShadow : Float -> Ball -> [PositionedForm]
+displayBallWithShadow shadowAngle b =
+  [ displayBallShadow shadowAngle b, displayBall b]
 
 stepBallUsual : Float -> Ball -> Ball
 stepBallUsual delta ({x,y,z,vx,vy,vz,col} as b) =
@@ -151,13 +151,14 @@ staticStars =
 display : State -> Form
 display ({time,balls} as state) =
   let
-    m = rotateY (0.0003*time)
+    rotateAngle = 0.0003*time
+    m = rotateY rotateAngle
     rotatedBalls = map (transformBall m) balls
     starForms = map (applyTransform3D m) staticStars |> map displayStar |>
                   filter isPosOK |> map .f
     m2 = move3 (vector 0 0 (-30))
-    moved2Balls = map (transformBall m2) rotatedBalls
-    ballForms = map displayBallWithShadow moved2Balls |> concat |>
+    movedBalls = map (transformBall m2) rotatedBalls
+    ballForms = map (displayBallWithShadow rotateAngle) movedBalls |> concat |>
                   displayPositionedForms
   in
     [ rect 200 200 |> filled (rgb 0 0 0) ]

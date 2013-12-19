@@ -1,20 +1,17 @@
 module Effects.Cube where
 
-{-| Generates a rotating 3d cube
-
-@docs cube
+{-| Generates a rotating 3d cube with an effect on every face.
 -}
 
 import Maybe
+
 import Effects.Effect(Effect, effect)
 import Effects.Effect as Effect
-
+import Common.Display(dummyForm)
 import Common.Vector(vector,Vector,transform3D,
               rotateX,rotateY,rotateZ,addVec,Transform3D,
               applyTransform3D,getAffineTransformation,
               subVec,crossProduct)
-import Common.Display(dummyForm)
-
 import Transform2D(Transform2D,matrix)
 
 speedX = 0.00053
@@ -40,11 +37,14 @@ type Face = { tl:Vector, tr:Vector, bl:Vector }
 face : Vector -> Vector -> Vector -> Face
 face tl tr bl = { tl=tl, tr=tr, bl=bl }
 
-
-
+{-| Calculate the bottom right position of a square face. -}
 faceBr : Face -> Vector
 faceBr {tl,tr,bl} = (tr `subVec` tl) `addVec` bl
 
+{-| Default cube with every face ordered as
+top-left, top-right, bottom-left.
+This way a face has a front and a back side and can thus be culled
+if the latter if pointing towards the camera. -}
 cubeFaces = [ Face (Vector (-100) ( 100) ( 100))
                    (Vector ( 100) ( 100) ( 100))
                    (Vector (-100) (-100) ( 100))
@@ -64,7 +64,6 @@ cubeFaces = [ Face (Vector (-100) ( 100) ( 100))
                    (Vector ( 100) (-100) ( 100))
                    (Vector (-100) (-100) (-100))
             ]
-
 
 transformFace : Transform3D -> Face -> Face
 transformFace matrix {tl,tr,bl} =
