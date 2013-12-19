@@ -78,6 +78,7 @@ applyTransform3D
           , y <- (m21*x + m22*y + m23*z) + m24
           , z <- (m31*x + m32*y + m33*z) + m34 }
 
+-- source: http://stackoverflow.com/questions/1114257/transform-a-triangle-to-another-triangle
 getAffineTransformation :
   (Float,Float) -> (Float,Float) -> (Float,Float) ->
   (Float,Float) -> (Float,Float) -> (Float,Float) ->
