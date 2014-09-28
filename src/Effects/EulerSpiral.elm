@@ -5,15 +5,17 @@ module Effects.EulerSpiral where
 
 
 import Common.Algorithms(numberedPairs,uncurry3)
-import Common.Vector(Positioned,Vector,vector,angle2D,vector2DFromAngle,
+import Common.Types(Positioned)
+import Common.Vector(Vector,vector,angle2D,vector2DFromAngle,
               multVec,addVec,subVec)
-import Effects.Effect(Effect,effect)
+import Effects.Effect(Effect)
 import Effects.Effect
 
 type State = {time:Float, points:[Vector], stepCount:Int}
 
 eulerSpiral : State -> Effect
-eulerSpiral s = Effect {step=step s, display=display s, name="Lissajous"}
+eulerSpiral s =
+  Effects.Effect.Effect {step=step s, display=display s, name="Lissajous"}
 
 make : Effect
 make = eulerSpiral { time=0
@@ -51,7 +53,7 @@ displayLine : Float -> Int -> Vector -> Vector -> Form
 displayLine time num s e =
   let
     width = 2
-    lS1 = solid (hsva (toFloat num / 10 + time / 1000) 1 1 1)
+    lS1 = solid (hsla (toFloat num / 10 + time / 1000) 1 0.5 1)
     lS1Wide = { lS1 | width <- width, cap <- Round }
     pointToPair {x,y} = (x,y)
     outline = [pointToPair s, pointToPair e] |> path

@@ -3,11 +3,11 @@ module Effects.Starfield where
 {-| Generates a starfield effect.
 -}
 
-import Effects.Effect(Effect, effect)
-import Common.Vector(Vector, vector, dist, Point,point,project2d)
+import Effects.Effect
+import Common.Vector(Vector, vector, dist, project2d)
 import Common.Algorithms(nonOverlappingQuadruples)
 import Common.Random(randomFloats)
-import Common.Types(Positioned,Colored)
+import Common.Types(Positioned,Colored,Point)
 import Common.Display(decomposeColor)
 
 type Star = Positioned (Colored {})
@@ -19,10 +19,11 @@ data Mode = BW | Colored
 
 type State = {time:Float, stars:[Star], mode:Mode, speed:Float, amount:Int}
 
-starfield : State -> Effect
-starfield s = Effect {step = step s, display = display s, name = "Starfield"}
+starfield : State -> Effects.Effect.Effect
+starfield s = Effects.Effect.Effect
+  {step = step s, display = display s, name = "Starfield"}
 
-make : Mode -> Float -> Int -> Effect
+make : Mode -> Float -> Int -> Effects.Effect.Effect
 make mode speed amount =
   starfield {time=0, stars=[], mode=mode, speed=speed, amount=amount}
 
@@ -45,7 +46,7 @@ generateNewStars mode amount time =
     triples = nonOverlappingQuadruples randoms
     calcCol v = case mode of
                   BW -> rgb 255 255 255
-                  Colored -> hsv (v*123.234) 1 1
+                  Colored -> hsl (v*123.234) 1 0.5
     f (x,y,z,c) = star (vector (100*x - 50)
                                (100*y - 50)
                                (80*z  - 180))
@@ -59,7 +60,7 @@ stepStar d ({z} as star) = { star | z <- z + d }
 stepStars : Float -> [Star] -> [Star]
 stepStars delta = map (stepStar delta)
 
-step : State -> Float -> Effect
+step : State -> Float -> Effects.Effect.Effect
 step ({time, stars, speed, mode, amount} as state) delta =
   let
     oldStars = stars |> (stepStars (speed * delta)) |> filter starInAllowedRange

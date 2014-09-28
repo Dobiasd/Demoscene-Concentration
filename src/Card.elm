@@ -5,12 +5,10 @@ module Card where
 
 import Effects.ElmLogo(elmLogo)
 import Common.Types(Positioned, Boxed)
-import Common.Vector(Point, Positioned, Boxed)
-import Effects.Effect(Effect)
-import Effects.Effect as Effect
+import Effects.Effect
 
 data Status = FaceDown | FaceUp | Done
-type Card = Boxed {effect:Effect, status:Status, doneTime:Time}
+type Card = Boxed {effect:Effects.Effect.Effect, status:Status, doneTime:Time}
 type Cards = [Card]
 
 {-| Show card according to its state. -}
@@ -19,8 +17,8 @@ display time card =
   let
     texture = case card.status of
                   FaceDown -> backside
-                  FaceUp   -> group [ Effect.display card.effect, border ]
-                  Done     -> group [ Effect.display card.effect
+                  FaceUp   -> group [ Effects.Effect.display card.effect, border ]
+                  Done     -> group [ Effects.Effect.display card.effect
                                     , border
                                     , doneOverlay ]
   in
@@ -71,7 +69,7 @@ step delta ({status, effect, doneTime} as card) =
       FaceDown -> card
       _ -> { card | effect <- if isGone card
                                 then effect
-                                else Effect.step effect delta
+                                else Effects.Effect.step effect delta
                   , doneTime <- doneTime' }
 
 {-| Do all cards in the list have the came effect name? -}
@@ -79,7 +77,8 @@ allEqual : Cards -> Bool
 allEqual cards =
   let
     es = map .effect cards
-    equalName (Effect e1) (Effect e2) = e1.name == e2.name
+    equalName (Effects.Effect.Effect e1)
+              (Effects.Effect.Effect e2) = e1.name == e2.name
   in
     if length es < 2 then True
       else all (equalName (head es)) (tail es)
@@ -87,4 +86,4 @@ allEqual cards =
 {-| The first list of the resulting pair contains all cards with the
 given status. The other cards are copied into the second list. -}
 splitCardsByStatus : Status -> Cards -> (Cards,Cards)
-splitCardsByStatus status = partition (((==) status) . (.status))
+splitCardsByStatus status = partition (.status >> (==) status)

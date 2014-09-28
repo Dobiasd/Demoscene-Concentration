@@ -4,32 +4,34 @@ module Effects.Sinescroller where
 -}
 
 import Effects.Cube as Cube
-import Effects.Effect(Effect, effect)
-import Effects.Effect as Effect
+import Effects.Effect
 import Common.Types(Point,Colored,Positioned,point2D)
-import Common.Algorithms(uncurry3,floatMod,zip3)
+import Common.Algorithms(uncurry3,floatMod)
 
+import List
 import String
+import Text
 
 charDist = 14
 timeFactX = 0.1
 timeFactY = 0.002
 textPosFact = -0.2
 
-type State = {message:String, time:Float, cube:Effect}
+type State = {message:String, time:Float, cube:Effects.Effect.Effect}
 
-sinescroller : State -> Effect
-sinescroller s = Effect {step=step s, display=display s, name="Sinescroller"}
+sinescroller : State -> Effects.Effect.Effect
+sinescroller s = Effects.Effect.Effect
+  {step=step s, display=display s, name="Sinescroller"}
 
-make : String -> Effect
+make : String -> Effects.Effect.Effect
 make message = sinescroller {message=message
                            , time=0
                            , cube=Cube.make [] (rgba 255 255 255 0.07)}
 
-step : State -> Float -> Effect
+step : State -> Float -> Effects.Effect.Effect
 step ({time, cube} as state) delta =
     sinescroller { state | time <- time + delta
-                         , cube <- Effect.step cube delta }
+                         , cube <- Effects.Effect.step cube delta }
 
 deconcat : String -> [String]
 deconcat = String.foldr (\c acc -> String.fromList [c] :: acc) []
@@ -41,7 +43,7 @@ charPos time textPos =
     (70 * sin (toFloat textPos * textPosFact + timeFactY*time))
 
 charCol : Float -> Positioned a -> Color
-charCol time {x,y} = hsv (0.001 * time + 0.03 * x) 1 1
+charCol time {x,y} = hsl (0.001 * time + 0.03 * x) 1 0.5
 
 type ScrollerChar = Colored ( Positioned {s:String} )
 
@@ -55,7 +57,8 @@ wrapCharPos minX ({x} as sc) =
 scrollerChars a b c = (map (uncurry3 scrollerChar)) (zip3 a b c)
 
 txt : Color -> String -> Element
-txt c = text . (Text.height 28) . monospace . Text.color c . toText
+--txt c = text . (Text.height 28) . monospace . Text.color c . toText
+txt c = toText >> Text.color c >> monospace >> Text.height 28 >> leftAligned
 
 displayScrollerChar : ScrollerChar -> Form
 displayScrollerChar {s,x,y,col} = txt col s |> toForm |> move (x,y)
@@ -72,5 +75,5 @@ display ({time,cube,message} as state) =
     charsForm = map displayScrollerChar goodChars |> group
   in
     group [ rect 200 200 |> filled (rgb 0 0 0)
-          , Effect.display cube
+          , Effects.Effect.display cube
           , charsForm ]

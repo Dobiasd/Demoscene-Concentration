@@ -12,19 +12,18 @@ when the front side is shown.
 -}
 
 
+import Text
 import Touch
 import Window
 
 import Common.Types(Point,Positioned,Boxed,Box,point2D,box2D,inBox)
-import Common.Algorithms(roundTo)
 import Common.Random(randomInts,shuffle)
 import Common.Display(winPosToGamePos,displayFullScreen,
                       FPSCounter,makeFPSCounter,stepFPSCounter)
 import Card
 import Card(Card,Cards,allEqual,splitCardsByStatus)
 
-import Effects.Effect(Effect)
-import Effects.Effect as Effect
+import Effects.Effect
 
 import Effects.Cube as Cube
 import Effects.EulerSpiral as EulerSpiral
@@ -93,11 +92,11 @@ cardBoxes =
     distY = 55
     yOff = -distY * (toFloat rows - 1) / 2
   in
-    map (((+) yOff ) . (*) distY) [0..rows-1] |> map boxRow |> concat
+    map ((*) distY >> ((+) yOff)) [0..rows-1] |> map boxRow |> concat
 
 {-| The Effects we want to use for our cards.
 Every one will of occur two times. -}
-effects : [Effect]
+effects : [Effects.Effect.Effect]
 effects = [ EulerSpiral.make
           , Plasma.make
           , Particles.make
@@ -119,7 +118,7 @@ generateCards seed =
 {-| The whole game state. -}
 type Game = { state:State
             , cards:Cards
-            , wonEffect:Effect
+            , wonEffect:Effects.Effect.Effect
             , time:Time
             , fpsCounter:FPSCounter }
 
@@ -175,11 +174,11 @@ stepTapStart ({x,y} as gameTapPos) ({state,cards} as game) =
 -- The Sinescroller is removed here, because its Text will display the
 -- needed time. Since this is possible only after the game is finished,
 -- it will be added then.
-generateWonEffect : Time -> Effect
+generateWonEffect : Time -> Effects.Effect.Effect
 generateWonEffect time =
   let
     message = show (roundTime time) ++ " seconds"
-    wonEffects = filter (\(Effect e) -> e.name /= "Sinescroller") effects
+    wonEffects = filter (\(Effects.Effect.Effect e) -> e.name /= "Sinescroller") effects
   in
     Cube.make (Sinescroller.make message :: wonEffects) (rgb 64 64 64)
 
@@ -189,11 +188,11 @@ stepPlayFlipCards : Point -> Cards -> Cards
 stepPlayFlipCards tapPos cards =
   let
     -- Only the cards that are not yet done play a role in flipping.
-    cardsNotDone = filter (not . ((==) Card.Done) . (.status)) cards
+    cardsNotDone = filter (not << ((==) Card.Done) << (.status)) cards
     -- Put given cards face down.
     putFaceDown = map (\c -> {c | status <- Card.FaceDown})
     -- How many cards are there face up?
-    faceUpCount = cards |> filter (((==) Card.FaceUp) . (.status)) |> length
+    faceUpCount = cards |> filter (((==) Card.FaceUp) << (.status)) |> length
   in
     -- If two cards are face up, they are turned down again
     -- before another card can be turned up.
@@ -209,7 +208,7 @@ stepTapPlay : Point -> Game -> Game
 stepTapPlay gameTapPos ({cards,time} as game) =
   let
     -- Return only already done cards.
-    getDoneCards = filter (((==) Card.Done) . (.status))
+    getDoneCards = filter (((==) Card.Done) << (.status))
     -- Not done cards after possible flips.
     cardsNotDone' = stepPlayFlipCards gameTapPos cards
     -- In game cards splitted by state.
@@ -236,19 +235,19 @@ stepTap gameTapPos ({state,cards} as game) =
 {-| Update card's animation and remove gone cards. -}
 stepCards : Float -> Cards -> Cards
 stepCards delta cards =
-  map (Card.step delta) cards |> filter (not . Card.isGone)
+  map (Card.step delta) cards |> filter (not << Card.isGone)
 
 {-| Update wonEffect (only used when game is already solved). -}
 stepWon : Float -> Game -> Game
 stepWon delta ({wonEffect} as game) =
-  { game | wonEffect <- Effect.step wonEffect delta }
+  { game | wonEffect <- Effects.Effect.step wonEffect delta }
 
 {-| Calculate state for next frame. -}
 stepDelta : Float -> Game -> Game
 stepDelta delta ({cards, state, time, fpsCounter} as game) =
   let
     -- If all cards are done the stopwatch is stopped.
-    allDone = all (((==) Card.Done) . .status) cards
+    allDone = all (((==) Card.Done) << .status) cards
     time' = case state of
               Play -> if allDone then time
                                  else time + delta
@@ -281,7 +280,7 @@ displayCards time cards =
 
 {-| Render text using a given transformation function. -}
 txt : (Text -> Text) -> String -> Element
-txt f = text . f . monospace . Text.color lightBlue . toText
+txt f = toText >> Text.color lightBlue >> monospace >> f >> leftAligned
 
 {-| Show number of calculated frames during last passed second. -}
 displayFPS : FPSCounter -> Form
@@ -295,11 +294,11 @@ displayFPS {lastVal} =
 
 {-| Show the final Effect -}
 displayWon : Game -> Form
-displayWon ({wonEffect} as game) = Effect.display wonEffect
+displayWon ({wonEffect} as game) = Effects.Effect.display wonEffect
 
 {-| Round time for decisecond precision. -}
 roundTime : Time -> Time
-roundTime time = (toFloat . round) (time / 100) / 10
+roundTime time = (round >> toFloat) (time / 100) / 10
 
 {-| Draw game into a form with size (gameWidth,gameHeight). -}
 displayNotYetDone : Game -> Form

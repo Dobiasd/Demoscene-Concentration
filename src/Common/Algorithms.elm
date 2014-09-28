@@ -3,12 +3,6 @@ module Common.Algorithms where
 {-| Commonly used Algorithms.
 -}
 
-{-| zip3 [a,b] [1,2] [x,y] === [(a,1,x),(b,2,y)] -}
-zip3 : [a] -> [b] -> [c] -> [(a,b,c)]
-zip3 xs ys zs = case (xs, ys, zs) of
-                  (x::xs', y::ys', z::zs') -> (x,y,z) :: zip3 xs' ys' zs'
-                  otherwise                -> []
-
 curry3 : ((a,b,c) -> d) -> a -> b -> c -> d
 curry3 f a b c = f (a,b,c)
 
@@ -82,8 +76,8 @@ quicksort cmp l =
     (p::xs) ->
       let
         lesser  = filter (cmp p) xs
-        greater = filter (not . (cmp p)) xs
+        greater = filter (cmp p >> not) xs
       in
         (quicksort cmp lesser) ++ [p] ++ (quicksort cmp greater)
 
-sortBy = quicksort
+sortByLess = quicksort

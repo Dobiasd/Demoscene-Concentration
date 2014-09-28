@@ -9,8 +9,8 @@ import Common.Algorithms(splitAt,init)
 randomInt : Int -> (Int,Int)
 randomInt i =
   let
-    j   = 701 * i  `mod` 10001
-    ans = (j - 1) `mod` 1000
+    j   = 701 * i  % 10001
+    ans = (j - 1) % 1000
   in
     (j, ans)
 
@@ -52,6 +52,6 @@ shuffle : [Int] -> [a] -> [a]
 shuffle ((i::is) as randoms) l =
   case l of
     (x::xs) ->
-      let (firsts, rest) = splitAt (i `mod` length l + 1) l
+      let (firsts, rest) = splitAt (i % length l + 1) l
       in (last firsts) :: shuffle is (init firsts ++ rest)
     x -> x

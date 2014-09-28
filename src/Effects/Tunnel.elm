@@ -3,21 +3,21 @@ module Effects.Tunnel where
 {-| Generates a tunnel effect.
 -}
 
-import Effects.Effect(Effect, effect)
+import Effects.Effect
 import Effects.Effect as Effect
 import Effects.Starfield as Starfield
-import Common.Vector(vector,project2d,dist,point2D,normalize,scalarProd)
-import Common.Algorithms(sortBy)
+import Common.Vector(vector,project2d,dist,normalize,scalarProd)
 import Common.Display(displayPositionedForms,
                       PositionedForm, isPosOK, positionedForm)
 import Common.Types(WithRadius,WithNormal,Colored,Positioned,Point,point2D)
 
-type State = {time:Float, background:Effect, discs:[Disc]}
+type State = {time:Float, background:Effects.Effect.Effect, discs:[Disc]}
 
-tunnel : State -> Effect
-tunnel s = Effect {step = step s, display = display s, name = "Tunnel"}
+tunnel : State -> Effects.Effect.Effect
+tunnel s = Effects.Effect.Effect
+  {step = step s, display = display s, name = "Tunnel"}
 
-make : Effect
+make : Effects.Effect.Effect
 make = tunnel { time=0
               , background=Starfield.make Starfield.BW 0.05 64
               , discs=[] }
@@ -54,7 +54,7 @@ calcPosOffset time z =
 generateNewRingDisc : Time -> Float -> Disc
 generateNewRingDisc time num =
   let
-    calcCol v = hsva (v*0.06) 1 1 1
+    calcCol v = hsla (v*0.06) 1 0.5 1
     r = 12
     x = r * cos (num+time)
     y = r * sin (num+time)
@@ -78,7 +78,7 @@ stepDisc delta ({z} as disc) = { disc | z <- z + 0.05 * delta }
 stepDiscs : Float -> [Disc] -> [Disc]
 stepDiscs delta = map (stepDisc delta)
 
-step : State -> Float -> Effect
+step : State -> Float -> Effects.Effect.Effect
 step ({time, discs, background} as state) delta =
   let
     oldDiscs = discs |> (stepDiscs delta) |> filter discInAllowedRange
@@ -94,7 +94,7 @@ step ({time, discs, background} as state) delta =
     discs' = newDiscs ++ oldDiscs
   in
     tunnel { state | time <- time + delta
-                   , background <- Effect.step background delta
+                   , background <- Effects.Effect.step background delta
                    , discs <- discs' }
 
 display : State -> Form
@@ -102,5 +102,5 @@ display ({time,background,discs} as state) =
   let
     discsForm = map displayDisc discs |> displayPositionedForms
   in
-    group [ Effect.display background
+    group [ Effects.Effect.display background
           , discsForm ]

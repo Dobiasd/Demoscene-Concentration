@@ -3,7 +3,9 @@ module Effects.Plasma where
 {-| Generates a plasma effect.
 -}
 
-import Effects.Effect(Effect, effect)
+import Color
+
+import Effects.Effect
 import Common.Algorithms(uncurry4, nonOverlappingQuadruples)
 import Common.Random(randomFloats)
 
@@ -12,13 +14,14 @@ speed = 0.0004
 
 type State = {time:Float}
 
-plasma : State -> Effect
-plasma s = Effect {step = step s, display = display s, name = "Plasma"}
+plasma : State -> Effects.Effect.Effect
+plasma s = Effects.Effect.Effect
+  {step = step s, display = display s, name = "Plasma"}
 
-make : Effect
+make : Effects.Effect.Effect
 make = plasma {time=0}
 
-step : State -> Float -> Effect
+step : State -> Float -> Effects.Effect.Effect
 step ({time} as state) delta = plasma { state | time <- time + delta }
 
 {-| Returns a plasma effect filled form depending on the current time. -}
@@ -72,7 +75,7 @@ colValFromConf x y t conf =
 
 divisorForColConfs : [PlasmaColConf] -> Float
 divisorForColConfs confs =
-  sum <| map (abs . .sf) confs
+  sum <| map (.sf >> abs) confs
 
 colValFromConfs : Float -> Float -> Float -> [PlasmaColConf] -> Float
 colValFromConfs x y t confs =
@@ -102,17 +105,17 @@ pseudoBilinearInterpolatedRect : (Float,Float) -> (Float,Float) ->
 pseudoBilinearInterpolatedRect
     ((tlx,tly) as tl)
     ((brx,bry) as br)
-    ((Color rtl gtl btl atl) as ctl)
-    ((Color rbl gbl bbl abl) as cbl)
-    ((Color rbr gbr bbr abr) as cbr)
-    ((Color rtr gtr btr atr) as ctr) =
+    ((Color.RGBA rtl gtl btl atl) as ctl)
+    ((Color.RGBA rbl gbl bbl abl) as cbl)
+    ((Color.RGBA rbr gbr bbr abr) as cbr)
+    ((Color.RGBA rtr gtr btr atr) as ctr) =
   let
     ((trx,try) as tr) = (brx,tly)
     ((blx,bly) as bl) = (tlx,bry)
     g1cm = rgba
-      ((rtl+rbr) `div` 2) ((gtl+gbr) `div` 2) ((btl+bbr) `div` 2) 0.7
+      ((rtl+rbr) // 2) ((gtl+gbr) // 2) ((btl+bbr) // 2) 0.7
     g2cm = rgba
-      ((rtr+rbl) `div` 2) ((gtr+gbl) `div` 2) ((btr+bbl) `div` 2) 0.03
+      ((rtr+rbl) // 2) ((gtr+gbl) // 2) ((btr+bbl) // 2) 0.03
     (w,h) = (brx-tlx, tly-bry)
     ((cx,cy) as c) = (tlx + w/2, tly - h/2)
     tlg = (tlx - cx, tly - cy)

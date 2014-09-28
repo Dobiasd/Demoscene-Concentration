@@ -4,7 +4,10 @@ module Common.Display where
 -}
 
 import Common.Types(Positioned,Point,point2D)
-import Common.Algorithms(sortBy)
+import Common.Algorithms(sortByLess)
+
+import Color
+import List
 
 (gameWidth,gameHeight) = (200,200)
 
@@ -29,7 +32,9 @@ gameScale (winW, winH) (gameW, gameH) =
 
 {-| Split a color into its components. -}
 decomposeColor : Color -> (Int,Int,Int,Float)
-decomposeColor (Color r g b a) = (r,g,b,a)
+decomposeColor col =
+  let toTuple {red, green, blue, alpha} = (red, green, blue, alpha)
+  in toRgb col |> toTuple
 
 {-| Check if a position is inside the allowed box of
 (-100,-100),(100,100)). -}
@@ -76,7 +81,7 @@ displayPositionedForms : [PositionedForm] -> Form
 displayPositionedForms fs =
   fs
   |> filter isPosOK
-  |> sortBy (\a b -> a.z > b.z)
+  |> sortByLess (\a b -> a.z > b.z)
   |> map displayPositionedForm |> group
 
 {-| Draw game maximized into the window. -}

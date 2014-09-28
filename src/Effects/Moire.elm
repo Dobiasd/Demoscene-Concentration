@@ -3,23 +3,23 @@ module Effects.Moire where
 {-| Generates a moire effect.
 -}
 
-import Effects.Effect(Effect,effect)
-import Effects.Effect as Effect
+import Effects.Effect
 import Common.Vector(Vector,vector,Transform3D,applyTransform3D,rotateZ)
 import Effects.Starfield as Starfield
 
-type State = {time:Float, background:Effect}
+type State = {time:Float, background:Effects.Effect.Effect}
 
-moire : State -> Effect
-moire s = Effect {step = step s, display = display s, name = "Moire"}
+moire : State -> Effects.Effect.Effect
+moire s = Effects.Effect.Effect
+  {step = step s, display = display s, name = "Moire"}
 
-make : Effect
+make : Effects.Effect.Effect
 make = moire {time=0, background=Starfield.make Starfield.Colored 0.2 64}
 
-step : State -> Float -> Effect
+step : State -> Float -> Effects.Effect.Effect
 step ({time, background} as state) delta =
   moire { state | time <- time + delta
-                , background <- Effect.step background delta }
+                , background <- Effects.Effect.step background delta }
 
 type Line = (Vector, Vector)
 
@@ -40,7 +40,7 @@ displayLine : Float -> Line -> Form
 displayLine num (s, e) =
   let
     width = 8
-    lS = solid (hsva (2.6 + cos num) 1 1 0.1)
+    lS = solid (hsla (2.6 + cos num) 1 0.5 0.1)
     lSWide = { lS | width <- width }
     outline = path [(s.x,s.y), (e.x,e.y)]
   in
@@ -62,5 +62,5 @@ display ({time, background} as state) =
     patterns = map (displayLines pattern) angles |> group
   in
     group [ rect 200 200 |> filled (rgb 0 0 0)
-          , Effect.display background
+          , Effects.Effect.display background
           , patterns ]

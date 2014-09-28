@@ -3,7 +3,7 @@ module Effects.Particles where
 {-| Generates a particle effect.
 -}
 
-import Effects.Effect(Effect, effect)
+import Effects.Effect
 import Common.Random(randomFloats)
 import Common.Algorithms(nonOverlappingTriples,nonOverlappingPairs)
 import Common.Types(WithRadius,Positioned,Moving,Colored)
@@ -22,7 +22,7 @@ ball : Float -> Float -> Float
     -> Color -> Ball
 ball x y z vx vy vz col = {x=x,y=y,z=z,vx=vx,vy=vy,vz=vz,col=col}
 
-make : Effect
+make : Effects.Effect.Effect
 make = particles {time=0, balls=generateBalls 64 1.23}
 
 generateBalls : Int -> Float -> [Ball]
@@ -33,7 +33,7 @@ generateBalls amount time =
     f ((x,y,z),(vx,vy,vz)) =
       ball (40 * x - 20) (40 * y - 20) (40 * z - 20)
            (0.2 * vx - 0.1) (0.2 * vy - 0.1) (0.2 * vz - 0.1)
-           (hsv (2*x*y) 1 1)
+           (hsl (2*x*y) 1 0.5)
   in
     map f sextuples
 
@@ -103,17 +103,18 @@ stepBall : Float -> Ball -> Ball
 stepBall delta b =
   let
     throw = distTo b origin < 3.0
-    stepF = (stepBallUsual delta) . (pullToRoot delta)
+    stepF = pullToRoot delta >> stepBallUsual delta
   in
     if throw then throwBall b |> stepF else stepF b
 
 transformBall : Transform3D -> Ball -> Ball
 transformBall m b = applyTransform3D m b
 
-particles : State -> Effect
-particles s = Effect {step = step s, display = display s, name = "Particles"}
+particles : State -> Effects.Effect.Effect
+particles s = Effects.Effect.Effect
+  {step = step s, display = display s, name = "Particles"}
 
-step : State -> Float -> Effect
+step : State -> Float -> Effects.Effect.Effect
 step ({time, balls} as state) delta =
   let
     balls' = balls |> map (stepBall delta)

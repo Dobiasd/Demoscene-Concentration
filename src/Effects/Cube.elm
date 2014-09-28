@@ -4,10 +4,10 @@ module Effects.Cube where
 -}
 
 import Maybe
+import List
 
-import Effects.Effect(Effect, effect)
+import Effects.Effect(Effect)
 import Effects.Effect as Effect
-import Common.Display(dummyForm)
 import Common.Vector(vector,Vector,transform3D,
               rotateX,rotateY,rotateZ,addVec,Transform3D,
               applyTransform3D,getAffineTransformation,
@@ -22,7 +22,7 @@ borderWidth = 8
 type State = {time:Float, faceEffects:[Effect], wireCol:Color}
 
 cube : State -> Effect
-cube s = Effect {step = step s, display = display s, name = "Cube"}
+cube s = Effect.Effect {step = step s, display = display s, name = "Cube"}
 
 make : [Effect] -> Color -> Effect
 make effects wireCol = cube {time=0, faceEffects=effects, wireCol=wireCol}
@@ -117,6 +117,7 @@ display ({time, wireCol, faceEffects} as state) =
     faces = calcFaces (time/2)
     forms = map Effect.display faceEffects
     facesWithForms = zip faces forms
-    resultForms = justs <| map (uncurry (displayFace wireCol)) facesWithForms
+    resultForms = List.filterMap identity
+      <| map (uncurry (displayFace wireCol)) facesWithForms
   in
     group resultForms |> scale (1/sqrt(3))
