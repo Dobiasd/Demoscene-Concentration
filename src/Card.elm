@@ -5,10 +5,10 @@ module Card where
 
 import Effects.ElmLogo(elmLogo)
 import Common.Types(Positioned, Boxed)
-import Effects.Effect
+import Effects.Effect as Eff
 
 data Status = FaceDown | FaceUp | Done
-type Card = Boxed {effect:Effects.Effect.Effect, status:Status, doneTime:Time}
+type Card = Boxed {effect:Eff.Effect, status:Status, doneTime:Time}
 type Cards = [Card]
 
 {-| Show card according to its state. -}
@@ -17,8 +17,8 @@ display time card =
   let
     texture = case card.status of
                   FaceDown -> backside
-                  FaceUp   -> group [ Effects.Effect.display card.effect, border ]
-                  Done     -> group [ Effects.Effect.display card.effect
+                  FaceUp   -> group [ Eff.display card.effect, border ]
+                  Done     -> group [ Eff.display card.effect
                                     , border
                                     , doneOverlay ]
   in
@@ -69,7 +69,7 @@ step delta ({status, effect, doneTime} as card) =
       FaceDown -> card
       _ -> { card | effect <- if isGone card
                                 then effect
-                                else Effects.Effect.step effect delta
+                                else Eff.step effect delta
                   , doneTime <- doneTime' }
 
 {-| Do all cards in the list have the came effect name? -}
@@ -77,8 +77,8 @@ allEqual : Cards -> Bool
 allEqual cards =
   let
     es = map .effect cards
-    equalName (Effects.Effect.Effect e1)
-              (Effects.Effect.Effect e2) = e1.name == e2.name
+    equalName (Eff.Effect e1)
+              (Eff.Effect e2) = e1.name == e2.name
   in
     if length es < 2 then True
       else all (equalName (head es)) (tail es)

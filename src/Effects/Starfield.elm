@@ -3,7 +3,7 @@ module Effects.Starfield where
 {-| Generates a starfield effect.
 -}
 
-import Effects.Effect
+import Effects.Effect as Eff
 import Common.Vector(Vector, vector, dist, project2d)
 import Common.Algorithms(nonOverlappingQuadruples)
 import Common.Random(randomFloats)
@@ -19,11 +19,11 @@ data Mode = BW | Colored
 
 type State = {time:Float, stars:[Star], mode:Mode, speed:Float, amount:Int}
 
-starfield : State -> Effects.Effect.Effect
-starfield s = Effects.Effect.Effect
+starfield : State -> Eff.Effect
+starfield s = Eff.Effect
   {step = step s, display = display s, name = "Starfield"}
 
-make : Mode -> Float -> Int -> Effects.Effect.Effect
+make : Mode -> Float -> Int -> Eff.Effect
 make mode speed amount =
   starfield {time=0, stars=[], mode=mode, speed=speed, amount=amount}
 
@@ -60,7 +60,7 @@ stepStar d ({z} as star) = { star | z <- z + d }
 stepStars : Float -> [Star] -> [Star]
 stepStars delta = map (stepStar delta)
 
-step : State -> Float -> Effects.Effect.Effect
+step : State -> Float -> Eff.Effect
 step ({time, stars, speed, mode, amount} as state) delta =
   let
     oldStars = stars |> (stepStars (speed * delta)) |> filter starInAllowedRange

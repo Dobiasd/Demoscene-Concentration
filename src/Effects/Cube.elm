@@ -6,8 +6,7 @@ module Effects.Cube where
 import Maybe
 import List
 
-import Effects.Effect(Effect)
-import Effects.Effect as Effect
+import Effects.Effect as Eff
 import Common.Vector(vector,Vector,transform3D,
               rotateX,rotateY,rotateZ,addVec,Transform3D,
               applyTransform3D,getAffineTransformation,
@@ -19,18 +18,18 @@ speedY = 0.00087
 speedZ = 0.00114
 borderWidth = 8
 
-type State = {time:Float, faceEffects:[Effect], wireCol:Color}
+type State = {time:Float, faceEffects:[Eff.Effect], wireCol:Color}
 
-cube : State -> Effect
-cube s = Effect.Effect {step = step s, display = display s, name = "Cube"}
+cube : State -> Eff.Effect
+cube s = Eff.Effect {step = step s, display = display s, name = "Cube"}
 
-make : [Effect] -> Color -> Effect
+make : [Eff.Effect] -> Color -> Eff.Effect
 make effects wireCol = cube {time=0, faceEffects=effects, wireCol=wireCol}
 
-step : State -> Float -> Effect
+step : State -> Float -> Eff.Effect
 step ({time,faceEffects} as state) delta =
   cube { state | time <- time + delta
-               , faceEffects <-  map (\e -> Effect.step e delta) faceEffects }
+               , faceEffects <-  map (\e -> Eff.step e delta) faceEffects }
 
 type Face = { tl:Vector, tr:Vector, bl:Vector }
 
@@ -115,7 +114,7 @@ display : State -> Form
 display ({time, wireCol, faceEffects} as state) =
   let
     faces = calcFaces (time/2)
-    forms = map Effect.display faceEffects
+    forms = map Eff.display faceEffects
     facesWithForms = zip faces forms
     resultForms = List.filterMap identity
       <| map (uncurry (displayFace wireCol)) facesWithForms

@@ -23,7 +23,7 @@ import Common.Display(winPosToGamePos,displayFullScreen,
 import Card
 import Card(Card,Cards,allEqual,splitCardsByStatus)
 
-import Effects.Effect
+import Effects.Effect as Eff
 
 import Effects.Cube as Cube
 import Effects.EulerSpiral as EulerSpiral
@@ -96,7 +96,7 @@ cardBoxes =
 
 {-| The Effects we want to use for our cards.
 Every one will of occur two times. -}
-effects : [Effects.Effect.Effect]
+effects : [Eff.Effect]
 effects = [ EulerSpiral.make
           , Plasma.make
           , Particles.make
@@ -118,7 +118,7 @@ generateCards seed =
 {-| The whole game state. -}
 type Game = { state:State
             , cards:Cards
-            , wonEffect:Effects.Effect.Effect
+            , wonEffect:Eff.Effect
             , time:Time
             , fpsCounter:FPSCounter }
 
@@ -174,11 +174,11 @@ stepTapStart ({x,y} as gameTapPos) ({state,cards} as game) =
 -- The Sinescroller is removed here, because its Text will display the
 -- needed time. Since this is possible only after the game is finished,
 -- it will be added then.
-generateWonEffect : Time -> Effects.Effect.Effect
+generateWonEffect : Time -> Eff.Effect
 generateWonEffect time =
   let
     message = show (roundTime time) ++ " seconds"
-    wonEffects = filter (\(Effects.Effect.Effect e) -> e.name /= "Sinescroller") effects
+    wonEffects = filter (\(Eff.Effect e) -> e.name /= "Sinescroller") effects
   in
     Cube.make (Sinescroller.make message :: wonEffects) (rgb 64 64 64)
 
@@ -240,7 +240,7 @@ stepCards delta cards =
 {-| Update wonEffect (only used when game is already solved). -}
 stepWon : Float -> Game -> Game
 stepWon delta ({wonEffect} as game) =
-  { game | wonEffect <- Effects.Effect.step wonEffect delta }
+  { game | wonEffect <- Eff.step wonEffect delta }
 
 {-| Calculate state for next frame. -}
 stepDelta : Float -> Game -> Game
@@ -294,7 +294,7 @@ displayFPS {lastVal} =
 
 {-| Show the final Effect -}
 displayWon : Game -> Form
-displayWon ({wonEffect} as game) = Effects.Effect.display wonEffect
+displayWon ({wonEffect} as game) = Eff.display wonEffect
 
 {-| Round time for decisecond precision. -}
 roundTime : Time -> Time

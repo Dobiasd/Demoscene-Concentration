@@ -8,16 +8,15 @@ import Common.Algorithms(numberedPairs,uncurry3)
 import Common.Types(Positioned)
 import Common.Vector(Vector,vector,angle2D,vector2DFromAngle,
               multVec,addVec,subVec)
-import Effects.Effect(Effect)
-import Effects.Effect
+import Effects.Effect as Eff
 
 type State = {time:Float, points:[Vector], stepCount:Int}
 
-eulerSpiral : State -> Effect
+eulerSpiral : State -> Eff.Effect
 eulerSpiral s =
-  Effects.Effect.Effect {step=step s, display=display s, name="Lissajous"}
+  Eff.Effect {step=step s, display=display s, name="Lissajous"}
 
-make : Effect
+make : Eff.Effect
 make = eulerSpiral { time=0
                    , points=[vector 0 0 0, vector 10 0 0]
                    , stepCount=0 }
@@ -33,7 +32,7 @@ addPoint ((a::b::_) as points) stepCount =
   in
     p::points |> take 512
 
-step : State -> Float -> Effect
+step : State -> Float -> Eff.Effect
 step ({time,points,stepCount} as state) delta =
   eulerSpiral { state | time <- time + delta
                       , points <- addPoint points stepCount

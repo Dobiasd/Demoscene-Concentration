@@ -5,7 +5,7 @@ module Effects.Plasma where
 
 import Color
 
-import Effects.Effect
+import Effects.Effect as Eff
 import Common.Algorithms(uncurry4, nonOverlappingQuadruples)
 import Common.Random(randomFloats)
 
@@ -14,14 +14,14 @@ speed = 0.0004
 
 type State = {time:Float}
 
-plasma : State -> Effects.Effect.Effect
-plasma s = Effects.Effect.Effect
+plasma : State -> Eff.Effect
+plasma s = Eff.Effect
   {step = step s, display = display s, name = "Plasma"}
 
-make : Effects.Effect.Effect
+make : Eff.Effect
 make = plasma {time=0}
 
-step : State -> Float -> Effects.Effect.Effect
+step : State -> Float -> Eff.Effect
 step ({time} as state) delta = plasma { state | time <- time + delta }
 
 {-| Returns a plasma effect filled form depending on the current time. -}

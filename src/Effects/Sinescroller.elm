@@ -4,7 +4,7 @@ module Effects.Sinescroller where
 -}
 
 import Effects.Cube as Cube
-import Effects.Effect
+import Effects.Effect as Eff
 import Common.Types(Point,Colored,Positioned,point2D)
 import Common.Algorithms(uncurry3,floatMod)
 
@@ -17,21 +17,21 @@ timeFactX = 0.1
 timeFactY = 0.002
 textPosFact = -0.2
 
-type State = {message:String, time:Float, cube:Effects.Effect.Effect}
+type State = {message:String, time:Float, cube:Eff.Effect}
 
-sinescroller : State -> Effects.Effect.Effect
-sinescroller s = Effects.Effect.Effect
+sinescroller : State -> Eff.Effect
+sinescroller s = Eff.Effect
   {step=step s, display=display s, name="Sinescroller"}
 
-make : String -> Effects.Effect.Effect
+make : String -> Eff.Effect
 make message = sinescroller {message=message
                            , time=0
                            , cube=Cube.make [] (rgba 255 255 255 0.07)}
 
-step : State -> Float -> Effects.Effect.Effect
+step : State -> Float -> Eff.Effect
 step ({time, cube} as state) delta =
     sinescroller { state | time <- time + delta
-                         , cube <- Effects.Effect.step cube delta }
+                         , cube <- Eff.step cube delta }
 
 deconcat : String -> [String]
 deconcat = String.foldr (\c acc -> String.fromList [c] :: acc) []
@@ -75,5 +75,5 @@ display ({time,cube,message} as state) =
     charsForm = map displayScrollerChar goodChars |> group
   in
     group [ rect 200 200 |> filled (rgb 0 0 0)
-          , Effects.Effect.display cube
+          , Eff.display cube
           , charsForm ]

@@ -3,23 +3,23 @@ module Effects.Moire where
 {-| Generates a moire effect.
 -}
 
-import Effects.Effect
+import Effects.Effect as Eff
 import Common.Vector(Vector,vector,Transform3D,applyTransform3D,rotateZ)
 import Effects.Starfield as Starfield
 
-type State = {time:Float, background:Effects.Effect.Effect}
+type State = {time:Float, background:Eff.Effect}
 
-moire : State -> Effects.Effect.Effect
-moire s = Effects.Effect.Effect
+moire : State -> Eff.Effect
+moire s = Eff.Effect
   {step = step s, display = display s, name = "Moire"}
 
-make : Effects.Effect.Effect
+make : Eff.Effect
 make = moire {time=0, background=Starfield.make Starfield.Colored 0.2 64}
 
-step : State -> Float -> Effects.Effect.Effect
+step : State -> Float -> Eff.Effect
 step ({time, background} as state) delta =
   moire { state | time <- time + delta
-                , background <- Effects.Effect.step background delta }
+                , background <- Eff.step background delta }
 
 type Line = (Vector, Vector)
 
@@ -62,5 +62,5 @@ display ({time, background} as state) =
     patterns = map (displayLines pattern) angles |> group
   in
     group [ rect 200 200 |> filled (rgb 0 0 0)
-          , Effects.Effect.display background
+          , Eff.display background
           , patterns ]

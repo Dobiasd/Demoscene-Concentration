@@ -3,21 +3,20 @@ module Effects.Tunnel where
 {-| Generates a tunnel effect.
 -}
 
-import Effects.Effect
-import Effects.Effect as Effect
+import Effects.Effect as Eff
 import Effects.Starfield as Starfield
 import Common.Vector(vector,project2d,dist,normalize,scalarProd)
 import Common.Display(displayPositionedForms,
                       PositionedForm, isPosOK, positionedForm)
 import Common.Types(WithRadius,WithNormal,Colored,Positioned,Point,point2D)
 
-type State = {time:Float, background:Effects.Effect.Effect, discs:[Disc]}
+type State = {time:Float, background:Eff.Effect, discs:[Disc]}
 
-tunnel : State -> Effects.Effect.Effect
-tunnel s = Effects.Effect.Effect
+tunnel : State -> Eff.Effect
+tunnel s = Eff.Effect
   {step = step s, display = display s, name = "Tunnel"}
 
-make : Effects.Effect.Effect
+make : Eff.Effect
 make = tunnel { time=0
               , background=Starfield.make Starfield.BW 0.05 64
               , discs=[] }
@@ -78,7 +77,7 @@ stepDisc delta ({z} as disc) = { disc | z <- z + 0.05 * delta }
 stepDiscs : Float -> [Disc] -> [Disc]
 stepDiscs delta = map (stepDisc delta)
 
-step : State -> Float -> Effects.Effect.Effect
+step : State -> Float -> Eff.Effect
 step ({time, discs, background} as state) delta =
   let
     oldDiscs = discs |> (stepDiscs delta) |> filter discInAllowedRange
@@ -94,7 +93,7 @@ step ({time, discs, background} as state) delta =
     discs' = newDiscs ++ oldDiscs
   in
     tunnel { state | time <- time + delta
-                   , background <- Effects.Effect.step background delta
+                   , background <- Eff.step background delta
                    , discs <- discs' }
 
 display : State -> Form
@@ -102,5 +101,5 @@ display ({time,background,discs} as state) =
   let
     discsForm = map displayDisc discs |> displayPositionedForms
   in
-    group [ Effects.Effect.display background
+    group [ Eff.display background
           , discsForm ]

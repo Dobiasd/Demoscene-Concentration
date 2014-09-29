@@ -3,7 +3,7 @@ module Effects.Particles where
 {-| Generates a particle effect.
 -}
 
-import Effects.Effect
+import Effects.Effect as Eff
 import Common.Random(randomFloats)
 import Common.Algorithms(nonOverlappingTriples,nonOverlappingPairs)
 import Common.Types(WithRadius,Positioned,Moving,Colored)
@@ -22,7 +22,7 @@ ball : Float -> Float -> Float
     -> Color -> Ball
 ball x y z vx vy vz col = {x=x,y=y,z=z,vx=vx,vy=vy,vz=vz,col=col}
 
-make : Effects.Effect.Effect
+make : Eff.Effect
 make = particles {time=0, balls=generateBalls 64 1.23}
 
 generateBalls : Int -> Float -> [Ball]
@@ -110,11 +110,11 @@ stepBall delta b =
 transformBall : Transform3D -> Ball -> Ball
 transformBall m b = applyTransform3D m b
 
-particles : State -> Effects.Effect.Effect
-particles s = Effects.Effect.Effect
+particles : State -> Eff.Effect
+particles s = Eff.Effect
   {step = step s, display = display s, name = "Particles"}
 
-step : State -> Float -> Effects.Effect.Effect
+step : State -> Float -> Eff.Effect
 step ({time, balls} as state) delta =
   let
     balls' = balls |> map (stepBall delta)
