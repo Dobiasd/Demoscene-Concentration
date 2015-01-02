@@ -10,7 +10,7 @@ import Common.Types(Positioned,Point,point)
 -- type Vector = Positioned {}
 -- leads to: Could not find 'Vector' when solving type constraints,
 -- so Vector is defined on its own.
-type Vector = {x:Float, y:Float, z:Float}
+type alias Vector = {x:Float, y:Float, z:Float}
 
 vector : Float -> Float -> Float -> Vector
 vector x y z = { x=x, y=y, z=z }
@@ -32,10 +32,10 @@ vector2DFromAngle : Float -> Vector
 vector2DFromAngle angle = vector (sin angle) (cos angle) 0
 
 {-| A transformation matrix for 3 dimensions vectors. -}
-type Transform3D = { m11:Float, m12:Float, m13:Float, m14:Float
-                   , m21:Float, m22:Float, m23:Float, m24:Float
-                   , m31:Float, m32:Float, m33:Float, m34:Float
-                   , m41:Float, m42:Float, m43:Float, m44:Float }
+type alias Transform3D = { m11:Float, m12:Float, m13:Float, m14:Float
+                         , m21:Float, m22:Float, m23:Float, m24:Float
+                         , m31:Float, m32:Float, m33:Float, m34:Float
+                         , m41:Float, m42:Float, m43:Float, m44:Float }
 
 transform3D : Float -> Float -> Float -> Float
            -> Float -> Float -> Float -> Float

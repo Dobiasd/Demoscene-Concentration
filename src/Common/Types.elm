@@ -3,17 +3,19 @@ module Common.Types where
 {-| Commonly used types.
 -}
 
-type Named       a = { a | name:String }
-type Positioned  a = { a | x:Float, y:Float, z:Float }
-type Moving      a = { a | vx:Float, vy:Float, vz:Float }
-type Sized       a = { a | w:Float, h:Float, d:Float }
-type WithRadius  a = { a | r:Float }
-type WithNormal  a = { a | nx:Float, ny:Float, nz:Float }
-type Colored     a = { a | col:Color }
-type Boxed       a = Sized (Positioned a)
+import Color(Color)
 
-type Point = Positioned {}
-type Box = Boxed {}
+type alias Named       a = { a | name:String }
+type alias Positioned  a = { a | x:Float, y:Float, z:Float }
+type alias Moving      a = { a | vx:Float, vy:Float, vz:Float }
+type alias Sized       a = { a | w:Float, h:Float, d:Float }
+type alias WithRadius  a = { a | r:Float }
+type alias WithNormal  a = { a | nx:Float, ny:Float, nz:Float }
+type alias Colored     a = { a | col:Color }
+type alias Boxed       a = Sized (Positioned a)
+
+type alias Point = Positioned {}
+type alias Box = Boxed {}
 
 point : Float -> Float -> Float -> Point
 point x y z = { x=x, y=y, z=z }

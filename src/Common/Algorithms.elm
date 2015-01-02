@@ -3,6 +3,8 @@ module Common.Algorithms where
 {-| Commonly used Algorithms.
 -}
 
+import List((::), map2, tail, length, filter)
+
 curry3 : ((a,b,c) -> d) -> a -> b -> c -> d
 curry3 f a b c = f (a,b,c)
 
@@ -19,13 +21,13 @@ floatMod numerator divisor =
   in
     numerator - q * divisor
 
-init : [a] -> [a]
+init : List a -> List a
 init l = case l of
            [x] -> []
            (x::xs) -> x :: init xs
 
 {-| splitAt 2 [1,2,3,4,5,6] === ([1,2],[3,4,5,6]) -}
-splitAt : Int -> [a] -> ([a], [a])
+splitAt : Int -> List a -> (List a, List a)
 splitAt n l = case (n, l) of
                 (0, xs)     -> ([], xs)
                 (_, [])     -> ([], [])
@@ -34,42 +36,42 @@ splitAt n l = case (n, l) of
                   in (x::xs', xs'')
 
 {-| pairs [1,2,3,4,5] === [(1,2),(2,3),(3,4),(4,5)] -}
-pairs : [a] -> [(a,a)]
-pairs xs = zip xs (tail xs)
+pairs : List a -> List (a,a)
+pairs xs = map2 (,) xs (tail xs)
 
 {-| numberedPairs [a,b,c,d,e] === [(0,a,b),(1,b,c),(2,c,d),(3,d,e)] -}
-numberedPairs : [a] -> [(Int,a,a)]
+numberedPairs : List a -> List (Int,a,a)
 numberedPairs xs =
   let
     ps = pairs xs
     l = length ps - 1
     nums = [0..l]
   in
-    zipWith (\i (a,b) -> (i,a,b)) nums ps
+    map2 (\i (a,b) -> (i,a,b)) nums ps
 
 {-| nonOverlappingPairs [1,2,3,4,5] === [(1,2),(3,4)] -}
-nonOverlappingPairs : [a] -> [(a,a)]
+nonOverlappingPairs : List a -> List (a,a)
 nonOverlappingPairs l =
   case l of
     (x1::x2::xs) -> (x1,x2) :: nonOverlappingPairs xs
     _            -> []
 
 {-| nonOverlappingTriples [1,2,3,4,5,6,7,8] === [(1,2,3),(4,5,6)] -}
-nonOverlappingTriples : [a] -> [(a,a,a)]
+nonOverlappingTriples : List a -> List (a,a,a)
 nonOverlappingTriples l =
   case l of
     (x1::x2::x3::xs) -> (x1,x2,x3) :: nonOverlappingTriples xs
     _             -> []
 
 {-| nonOverlappingQuadruples [1,2,3,4,5,6,7,8,9] === [(1,2,3,4),(5,6,7,8)] -}
-nonOverlappingQuadruples : [a] -> [(a,a,a,a)]
+nonOverlappingQuadruples : List a -> List (a,a,a,a)
 nonOverlappingQuadruples l =
   case l of
     (x1::x2::x3::x4::xs) -> (x1,x2,x3,x4) :: nonOverlappingQuadruples xs
     _                    -> []
 
 {-| Sort list with given comparison function. -}
-quicksort : (a -> a -> Bool) -> [a] -> [a]
+quicksort : (a -> a -> Bool) -> List a -> List a
 quicksort cmp l =
   case l of
     [] -> []

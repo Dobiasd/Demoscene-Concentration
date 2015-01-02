@@ -7,9 +7,11 @@ Every effect has to implement the convention to return its displayed form
 in the range of [-100,+100] for both dimensions.
 -}
 
+import Color(rgb)
 import Common.Types(Named)
+import Graphics.Collage(Form, rect, filled)
 
-data Effect = Effect (Named {step:(Float -> Effect), display:Form})
+type Effect = Effect (Named {step : (Float -> Effect), display : Form})
 
 step : Effect -> Float -> Effect
 step (Effect ef) = ef.step

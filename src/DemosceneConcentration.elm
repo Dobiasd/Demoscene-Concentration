@@ -12,7 +12,15 @@ when the front side is shown.
 -}
 
 
+import Color(rgb, lightBlue)
+import Graphics.Collage(group, Form, toForm, move)
+import Graphics.Element(Element)
+import List(map, concat, length, map2, (::), foldr, filter, all, isEmpty)
+import Signal
+import Signal(merge, Signal, (<~), (~), sampleOn, dropRepeats, foldp)
+import Text(Text)
 import Text
+import Time(Time, fps)
 import Touch
 import Window
 
@@ -41,9 +49,9 @@ import Effects.Tunnel as Tunnel
 {-| Input actions can indicate a user input for the game locic
 or a time step for the animations. -}
 
-type Input = { action:Action }
+type alias Input = { action:Action }
 
-data Action = Tap Point (Int,Int) | Step Float
+type Action = Tap Point (Int,Int) | Step Float
 
 actions = merge steps flips
 
@@ -54,7 +62,7 @@ input : Signal Input
 input = (Input <~ actions)
 
 steps : Signal Action
-steps = lift Step speed
+steps = Signal.map Step speed
 
 flips : Signal Action
 flips =
@@ -71,7 +79,7 @@ flips =
 {-| The game field extends from -100 to +100 in x and y coordinates. -}
 
 {-| Create one single row of boxes with equidistant gaps. -}
-boxRow : Float -> [Box]
+boxRow : Float -> List Box
 boxRow y =
   let
     cols = 4
@@ -85,7 +93,7 @@ boxRow y =
 
 {-| Create boxes nicely spaced boxes representing the cards
 positions and sized. -}
-cardBoxes : [Box]
+cardBoxes : List Box
 cardBoxes =
   let
     rows = 3
@@ -96,7 +104,7 @@ cardBoxes =
 
 {-| The Effects we want to use for our cards.
 Every one will of occur two times. -}
-effects : [Eff.Effect]
+effects : List Eff.Effect
 effects = [ EulerSpiral.make
           , Plasma.make
           , Particles.make
@@ -111,18 +119,18 @@ generateCards seed =
     numbers = randomInts (round seed) (length cardBoxes + 1)
     shuffledBoxes = shuffle numbers cardBoxes
   in
-    zipWith (\effect box -> Card.make effect box)
-            (effects ++ effects)
-            shuffledBoxes
+    map2 (\effect box -> Card.make effect box)
+         (effects ++ effects)
+         shuffledBoxes
 
 {-| The whole game state. -}
-type Game = { state:State
-            , cards:Cards
-            , wonEffect:Eff.Effect
-            , time:Time
-            , fpsCounter:FPSCounter }
+type alias Game = { state:State
+                  , cards:Cards
+                  , wonEffect:Eff.Effect
+                  , time:Time
+                  , fpsCounter:FPSCounter }
 
-data State = Start | Play | Won
+type State = Start | Play | Won
 
 {-| Initial game. -}
 defaultGame : Game
@@ -177,7 +185,7 @@ stepTapStart ({x,y} as gameTapPos) ({state,cards} as game) =
 generateWonEffect : Time -> Eff.Effect
 generateWonEffect time =
   let
-    message = show (roundTime time) ++ " seconds"
+    message = toString (roundTime time) ++ " seconds"
     wonEffects = filter (\(Eff.Effect e) -> e.name /= "Sinescroller") effects
   in
     Cube.make (Sinescroller.make message :: wonEffects) (rgb 64 64 64)
@@ -280,7 +288,12 @@ displayCards time cards =
 
 {-| Render text using a given transformation function. -}
 txt : (Text -> Text) -> String -> Element
-txt f = toText >> Text.color lightBlue >> monospace >> f >> leftAligned
+txt f =
+  Text.fromString
+  >> Text.color lightBlue
+  >> Text.monospace
+  >> f
+  >> Text.leftAligned
 
 {-| Show number of calculated frames during last passed second. -}
 displayFPS : FPSCounter -> Form
@@ -289,7 +302,7 @@ displayFPS {lastVal} =
     (fpsTextPosX,fpsTextPosY) = (-84,95)
     fpsTextHeight = 7
   in
-    txt (Text.height fpsTextHeight) ("FPS: " ++ (show <| lastVal))
+    txt (Text.height fpsTextHeight) ("FPS: " ++ (toString <| lastVal))
       |> toForm |> move (fpsTextPosX, fpsTextPosY)
 
 {-| Show the final Effect -}
@@ -306,7 +319,7 @@ displayNotYetDone ({time,cards} as game) =
   let
     timeTextHeight = 10
     timeTextPosY = 90
-    timeTextForm = txt (Text.height timeTextHeight) (show <| roundTime time)
+    timeTextForm = txt (Text.height timeTextHeight) (toString <| roundTime time)
                      |> toForm |> move (0, timeTextPosY)
   in
     group [ displayCards time cards

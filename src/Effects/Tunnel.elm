@@ -3,6 +3,11 @@ module Effects.Tunnel where
 {-| Generates a tunnel effect.
 -}
 
+import Color(Color, hsla)
+import Graphics.Collage(oval, filled, rotate, group, Form)
+import List(map, filter, length, isEmpty, reverse, head)
+import Time(Time)
+
 import Effects.Effect as Eff
 import Effects.Starfield as Starfield
 import Common.Vector(vector,project2d,dist,normalize,scalarProd)
@@ -10,7 +15,10 @@ import Common.Display(displayPositionedForms,
                       PositionedForm, isPosOK, positionedForm)
 import Common.Types(WithRadius,WithNormal,Colored,Positioned,Point,point2D)
 
-type State = {time:Float, background:Eff.Effect, discs:[Disc]}
+type alias State = {time:Float, background:Eff.Effect, discs:List Disc}
+
+last : List a -> a
+last = reverse >> head
 
 tunnel : State -> Eff.Effect
 tunnel s = Eff.Effect
@@ -23,7 +31,7 @@ make = tunnel { time=0
 
 minDist = 2
 
-type Disc = WithRadius ( Colored ( Positioned ( WithNormal {} ) ) )
+type alias Disc = WithRadius ( Colored ( Positioned ( WithNormal {} ) ) )
 
 disc : Float -> Float -> Float -> Float -> Float -> Float -> Color -> Disc
 disc x y z nx ny nz c = {x=x, y=y, z=z, col=c, r=400, nx=nx,ny=ny,nz=nz}
@@ -64,7 +72,7 @@ generateNewRingDisc time num =
   in
     disc (x+xOff) (y+yOff) z x y 0 (calcCol (num+time))
 
-generateNewDiscRing : Float -> [Disc]
+generateNewDiscRing : Float -> List Disc
 generateNewDiscRing time =
   let
     n = 11
@@ -74,7 +82,7 @@ generateNewDiscRing time =
 stepDisc : Float -> Disc -> Disc
 stepDisc delta ({z} as disc) = { disc | z <- z + 0.05 * delta }
 
-stepDiscs : Float -> [Disc] -> [Disc]
+stepDiscs : Float -> List Disc -> List Disc
 stepDiscs delta = map (stepDisc delta)
 
 step : State -> Float -> Eff.Effect

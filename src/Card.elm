@@ -3,13 +3,19 @@ module Card where
 {-| Representation of a game card.
 -}
 
+import Color(gray, rgba)
+import Graphics.Collage(group, move, scale, Form, solid, LineJoin(Smooth)
+  , LineCap(Round), rect, outlined, filled)
+import List(map, length, all, head, tail, partition)
+import Time(Time)
+
 import Effects.ElmLogo(elmLogo)
 import Common.Types(Positioned, Boxed)
 import Effects.Effect as Eff
 
-data Status = FaceDown | FaceUp | Done
-type Card = Boxed {effect:Eff.Effect, status:Status, doneTime:Time}
-type Cards = [Card]
+type Status = FaceDown | FaceUp | Done
+type alias Card = Boxed {effect:Eff.Effect, status:Status, doneTime:Time}
+type alias Cards = List Card
 
 {-| Show card according to its state. -}
 display : Time -> Card -> Form

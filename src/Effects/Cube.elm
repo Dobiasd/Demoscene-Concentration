@@ -3,8 +3,11 @@ module Effects.Cube where
 {-| Generates a rotating 3d cube with an effect on every face.
 -}
 
+import Color(Color)
+import Graphics.Collage(solid, LineJoin(Smooth), LineCap(Round), path
+  , groupTransform, group, traced, Form, scale)
 import Maybe
-import List
+import List(map, map2, filterMap)
 
 import Effects.Effect as Eff
 import Common.Vector(vector,Vector,transform3D,
@@ -18,12 +21,14 @@ speedY = 0.00087
 speedZ = 0.00114
 borderWidth = 8
 
-type State = {time:Float, faceEffects:[Eff.Effect], wireCol:Color}
+type alias State = { time : Float
+                   , faceEffects : List Eff.Effect
+                   , wireCol : Color }
 
 cube : State -> Eff.Effect
 cube s = Eff.Effect {step = step s, display = display s, name = "Cube"}
 
-make : [Eff.Effect] -> Color -> Eff.Effect
+make : List Eff.Effect -> Color -> Eff.Effect
 make effects wireCol = cube {time=0, faceEffects=effects, wireCol=wireCol}
 
 step : State -> Float -> Eff.Effect
@@ -31,7 +36,7 @@ step ({time,faceEffects} as state) delta =
   cube { state | time <- time + delta
                , faceEffects <-  map (\e -> Eff.step e delta) faceEffects }
 
-type Face = { tl:Vector, tr:Vector, bl:Vector }
+type alias Face = { tl:Vector, tr:Vector, bl:Vector }
 
 face : Vector -> Vector -> Vector -> Face
 face tl tr bl = { tl=tl, tr=tr, bl=bl }
@@ -69,10 +74,10 @@ transformFace matrix {tl,tr,bl} =
   let f = applyTransform3D matrix
   in face (f tl) (f tr) (f bl)
 
-transformFaces : Transform3D -> [Face] -> [Face]
+transformFaces : Transform3D -> List Face -> List Face
 transformFaces matrix = map (transformFace matrix)
 
-calcFaces : Float -> [Face]
+calcFaces : Float -> List Face
 calcFaces time =
   let
     rx = rotateX (speedX*time)
@@ -115,8 +120,8 @@ display ({time, wireCol, faceEffects} as state) =
   let
     faces = calcFaces (time/2)
     forms = map Eff.display faceEffects
-    facesWithForms = zip faces forms
-    resultForms = List.filterMap identity
+    facesWithForms = map2 (,) faces forms
+    resultForms = filterMap identity
       <| map (uncurry (displayFace wireCol)) facesWithForms
   in
     group resultForms |> scale (1/sqrt(3))

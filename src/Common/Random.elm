@@ -1,9 +1,15 @@
 module Common.Random where
 
 {-| Some very primitive pseudo random generation.
-  -}
+-}
+
+import List((::), foldr, length, reverse, head)
 
 import Common.Algorithms(splitAt,init)
+
+{-| Get last element of a list. (not total) -}
+last : List a -> a
+last = reverse >> head
 
 {-| Generate new seed and random number in [0, 999] with given seed. -}
 randomInt : Int -> (Int,Int)
@@ -15,7 +21,7 @@ randomInt i =
     (j, ans)
 
 {-| Make amount numbers in [0, 999]. -}
-randomInts : Int -> Int -> [Int]
+randomInts : Int -> Int -> List Int
 randomInts seed amount =
   let
     go _ (seed, l) =
@@ -36,7 +42,7 @@ randomFloat seed =
     (newFloatSeed, floatVal)
 
 {-| Make amount numbers in [0.0, 1.0). -}
-randomFloats : Float -> Int -> [Float]
+randomFloats : Float -> Int -> List Float
 randomFloats seed amount =
   let
     go _ (seed, l) =
@@ -48,7 +54,7 @@ randomFloats seed amount =
 {-| Suffle a list using random numbers
 The length of the list of random numbers has to be at least
 as long as the list that shall be shuffled. -}
-shuffle : [Int] -> [a] -> [a]
+shuffle : List Int -> List a -> List a
 shuffle ((i::is) as randoms) l =
   case l of
     (x::xs) ->

@@ -3,7 +3,9 @@ module Effects.Plasma where
 {-| Generates a plasma effect.
 -}
 
-import Color
+import Color(black, rgb, Color, toRgb, rgba, linear)
+import List(map, concat, sum)
+import Graphics.Collage(move, rect, filled, group, scale, Form, gradient)
 
 import Effects.Effect as Eff
 import Common.Algorithms(uncurry4, nonOverlappingQuadruples)
@@ -12,7 +14,7 @@ import Common.Random(randomFloats)
 pixels = 8
 speed = 0.0004
 
-type State = {time:Float}
+type alias State = {time:Float}
 
 plasma : State -> Eff.Effect
 plasma s = Eff.Effect
@@ -44,7 +46,7 @@ display ({time} as state) =
 rectPositions 2 3 =
   [(0,0),(1,0),(0,1),(1,1),(0,2),(1,2)]
 -}
-rectPositions : Float -> Float -> [(Float,Float)]
+rectPositions : Float -> Float -> List (Float,Float)
 rectPositions w h =
   let
     xs = [0..(w-1)]
@@ -53,12 +55,12 @@ rectPositions w h =
   in
     map row ys |> concat
 
-type PlasmaColConf = { sf:Float, xf:Float, yf:Float, tf:Float }
+type alias PlasmaColConf = { sf:Float, xf:Float, yf:Float, tf:Float }
 
 plasmaColConf : Float -> Float -> Float -> Float -> PlasmaColConf
 plasmaColConf sf xf yf tf = { sf=sf, xf=xf, yf=yf, tf=tf }
 
-genPlasmaColConfs : Float -> Int -> [ PlasmaColConf ]
+genPlasmaColConfs : Float -> Int -> List PlasmaColConf
 genPlasmaColConfs seed amount =
   let
     randoms = randomFloats seed (amount*4) |> map (\x -> 16 * x - 8)
@@ -73,18 +75,18 @@ colValFromConf : Float -> Float -> Float -> PlasmaColConf -> Float
 colValFromConf x y t conf =
   conf.sf * cos ( (conf.xf * x) + (conf.yf * y) + (conf.tf * t) )
 
-divisorForColConfs : [PlasmaColConf] -> Float
+divisorForColConfs : List PlasmaColConf -> Float
 divisorForColConfs confs =
   sum <| map (.sf >> abs) confs
 
-colValFromConfs : Float -> Float -> Float -> [PlasmaColConf] -> Float
+colValFromConfs : Float -> Float -> Float -> List PlasmaColConf -> Float
 colValFromConfs x y t confs =
   (sum <| map (colValFromConf x y t) confs) / divisorForColConfs confs
 
 clampCol : Int -> Int
 clampCol = clamp 0 255
 
-calcPixelCol : Float -> Float -> Float -> [PlasmaColConf] -> Int
+calcPixelCol : Float -> Float -> Float -> List PlasmaColConf -> Int
 calcPixelCol x y t confs =
   let
     center = 32
@@ -100,16 +102,22 @@ plasmaCol xIn yIn tIn =
   in
     rgb (colFunc rConf) (colFunc gConf) (colFunc bConf)
 
+colToRGBATuple : Color -> (Int, Int, Int, Float)
+colToRGBATuple col =
+  let rec = toRgb col
+  in  (rec.red, rec.green, rec.blue, rec.alpha)
+
 pseudoBilinearInterpolatedRect : (Float,Float) -> (Float,Float) ->
   Color -> Color -> Color -> Color -> Form
 pseudoBilinearInterpolatedRect
     ((tlx,tly) as tl)
     ((brx,bry) as br)
-    ((Color.RGBA rtl gtl btl atl) as ctl)
-    ((Color.RGBA rbl gbl bbl abl) as cbl)
-    ((Color.RGBA rbr gbr bbr abr) as cbr)
-    ((Color.RGBA rtr gtr btr atr) as ctr) =
+    ctl cbl cbr ctr =
   let
+    (rtl, gtl, btl, atl) = colToRGBATuple ctl
+    (rbl, gbl, bbl, abl) = colToRGBATuple cbl
+    (rbr, gbr, bbr, abr) = colToRGBATuple cbr
+    (rtr, gtr, btr, atr) = colToRGBATuple ctr
     ((trx,try) as tr) = (brx,tly)
     ((blx,bly) as bl) = (tlx,bry)
     g1cm = rgba

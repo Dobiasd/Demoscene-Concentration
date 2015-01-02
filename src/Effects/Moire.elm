@@ -3,11 +3,15 @@ module Effects.Moire where
 {-| Generates a moire effect.
 -}
 
+import Color(hsla, rgb)
+import Graphics.Collage(solid, path, traced, Form, group, rect, filled)
+import List(map, length, map2)
+
 import Effects.Effect as Eff
 import Common.Vector(Vector,vector,Transform3D,applyTransform3D,rotateZ)
 import Effects.Starfield as Starfield
 
-type State = {time:Float, background:Eff.Effect}
+type alias State = {time:Float, background:Eff.Effect}
 
 moire : State -> Eff.Effect
 moire s = Eff.Effect
@@ -21,12 +25,12 @@ step ({time, background} as state) delta =
   moire { state | time <- time + delta
                 , background <- Eff.step background delta }
 
-type Line = (Vector, Vector)
+type alias Line = (Vector, Vector)
 
 line : Vector -> Vector -> Line
 line s e = (s, e)
 
-pattern : [Line]
+pattern : List Line
 pattern =
   map (\y -> line (vector (-90*(cos (y/90))) y 0)
                   (vector ( 90*(cos (y/90))) y 0))
@@ -46,14 +50,14 @@ displayLine num (s, e) =
   in
     outline |> traced lSWide
 
-displayLines : [Line] -> Float -> Form
+displayLines : List Line -> Float -> Form
 displayLines pattern angle =
   let
     r = rotateZ angle
     lines = map (transformLine r) pattern
     nums = map toFloat [0..(length(lines))]
   in
-    map (uncurry displayLine) (zip nums lines) |> group
+    map (uncurry displayLine) (map2 (,) nums lines) |> group
 
 display : State -> Form
 display ({time, background} as state) =

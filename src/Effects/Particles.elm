@@ -3,6 +3,10 @@ module Effects.Particles where
 {-| Generates a particle effect.
 -}
 
+import Color(Color, hsl, radial, rgba, linear, rgb, white)
+import List(map, filter, concat, (::))
+import Graphics.Collage(oval, gradient, circle, rect, move, Form, filled, group)
+
 import Effects.Effect as Eff
 import Common.Random(randomFloats)
 import Common.Algorithms(nonOverlappingTriples,nonOverlappingPairs)
@@ -13,9 +17,9 @@ import Common.Vector(Vector,vector,Transform3D,applyTransform3D,
                      rotateY,project2d,addVec,move3,
                      distTo,multVec,subVec)
 
-type Ball = Positioned (Moving (Colored {}))
+type alias Ball = Positioned (Moving (Colored {}))
 
-type State = {time:Float,balls:[Ball]}
+type alias State = {time:Float,balls:List Ball}
 
 ball : Float -> Float -> Float
     -> Float -> Float -> Float
@@ -25,7 +29,7 @@ ball x y z vx vy vz col = {x=x,y=y,z=z,vx=vx,vy=vy,vz=vz,col=col}
 make : Eff.Effect
 make = particles {time=0, balls=generateBalls 64 1.23}
 
-generateBalls : Int -> Float -> [Ball]
+generateBalls : Int -> Float -> List Ball
 generateBalls amount time =
   let
     randoms = randomFloats time (amount*6)
@@ -67,7 +71,7 @@ displayBall ({x,y,z,col} as ball) =
     positionedForm (circle radius |> gradient grad)
                    {x=pos2d.x,y=pos2d.y,z=z}
 
-displayBallWithShadow : Float -> Ball -> [PositionedForm]
+displayBallWithShadow : Float -> Ball -> List PositionedForm
 displayBallWithShadow shadowAngle b =
   [ displayBallShadow shadowAngle b, displayBall b]
 
@@ -140,7 +144,7 @@ displayStar star =
     positionedForm (circle 0.6 |> filled white |> move (x,y))
                    {x=x,y=y,z=star.z}
 
-staticStars : [Vector]
+staticStars : List Vector
 staticStars =
   let
     f i = vector (     100 * (cos (1234 * i)))

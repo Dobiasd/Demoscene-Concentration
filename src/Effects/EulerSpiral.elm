@@ -3,6 +3,10 @@ module Effects.EulerSpiral where
 {-| Generates a euler spiral effect.
 -}
 
+import Color(hsla, rgb)
+import Graphics.Collage(solid, LineCap(Round), path, traced, Form, group, rect
+  , filled, move, scale)
+import List((::), take, foldl1, map, reverse)
 
 import Common.Algorithms(numberedPairs,uncurry3)
 import Common.Types(Positioned)
@@ -10,7 +14,7 @@ import Common.Vector(Vector,vector,angle2D,vector2DFromAngle,
               multVec,addVec,subVec)
 import Effects.Effect as Eff
 
-type State = {time:Float, points:[Vector], stepCount:Int}
+type alias State = {time:Float, points:List Vector, stepCount:Int}
 
 eulerSpiral : State -> Eff.Effect
 eulerSpiral s =
@@ -21,7 +25,7 @@ make = eulerSpiral { time=0
                    , points=[vector 0 0 0, vector 10 0 0]
                    , stepCount=0 }
 
-addPoint : [Vector] -> Int -> [Vector]
+addPoint : List Vector -> Int -> List Vector
 addPoint ((a::b::_) as points) stepCount =
   let
     angle = angle2D <| a `subVec` b
@@ -38,7 +42,7 @@ step ({time,points,stepCount} as state) delta =
                       , points <- addPoint points stepCount
                       , stepCount <- stepCount + 1}
 
-getPointRange : [Vector] -> ((Float,Float),(Float,Float))
+getPointRange : List Vector -> ((Float,Float),(Float,Float))
 getPointRange points =
   let
     minX = foldl1 min <| map .x points
@@ -59,7 +63,7 @@ displayLine time num s e =
   in
     outline |> traced lS1Wide
 
-displayLines : [Vector] -> Float -> [Form]
+displayLines : List Vector -> Float -> List Form
 displayLines points time =
   reverse points |> numberedPairs |> map (uncurry3 (displayLine time))
 

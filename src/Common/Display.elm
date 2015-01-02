@@ -6,8 +6,11 @@ module Common.Display where
 import Common.Types(Positioned,Point,point2D)
 import Common.Algorithms(sortByLess)
 
-import Color
-import List
+import Color(Color, toRgb)
+import Graphics.Element(Element)
+import Graphics.Collage(Form, move, group, collage, scale)
+import List(filter, map)
+import Time(Time)
 
 (gameWidth,gameHeight) = (200,200)
 
@@ -43,9 +46,9 @@ isPosOK {x,y,z} = z < -1 && x >= -100 && x <= 100 && y >= -100 && y <= 100
 
 {-| Counts frames and remembers how much where there during the last
 passed second. -}
-type FPSCounter = { time:Time
-                  , lastVal:Int
-                  , counter:Int }
+type alias FPSCounter = { time : Time
+                        , lastVal : Int
+                        , counter : Int }
 
 makeFPSCounter : FPSCounter
 makeFPSCounter = { time = 0
@@ -67,7 +70,7 @@ stepFPSCounter delta ({time,lastVal,counter} as fpsCounter) =
                                       , counter <- 0 }
 
 {-| A form with a position for later sorting/filtering. -}
-type PositionedForm = Positioned {f:Form}
+type alias PositionedForm = Positioned {f:Form}
 positionedForm : Form -> Positioned a -> PositionedForm
 positionedForm f {x,y,z} = { f=f, x=x, y=y, z=z }
 
@@ -77,7 +80,7 @@ displayPositionedForm {f,x,y} = f |> move (x, y)
 {-| Filter out forms with invalid positions,
 sort forms by their z coordinates (since we have no z buffer)
 and display them. -}
-displayPositionedForms : [PositionedForm] -> Form
+displayPositionedForms : List PositionedForm -> Form
 displayPositionedForms fs =
   fs
   |> filter isPosOK

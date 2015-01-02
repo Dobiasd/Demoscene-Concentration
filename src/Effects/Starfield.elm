@@ -3,6 +3,10 @@ module Effects.Starfield where
 {-| Generates a starfield effect.
 -}
 
+import Color(Color, rgb, hsl, radial, rgba)
+import Graphics.Collage(circle, gradient, move, Form, rect, filled, group)
+import List(map, filter, length, (::))
+
 import Effects.Effect as Eff
 import Common.Vector(Vector, vector, dist, project2d)
 import Common.Algorithms(nonOverlappingQuadruples)
@@ -10,14 +14,18 @@ import Common.Random(randomFloats)
 import Common.Types(Positioned,Colored,Point)
 import Common.Display(decomposeColor)
 
-type Star = Positioned (Colored {})
+type alias Star = Positioned (Colored {})
 
 star : Vector -> Color -> Star
 star pos col = { pos | col = col }
 
-data Mode = BW | Colored
+type Mode = BW | Colored
 
-type State = {time:Float, stars:[Star], mode:Mode, speed:Float, amount:Int}
+type alias State = { time:Float
+                   , stars:List Star
+                   , mode:Mode
+                   , speed:Float
+                   , amount:Int }
 
 starfield : State -> Eff.Effect
 starfield s = Eff.Effect
@@ -39,7 +47,7 @@ starInAllowedRange ({x,y,z} as star) =
     pos2d.x >= -100 && pos2d.x <= 100 &&
     pos2d.y >= -100 && pos2d.y <= 100
 
-generateNewStars : Mode -> Int -> Float -> [Star]
+generateNewStars : Mode -> Int -> Float -> List Star
 generateNewStars mode amount time =
   let
     randoms = randomFloats time (amount*4)
@@ -57,7 +65,7 @@ generateNewStars mode amount time =
 stepStar : Float -> Star -> Star
 stepStar d ({z} as star) = { star | z <- z + d }
 
-stepStars : Float -> [Star] -> [Star]
+stepStars : Float -> List Star -> List Star
 stepStars delta = map (stepStar delta)
 
 step : State -> Float -> Eff.Effect
