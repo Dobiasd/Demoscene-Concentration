@@ -3,8 +3,9 @@ module Effects.ElmLogo where
 {-| Generates a the Elm logo.
 -}
 
-import Color(rgb)
-import Graphics.Collage(Form, move, polygon, filled, groupTransform, scale)
+import Color exposing (rgb)
+import Graphics.Collage exposing (Form, move, polygon, filled, groupTransform
+  , scale)
 
 import Transform2D
 

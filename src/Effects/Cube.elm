@@ -3,18 +3,18 @@ module Effects.Cube where
 {-| Generates a rotating 3d cube with an effect on every face.
 -}
 
-import Color(Color)
-import Graphics.Collage(solid, LineJoin(Smooth), LineCap(Round), path
-  , groupTransform, group, traced, Form, scale)
+import Color exposing (Color)
+import Graphics.Collage exposing (solid, LineJoin(Smooth), LineCap(Round)
+  , path, groupTransform, group, traced, Form, scale)
 import Maybe
-import List(map, map2, filterMap)
+import List exposing (map, map2, filterMap)
 
 import Effects.Effect as Eff
-import Common.Vector(vector,Vector,transform3D,
+import Common.Vector exposing (vector,Vector,transform3D,
               rotateX,rotateY,rotateZ,addVec,Transform3D,
               applyTransform3D,getAffineTransformation,
               subVec,crossProduct)
-import Transform2D(Transform2D,matrix)
+import Transform2D exposing (Transform2D,matrix)
 
 speedX = 0.00053
 speedY = 0.00087

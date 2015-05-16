@@ -3,16 +3,17 @@ module Effects.Starfield where
 {-| Generates a starfield effect.
 -}
 
-import Color(Color, rgb, hsl, radial, rgba)
-import Graphics.Collage(circle, gradient, move, Form, rect, filled, group)
-import List(map, filter, length, (::))
+import Color exposing (Color, rgb, hsl, radial, rgba)
+import Graphics.Collage exposing (circle, gradient, move, Form, rect, filled,
+    group)
+import List exposing (map, filter, length, (::))
 
 import Effects.Effect as Eff
-import Common.Vector(Vector, vector, dist, project2d)
-import Common.Algorithms(nonOverlappingQuadruples)
-import Common.Random(randomFloats)
-import Common.Types(Positioned,Colored,Point)
-import Common.Display(decomposeColor)
+import Common.Vector exposing (Vector, vector, dist, project2d)
+import Common.Algorithms exposing (nonOverlappingQuadruples)
+import Common.Random exposing (randomFloats)
+import Common.Types exposing (Positioned,Colored,Point)
+import Common.Display exposing (decomposeColor)
 
 type alias Star = Positioned (Colored {})
 

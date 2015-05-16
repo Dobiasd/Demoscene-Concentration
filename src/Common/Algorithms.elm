@@ -3,7 +3,23 @@ module Common.Algorithms where
 {-| Commonly used Algorithms.
 -}
 
-import List((::), map2, tail, length, filter)
+import Debug
+import List exposing ((::), map2, tail, length, filter)
+
+unsafeHead : List a -> a
+unsafeHead xs = case xs of
+  (x::_) -> x
+  _ -> Debug.crash "unsafeHead with empty list"
+
+unsafeTail : List a -> List a
+unsafeTail xs = case xs of
+  (_::ys) -> ys
+  _ -> Debug.crash "unsafeTail with empty list"
+
+unsafeMaybe : Maybe a -> a
+unsafeMaybe x = case x of
+  Just y -> y
+  _ -> Debug.crash "unsafeMaybe with Nothing"
 
 curry3 : ((a,b,c) -> d) -> a -> b -> c -> d
 curry3 f a b c = f (a,b,c)
@@ -37,7 +53,7 @@ splitAt n l = case (n, l) of
 
 {-| pairs [1,2,3,4,5] === [(1,2),(2,3),(3,4),(4,5)] -}
 pairs : List a -> List (a,a)
-pairs xs = map2 (,) xs (tail xs)
+pairs xs = map2 (,) xs (unsafeTail xs)
 
 {-| numberedPairs [a,b,c,d,e] === [(0,a,b),(1,b,c),(2,c,d),(3,d,e)] -}
 numberedPairs : List a -> List (Int,a,a)

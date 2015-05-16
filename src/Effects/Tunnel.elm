@@ -3,22 +3,24 @@ module Effects.Tunnel where
 {-| Generates a tunnel effect.
 -}
 
-import Color(Color, hsla)
-import Graphics.Collage(oval, filled, rotate, group, Form)
-import List(map, filter, length, isEmpty, reverse, head)
-import Time(Time)
+import Color exposing (Color, hsla)
+import Graphics.Collage exposing (oval, filled, rotate, group, Form)
+import List exposing (map, filter, length, isEmpty, reverse, head)
+import Time exposing (Time)
 
 import Effects.Effect as Eff
 import Effects.Starfield as Starfield
-import Common.Vector(vector,project2d,dist,normalize,scalarProd)
-import Common.Display(displayPositionedForms,
+import Common.Algorithms exposing (unsafeHead)
+import Common.Vector exposing (vector,project2d,dist,normalize,scalarProd)
+import Common.Display exposing (displayPositionedForms,
                       PositionedForm, isPosOK, positionedForm)
-import Common.Types(WithRadius,WithNormal,Colored,Positioned,Point,point2D)
+import Common.Types exposing (WithRadius,WithNormal,Colored,Positioned,Point
+                    ,point2D)
 
 type alias State = {time:Float, background:Eff.Effect, discs:List Disc}
 
 last : List a -> a
-last = reverse >> head
+last = reverse >> unsafeHead
 
 tunnel : State -> Eff.Effect
 tunnel s = Eff.Effect

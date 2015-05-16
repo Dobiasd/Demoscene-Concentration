@@ -3,14 +3,14 @@ module Effects.EulerSpiral where
 {-| Generates a euler spiral effect.
 -}
 
-import Color(hsla, rgb)
-import Graphics.Collage(solid, LineCap(Round), path, traced, Form, group, rect
-  , filled, move, scale)
-import List((::), take, foldl1, map, reverse)
+import Color exposing (hsla, rgb)
+import Graphics.Collage exposing (solid, LineCap(Round), path, traced, Form
+  , group, rect, filled, move, scale)
+import List exposing ((::), take, map, reverse)
 
-import Common.Algorithms(numberedPairs,uncurry3)
-import Common.Types(Positioned)
-import Common.Vector(Vector,vector,angle2D,vector2DFromAngle,
+import Common.Algorithms exposing (numberedPairs,uncurry3,unsafeMaybe)
+import Common.Types exposing (Positioned)
+import Common.Vector exposing (Vector,vector,angle2D,vector2DFromAngle,
               multVec,addVec,subVec)
 import Effects.Effect as Eff
 
@@ -45,10 +45,10 @@ step ({time,points,stepCount} as state) delta =
 getPointRange : List Vector -> ((Float,Float),(Float,Float))
 getPointRange points =
   let
-    minX = foldl1 min <| map .x points
-    minY = foldl1 min <| map .y points
-    maxX = foldl1 max <| map .x points
-    maxY = foldl1 max <| map .y points
+    minX = map .x points |> List.minimum |> unsafeMaybe
+    minY = map .y points |> List.minimum |> unsafeMaybe
+    maxX = map .x points |> List.maximum |> unsafeMaybe
+    maxY = map .y points |> List.maximum |> unsafeMaybe
   in
     ((minX,maxX),(minY,maxY))
 

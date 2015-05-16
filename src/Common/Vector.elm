@@ -3,8 +3,8 @@ module Common.Vector where
 {-| 3D vector math.
 -}
 
-import Transform2D(Transform2D,matrix)
-import Common.Types(Positioned,Point,point)
+import Transform2D exposing (Transform2D,matrix)
+import Common.Types exposing (Positioned,Point,point)
 
 -- The more elegant definition:
 -- type Vector = Positioned {}

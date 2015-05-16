@@ -3,12 +3,14 @@ module Effects.Moire where
 {-| Generates a moire effect.
 -}
 
-import Color(hsla, rgb)
-import Graphics.Collage(solid, path, traced, Form, group, rect, filled)
-import List(map, length, map2)
+import Color exposing (hsla, rgb)
+import Graphics.Collage exposing (solid, path, traced, Form, group, rect
+  , filled)
+import List exposing (map, length, map2)
 
 import Effects.Effect as Eff
-import Common.Vector(Vector,vector,Transform3D,applyTransform3D,rotateZ)
+import Common.Vector exposing (Vector,vector,Transform3D,applyTransform3D
+  ,rotateZ)
 import Effects.Starfield as Starfield
 
 type alias State = {time:Float, background:Eff.Effect}

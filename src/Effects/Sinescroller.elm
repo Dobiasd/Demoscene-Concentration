@@ -5,13 +5,13 @@ module Effects.Sinescroller where
 
 import Effects.Cube as Cube
 import Effects.Effect as Eff
-import Common.Types(Point,Colored,Positioned,point2D)
-import Common.Algorithms(uncurry3,floatMod)
+import Common.Types exposing (Point,Colored,Positioned,point2D)
+import Common.Algorithms exposing (uncurry3,floatMod)
 
-import Graphics.Element(Element)
-import Graphics.Collage(toForm, move, Form, group, rect, filled)
-import Color(rgba, hsl, Color, rgb)
-import List((::), map, map3, filter)
+import Graphics.Element exposing (Element,leftAligned)
+import Graphics.Collage exposing (toForm, move, Form, group, rect, filled)
+import Color exposing (rgba, hsl, Color, rgb)
+import List exposing ((::), map, map3, filter)
 import String
 import Text
 
@@ -66,7 +66,7 @@ txt c =
   >> Text.color c
   >> Text.monospace
   >> Text.height 28
-  >> Text.leftAligned
+  >> leftAligned
 
 displayScrollerChar : ScrollerChar -> Form
 displayScrollerChar {s,x,y,col} = txt col s |> toForm |> move (x,y)

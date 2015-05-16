@@ -3,13 +3,13 @@ module Common.Random where
 {-| Some very primitive pseudo random generation.
 -}
 
-import List((::), foldr, length, reverse, head)
+import List exposing ((::), foldr, length, reverse, head)
 
-import Common.Algorithms(splitAt,init)
+import Common.Algorithms exposing (splitAt,init,unsafeHead)
 
 {-| Get last element of a list. (not total) -}
 last : List a -> a
-last = reverse >> head
+last = reverse >> unsafeHead
 
 {-| Generate new seed and random number in [0, 999] with given seed. -}
 randomInt : Int -> (Int,Int)

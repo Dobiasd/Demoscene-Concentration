@@ -12,24 +12,24 @@ when the front side is shown.
 -}
 
 
-import Color(rgb, lightBlue)
-import Graphics.Collage(group, Form, toForm, move)
-import Graphics.Element(Element)
-import List(map, concat, length, map2, (::), foldr, filter, all, isEmpty)
-import Signal
-import Signal(merge, Signal, (<~), (~), sampleOn, dropRepeats, foldp)
-import Text(Text)
-import Text
-import Time(Time, fps)
+import Color exposing (rgb, lightBlue)
+import Graphics.Collage exposing (group, Form, toForm, move)
+import Graphics.Element exposing (Element, leftAligned)
+import List exposing (map, concat, length, map2, (::), foldr, filter, all
+  , isEmpty)
+import Signal exposing (merge, Signal, (<~), (~), sampleOn, dropRepeats
+  , foldp)
+import Text exposing (Text)
+import Time exposing (Time, fps)
 import Touch
 import Window
 
-import Common.Types(Point,Positioned,Boxed,Box,point2D,box2D,inBox)
-import Common.Random(randomInts,shuffle)
-import Common.Display(winPosToGamePos,displayFullScreen,
+import Common.Types exposing  (Point,Positioned,Boxed,Box,point2D,box2D,inBox)
+import Common.Random exposing  (randomInts,shuffle)
+import Common.Display exposing (winPosToGamePos,displayFullScreen,
                       FPSCounter,makeFPSCounter,stepFPSCounter)
 import Card
-import Card(Card,Cards,allEqual,splitCardsByStatus)
+import Card exposing (Card,Cards,allEqual,splitCardsByStatus)
 
 import Effects.Effect as Eff
 
@@ -293,7 +293,7 @@ txt f =
   >> Text.color lightBlue
   >> Text.monospace
   >> f
-  >> Text.leftAligned
+  >> leftAligned
 
 {-| Show number of calculated frames during last passed second. -}
 displayFPS : FPSCounter -> Form

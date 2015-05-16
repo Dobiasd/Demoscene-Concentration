@@ -3,7 +3,7 @@ module Common.Types where
 {-| Commonly used types.
 -}
 
-import Color(Color)
+import Color exposing (Color)
 
 type alias Named       a = { a | name:String }
 type alias Positioned  a = { a | x:Float, y:Float, z:Float }

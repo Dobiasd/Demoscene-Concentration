@@ -3,13 +3,14 @@ module Effects.Plasma where
 {-| Generates a plasma effect.
 -}
 
-import Color(black, rgb, Color, toRgb, rgba, linear)
-import List(map, concat, sum)
-import Graphics.Collage(move, rect, filled, group, scale, Form, gradient)
+import Color exposing (black, rgb, Color, toRgb, rgba, linear)
+import List exposing (map, concat, sum)
+import Graphics.Collage exposing (move, rect, filled, group, scale, Form
+  , gradient)
 
 import Effects.Effect as Eff
-import Common.Algorithms(uncurry4, nonOverlappingQuadruples)
-import Common.Random(randomFloats)
+import Common.Algorithms exposing (uncurry4, nonOverlappingQuadruples)
+import Common.Random exposing (randomFloats)
 
 pixels = 8
 speed = 0.0004

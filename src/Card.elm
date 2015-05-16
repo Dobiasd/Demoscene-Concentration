@@ -3,14 +3,16 @@ module Card where
 {-| Representation of a game card.
 -}
 
-import Color(gray, rgba)
-import Graphics.Collage(group, move, scale, Form, solid, LineJoin(Smooth)
-  , LineCap(Round), rect, outlined, filled)
-import List(map, length, all, head, tail, partition)
-import Time(Time)
+import Color exposing (gray, rgba)
+import Graphics.Collage exposing (group, move, scale, Form, solid
+  , LineJoin(Smooth), LineCap(Round), rect, outlined, filled)
+import List exposing (map, length, all, head, tail, partition)
+import Time exposing (Time)
 
-import Effects.ElmLogo(elmLogo)
-import Common.Types(Positioned, Boxed)
+import Common.Algorithms exposing (unsafeTail, unsafeHead
+  )
+import Effects.ElmLogo exposing (elmLogo)
+import Common.Types exposing (Positioned, Boxed)
 import Effects.Effect as Eff
 
 type Status = FaceDown | FaceUp | Done
@@ -87,7 +89,7 @@ allEqual cards =
               (Eff.Effect e2) = e1.name == e2.name
   in
     if length es < 2 then True
-      else all (equalName (head es)) (tail es)
+      else all (equalName (unsafeHead es)) (unsafeTail es)
 
 {-| The first list of the resulting pair contains all cards with the
 given status. The other cards are copied into the second list. -}

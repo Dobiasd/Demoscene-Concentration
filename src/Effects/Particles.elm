@@ -3,17 +3,18 @@ module Effects.Particles where
 {-| Generates a particle effect.
 -}
 
-import Color(Color, hsl, radial, rgba, linear, rgb, white)
-import List(map, filter, concat, (::))
-import Graphics.Collage(oval, gradient, circle, rect, move, Form, filled, group)
+import Color exposing (Color, hsl, radial, rgba, linear, rgb, white)
+import List exposing (map, filter, concat, (::))
+import Graphics.Collage exposing (oval, gradient, circle, rect, move, Form
+  , filled, group)
 
 import Effects.Effect as Eff
-import Common.Random(randomFloats)
-import Common.Algorithms(nonOverlappingTriples,nonOverlappingPairs)
-import Common.Types(WithRadius,Positioned,Moving,Colored)
-import Common.Display(PositionedForm,positionedForm,
+import Common.Random exposing (randomFloats)
+import Common.Algorithms exposing (nonOverlappingTriples,nonOverlappingPairs)
+import Common.Types exposing (WithRadius,Positioned,Moving,Colored)
+import Common.Display exposing (PositionedForm,positionedForm,
                       displayPositionedForms,isPosOK,decomposeColor)
-import Common.Vector(Vector,vector,Transform3D,applyTransform3D,
+import Common.Vector exposing (Vector,vector,Transform3D,applyTransform3D,
                      rotateY,project2d,addVec,move3,
                      distTo,multVec,subVec)
 

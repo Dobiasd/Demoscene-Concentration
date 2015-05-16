@@ -3,14 +3,14 @@ module Common.Display where
 {-| Exports functions and types that can come in handy when displaying stuff.
 -}
 
-import Common.Types(Positioned,Point,point2D)
-import Common.Algorithms(sortByLess)
+import Common.Types exposing (Positioned,Point,point2D)
+import Common.Algorithms exposing (sortByLess)
 
-import Color(Color, toRgb)
-import Graphics.Element(Element)
-import Graphics.Collage(Form, move, group, collage, scale)
-import List(filter, map)
-import Time(Time)
+import Color exposing (Color, toRgb)
+import Graphics.Element exposing (Element)
+import Graphics.Collage exposing (Form, move, group, collage, scale)
+import List exposing (filter, map)
+import Time exposing (Time)
 
 (gameWidth,gameHeight) = (200,200)
 
