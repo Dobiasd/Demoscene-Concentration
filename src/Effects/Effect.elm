@@ -19,4 +19,3 @@ step (Effect ef) = ef.step
 display : Effect -> Form
 display effect = case effect of
                    (Effect ef) -> ef.display
-                   _           -> rect 0 0 |> filled (rgb 0 0 0)

@@ -25,7 +25,7 @@ make : Eff.Effect
 make = plasma {time=0}
 
 step : State -> Float -> Eff.Effect
-step ({time} as state) delta = plasma { state | time <- time + delta }
+step ({time} as state) delta = plasma { state | time = time + delta }
 
 {-| Returns a plasma effect filled form depending on the current time. -}
 display : State -> Form

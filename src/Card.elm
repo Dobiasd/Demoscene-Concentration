@@ -46,7 +46,7 @@ border =
   let
     width = 10
     lsGray = solid gray
-    grayLSWide = { lsGray | width <- width, join <- Smooth, cap <- Round }
+    grayLSWide = { lsGray | width = width, join = Smooth, cap = Round }
   in
     rect (206 - width) (206 - width) |> outlined grayLSWide
 
@@ -59,12 +59,17 @@ doneOverlay : Form
 doneOverlay = rect 200 200 |> filled (rgba 0 0 0 0.4)
 
 {-| Create a card with an effect and a gived box (position and size). -}
-make effect box =
-  let
-    boxedEffect = { box | effect=effect }
-    boxedEffectWithStatus = { boxedEffect | status=FaceDown }
-  in
-    { boxedEffectWithStatus | doneTime=0 }
+make : Eff.Effect -> Common.Types.Box -> Card
+make effect box = {
+      effect = effect,
+      status = FaceDown,
+      doneTime = 0,
+      w = box.w,
+      h = box.h,
+      d = box.d,
+      x = box.x,
+      y = box.y,
+      z = box.z }
 
 {-| Step a cards state by a time delta. -}
 step : Float -> Card -> Card
@@ -75,10 +80,10 @@ step delta ({status, effect, doneTime} as card) =
   in
     case status of
       FaceDown -> card
-      _ -> { card | effect <- if isGone card
+      _ -> { card | effect = if isGone card
                                 then effect
                                 else Eff.step effect delta
-                  , doneTime <- doneTime' }
+                  , doneTime = doneTime' }
 
 {-| Do all cards in the list have the came effect name? -}
 allEqual : Cards -> Bool

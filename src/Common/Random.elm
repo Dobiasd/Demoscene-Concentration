@@ -55,9 +55,12 @@ randomFloats seed amount =
 The length of the list of random numbers has to be at least
 as long as the list that shall be shuffled. -}
 shuffle : List Int -> List a -> List a
-shuffle ((i::is) as randoms) l =
-  case l of
-    (x::xs) ->
-      let (firsts, rest) = splitAt (i % length l + 1) l
-      in (last firsts) :: shuffle is (init firsts ++ rest)
-    x -> x
+shuffle randoms l =
+  case randoms of
+    (i::is) ->
+      case l of
+        (x::xs) ->
+          let (firsts, rest) = splitAt (i % length l + 1) l
+          in (last firsts) :: shuffle is (init firsts ++ rest)
+        x -> x
+    _ -> Debug.crash "shuffle failed"

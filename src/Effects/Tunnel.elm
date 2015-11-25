@@ -82,7 +82,7 @@ generateNewDiscRing time =
     map toFloat [0..n] |> map ((+) time) |> map (generateNewRingDisc time)
 
 stepDisc : Float -> Disc -> Disc
-stepDisc delta ({z} as disc) = { disc | z <- z + 0.05 * delta }
+stepDisc delta ({z} as disc) = { disc | z = z + 0.05 * delta }
 
 stepDiscs : Float -> List Disc -> List Disc
 stepDiscs delta = map (stepDisc delta)
@@ -102,9 +102,9 @@ step ({time, discs, background} as state) delta =
     -- to reduce the amount of work for the sorting algorithm.
     discs' = newDiscs ++ oldDiscs
   in
-    tunnel { state | time <- time + delta
-                   , background <- Eff.step background delta
-                   , discs <- discs' }
+    tunnel { state | time = time + delta
+                   , background = Eff.step background delta
+                   , discs = discs' }
 
 display : State -> Form
 display ({time,background,discs} as state) =

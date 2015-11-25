@@ -41,6 +41,7 @@ init : List a -> List a
 init l = case l of
            [x] -> []
            (x::xs) -> x :: init xs
+           _ -> Debug.crash "init failed"
 
 {-| splitAt 2 [1,2,3,4,5,6] === ([1,2],[3,4,5,6]) -}
 splitAt : Int -> List a -> (List a, List a)

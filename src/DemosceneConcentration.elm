@@ -17,7 +17,7 @@ import Graphics.Collage exposing (group, Form, toForm, move)
 import Graphics.Element exposing (Element, leftAligned)
 import List exposing (map, concat, length, map2, (::), foldr, filter, all
   , isEmpty)
-import Signal exposing (merge, Signal, (<~), (~), sampleOn, dropRepeats
+import Signal exposing (merge, Signal, sampleOn, dropRepeats
   , foldp)
 import Text exposing (Text)
 import Time exposing (Time, fps)
@@ -59,7 +59,7 @@ speed : Signal Time
 speed = fps 60
 
 input : Signal Input
-input = (Input <~ actions)
+input = Signal.map Input actions
 
 steps : Signal Action
 steps = Signal.map Step speed
@@ -69,7 +69,7 @@ flips =
   let
     f t winDims = Tap (point2D (toFloat t.x) (toFloat t.y)) winDims
   in
-    f <~ Touch.taps ~ Window.dimensions |> sampleOn Touch.taps |> dropRepeats
+    Signal.map2 f Touch.taps Window.dimensions |> sampleOn Touch.taps |> dropRepeats
 
 
 -- /-------\
@@ -162,7 +162,7 @@ flipCardsHit tapPos cards =
                                                 Card.FaceUp -> Card.FaceDown
                                                 Card.FaceDown -> Card.FaceUp
                                                 _ -> status
-        card' = { card | status <- status' }
+        card' = { card | status = status' }
       in
         card'::acc
   in
@@ -175,8 +175,8 @@ stepTapStart ({x,y} as gameTapPos) ({state,cards} as game) =
   let
     shuffledCards = generateCards (x+y)
   in
-    stepTap gameTapPos { game | state <- Play,
-                                cards <- shuffledCards }
+    stepTap gameTapPos { game | state = Play,
+                                cards = shuffledCards }
 
 {-| Generate the final effect to be shown when the game is solved. -}
 -- The Sinescroller is removed here, because its Text will display the
@@ -198,7 +198,7 @@ stepPlayFlipCards tapPos cards =
     -- Only the cards that are not yet done play a role in flipping.
     cardsNotDone = filter (not << ((==) Card.Done) << (.status)) cards
     -- Put given cards face down.
-    putFaceDown = map (\c -> {c | status <- Card.FaceDown})
+    putFaceDown = map (\c -> {c | status = Card.FaceDown})
     -- How many cards are there face up?
     faceUpCount = cards |> filter (((==) Card.FaceUp) << (.status)) |> length
   in
@@ -224,13 +224,13 @@ stepTapPlay gameTapPos ({cards,time} as game) =
                                                               cardsNotDone'
     -- Did the player uncover a pair?
     foundPair = length cardsNotDoneUp' == 2 && Card.allEqual cardsNotDoneUp'
-    putCardsFaceDown = map (\c -> {c | status <- Card.Done})
+    putCardsFaceDown = map (\c -> {c | status = Card.Done})
     cards' = getDoneCards cards ++ cardsNotDoneDown'
              ++ if foundPair then putCardsFaceDown cardsNotDoneUp'
                              else cardsNotDoneUp'
   in
-    { game | cards <- cards'
-           , wonEffect <- generateWonEffect time }
+    { game | cards = cards'
+           , wonEffect = generateWonEffect time }
 
 {-| Dispatch user input by game state. -}
 stepTap : Point -> Game -> Game
@@ -248,7 +248,7 @@ stepCards delta cards =
 {-| Update wonEffect (only used when game is already solved). -}
 stepWon : Float -> Game -> Game
 stepWon delta ({wonEffect} as game) =
-  { game | wonEffect <- Eff.step wonEffect delta }
+  { game | wonEffect = Eff.step wonEffect delta }
 
 {-| Calculate state for next frame. -}
 stepDelta : Float -> Game -> Game
@@ -263,11 +263,11 @@ stepDelta delta ({cards, state, time, fpsCounter} as game) =
     -- Step game according to state
     game' = case state of
       Won -> stepWon delta game
-      _   -> { game | cards <- stepCards delta cards
-                    , time  <- time'
-                    , state <- if isEmpty cards then Won else state }
+      _   -> { game | cards = stepCards delta cards
+                    , time  = time'
+                    , state = if isEmpty cards then Won else state }
   in
-    { game' | fpsCounter <- stepFPSCounter delta fpsCounter }
+    { game' | fpsCounter = stepFPSCounter delta fpsCounter }
 
 {-| Dispatch by inpout. -}
 stepGame : Input -> Game -> Game
@@ -333,4 +333,4 @@ display ({state,fpsCounter} as game) =
             _   -> displayNotYetDone game
         , displayFPS fpsCounter ]
 
-main = (displayFullScreen display) <~ gameState ~ Window.dimensions
+main = Signal.map2 (displayFullScreen display) gameState Window.dimensions

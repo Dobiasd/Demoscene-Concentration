@@ -24,8 +24,8 @@ make = moire {time=0, background=Starfield.make Starfield.Colored 0.2 64}
 
 step : State -> Float -> Eff.Effect
 step ({time, background} as state) delta =
-  moire { state | time <- time + delta
-                , background <- Eff.step background delta }
+  moire { state | time = time + delta
+                , background = Eff.step background delta }
 
 type alias Line = (Vector, Vector)
 
@@ -47,7 +47,7 @@ displayLine num (s, e) =
   let
     width = 8
     lS = solid (hsla (2.6 + cos num) 1 0.5 0.1)
-    lSWide = { lS | width <- width }
+    lSWide = { lS | width = width }
     outline = path [(s.x,s.y), (e.x,e.y)]
   in
     outline |> traced lSWide

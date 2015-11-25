@@ -63,11 +63,11 @@ stepFPSCounter delta ({time,lastVal,counter} as fpsCounter) =
     time' = time + delta
     counter' = counter + 1
   in
-    if time' < 1000 then { fpsCounter | time <- time'
-                                      , counter <- counter + 1 }
-                    else { fpsCounter | time <- time' - 1000
-                                      , lastVal <- counter
-                                      , counter <- 0 }
+    if time' < 1000 then { fpsCounter | time = time'
+                                      , counter = counter + 1 }
+                    else { fpsCounter | time = time' - 1000
+                                      , lastVal = counter
+                                      , counter = 0 }
 
 {-| A form with a position for later sorting/filtering. -}
 type alias PositionedForm = Positioned {f:Form}

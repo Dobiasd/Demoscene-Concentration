@@ -86,11 +86,11 @@ stepBallUsual delta ({x,y,z,vx,vy,vz,col} as b) =
                       else (vy - 0.001 * delta)
     v' = vector vx vy' vz
   in
-    { b | x  <- p'.x,  y <- p'.y,  z <- p'.z
-        , vx <- v'.x, vy <- v'.y, vz <- v'.z }
+    { b | x  = p'.x,  y = p'.y,  z = p'.z
+        , vx = v'.x, vy = v'.y, vz = v'.z }
 
 throwBall : Ball -> Ball
-throwBall ({vy} as b) = { b | vy <- 2.0 }
+throwBall ({vy} as b) = { b | vy = 2.0 }
 
 pullToRoot : Float -> Ball -> Ball
 pullToRoot delta ({x,y,z,vx,vy,vz} as b) =
@@ -98,9 +98,9 @@ pullToRoot delta ({x,y,z,vx,vy,vz} as b) =
     diff = origin `subVec` b
     pull = diff `multVec` (0.00001 * delta)
   in
-    { b | vx <- vx + pull.x
-        , vy <- vy + pull.y
-        , vz <- vz + pull.z }
+    { b | vx = vx + pull.x
+        , vy = vy + pull.y
+        , vz = vz + pull.z }
 
 origin = {x=0,y=-15,z=0}
 
@@ -124,8 +124,8 @@ step ({time, balls} as state) delta =
   let
     balls' = balls |> map (stepBall delta)
   in
-    particles { state | time <- time + delta
-                      , balls <- balls' }
+    particles { state | time = time + delta
+                      , balls = balls' }
 
 displayFloor : Form
 displayFloor =

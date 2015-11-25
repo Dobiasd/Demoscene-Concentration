@@ -33,8 +33,8 @@ make message = sinescroller {message=message
 
 step : State -> Float -> Eff.Effect
 step ({time, cube} as state) delta =
-    sinescroller { state | time <- time + delta
-                         , cube <- Eff.step cube delta }
+    sinescroller { state | time = time + delta
+                         , cube = Eff.step cube delta }
 
 deconcat : String -> List String
 deconcat = String.foldr (\c acc -> String.fromList [c] :: acc) []
@@ -55,7 +55,7 @@ scrollerChar s pos col = {s=s, x=pos.x, y=pos.y, z=0, col=col}
 
 wrapCharPos : Float -> ScrollerChar -> ScrollerChar
 wrapCharPos minX ({x} as sc) =
-    { sc | x <- 100 + floatMod (x) (minX) }
+    { sc | x = 100 + floatMod (x) (minX) }
 
 scrollerChars a b c =
   (map (uncurry3 scrollerChar)) (map3 (\a b c -> (a,b,c)) a b c)

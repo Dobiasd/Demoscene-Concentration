@@ -33,8 +33,8 @@ make effects wireCol = cube {time=0, faceEffects=effects, wireCol=wireCol}
 
 step : State -> Float -> Eff.Effect
 step ({time,faceEffects} as state) delta =
-  cube { state | time <- time + delta
-               , faceEffects <-  map (\e -> Eff.step e delta) faceEffects }
+  cube { state | time = time + delta
+               , faceEffects =  map (\e -> Eff.step e delta) faceEffects }
 
 type alias Face = { tl:Vector, tr:Vector, bl:Vector }
 
@@ -101,7 +101,7 @@ renderFace wireCol ({tl,tr,bl} as face) form =
     br = faceBr face
     vtp {x,y} = (x,y)
     lsjustCol = solid wireCol
-    lSWide = {lsjustCol | width <- borderWidth, join <- Smooth, cap <- Round}
+    lSWide = {lsjustCol | width = borderWidth, join = Smooth, cap = Round}
     outline = path [vtp tr, vtp tl, vtp bl, vtp br, vtp tr]
     (m2d,m3d) = getAffineTransformation
           (-100,100) (100,100) (-100,-100)

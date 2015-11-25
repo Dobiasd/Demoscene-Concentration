@@ -18,7 +18,7 @@ import Common.Display exposing (decomposeColor)
 type alias Star = Positioned (Colored {})
 
 star : Vector -> Color -> Star
-star pos col = { pos | col = col }
+star pos col = { x = pos.x, y = pos.y, z = pos.z, col = col }
 
 type Mode = BW | Colored
 
@@ -64,7 +64,7 @@ generateNewStars mode amount time =
     map f triples
 
 stepStar : Float -> Star -> Star
-stepStar d ({z} as star) = { star | z <- z + d }
+stepStar d ({z} as star) = { star | z = z + d }
 
 stepStars : Float -> List Star -> List Star
 stepStars delta = map (stepStar delta)
@@ -76,8 +76,8 @@ step ({time, stars, speed, mode, amount} as state) delta =
     newAmount = max 0 (amount - length oldStars)
     stars' = (generateNewStars mode) newAmount time ++ oldStars
   in
-    starfield { state | time <- time + delta
-                      , stars <- stars' }
+    starfield { state | time = time + delta
+                      , stars = stars' }
 
 displayStar : Star -> Form
 displayStar ({x,y,z,col} as star) =

@@ -13,6 +13,7 @@ import Common.Types exposing (Positioned)
 import Common.Vector exposing (Vector,vector,angle2D,vector2DFromAngle,
               multVec,addVec,subVec)
 import Effects.Effect as Eff
+import Debug
 
 type alias State = {time:Float, points:List Vector, stepCount:Int}
 
@@ -26,21 +27,24 @@ make = eulerSpiral { time=0
                    , stepCount=0 }
 
 addPoint : List Vector -> Int -> List Vector
-addPoint ((a::b::_) as points) stepCount =
-  let
-    angle = angle2D <| a `subVec` b
-    angle' = angle + toFloat stepCount / 8.34567
-    d = vector2DFromAngle angle'
-    d' = d `multVec` 4
-    p = a `addVec` d'
-  in
-    p::points |> take 512
+addPoint points stepCount =
+  case points of
+    (a::b::_) ->
+      let
+        angle = angle2D <| a `subVec` b
+        angle' = angle + toFloat stepCount / 8.34567
+        d = vector2DFromAngle angle'
+        d' = d `multVec` 4
+        p = a `addVec` d'
+      in
+        p::points |> take 512
+    _ -> Debug.crash "addPoint failed"
 
 step : State -> Float -> Eff.Effect
 step ({time,points,stepCount} as state) delta =
-  eulerSpiral { state | time <- time + delta
-                      , points <- addPoint points stepCount
-                      , stepCount <- stepCount + 1}
+  eulerSpiral { state | time = time + delta
+                      , points = addPoint points stepCount
+                      , stepCount = stepCount + 1}
 
 getPointRange : List Vector -> ((Float,Float),(Float,Float))
 getPointRange points =
@@ -57,7 +61,7 @@ displayLine time num s e =
   let
     width = 2
     lS1 = solid (hsla (toFloat num / 10 + time / 1000) 1 0.5 1)
-    lS1Wide = { lS1 | width <- width, cap <- Round }
+    lS1Wide = { lS1 | width = width, cap = Round }
     pointToPair {x,y} = (x,y)
     outline = [pointToPair s, pointToPair e] |> path
   in

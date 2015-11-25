@@ -83,9 +83,9 @@ applyTransform3D
     , m31, m32, m33, m34
     , m41, m42, m43, m44 }
     ({x,y,z} as thing) =
-  { thing | x <- (m11*x + m12*y + m13*z) + m14
-          , y <- (m21*x + m22*y + m23*z) + m24
-          , z <- (m31*x + m32*y + m33*z) + m34 }
+  { thing | x = (m11*x + m12*y + m13*z) + m14
+          , y = (m21*x + m22*y + m23*z) + m24
+          , z = (m31*x + m32*y + m33*z) + m34 }
 
 
 -- source: http://stackoverflow.com/questions/1114257/transform-a-triangle-to-another-triangle
@@ -124,17 +124,17 @@ crossProduct a b =
 
 addVec : Vector -> Positioned a -> Positioned a
 addVec b ({x,y,z} as p) =
-  {p | x <- (x + b.x)
-     , y <- (y + b.y)
-     , z <- (z + b.z)}
+  {p | x = (x + b.x)
+     , y = (y + b.y)
+     , z = (z + b.z)}
 
 subVec : Positioned a -> Positioned b -> Vector
 subVec a b = Vector (a.x - b.x) (a.y - b.y) (a.z - b.z)
 
 multVec : Positioned a -> Float -> Positioned a
-multVec ({x,y,z} as a) f = { a | x <- x * f
-                               , y <- y * f
-                               , z <- z * f }
+multVec ({x,y,z} as a) f = { a | x = x * f
+                               , y = y * f
+                               , z = z * f }
 
 {-| Project a 3D position onto the x y plane
 with the virtual camera at the origin. -}
