@@ -52,7 +52,7 @@ randomFloats seed amount =
     foldr go (seed+1.23, []) [1..amount] |> snd
 
 {-| Suffle a list using random numbers
-The length of the list of random numbers has to be at least
+The length of the list of random numbers has to be larger
 as long as the list that shall be shuffled. -}
 shuffle : List Int -> List a -> List a
 shuffle randoms l =
