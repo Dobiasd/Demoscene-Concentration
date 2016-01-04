@@ -20,7 +20,7 @@ import List exposing (map, concat, length, map2, (::), foldr, filter, all
 import Signal exposing (merge, Signal, sampleOn, dropRepeats
   , foldp)
 import Text exposing (Text)
-import Time exposing (Time, fps)
+import Time exposing (Time)
 import Touch
 import Window
 
@@ -41,6 +41,8 @@ import Effects.Particles as Particles
 import Effects.Sinescroller as Sinescroller
 import Effects.Tunnel as Tunnel
 
+import AnimationFrame
+
 
 -- /--------\
 -- | inputs |
@@ -56,7 +58,7 @@ type Action = Tap Point (Int,Int) | Step Float
 actions = merge steps flips
 
 speed : Signal Time
-speed = fps 60
+speed = AnimationFrame.frame
 
 input : Signal Input
 input = Signal.map Input actions
