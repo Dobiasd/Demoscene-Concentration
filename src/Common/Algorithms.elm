@@ -1,4 +1,4 @@
-module Common.Algorithms where
+module Common.Algorithms (..) where
 
 {-| Commonly used Algorithms.
 -}
@@ -6,97 +6,164 @@ module Common.Algorithms where
 import Debug
 import List exposing ((::), map2, tail, length, filter)
 
+
 unsafeHead : List a -> a
-unsafeHead xs = case xs of
-  (x::_) -> x
-  _ -> Debug.crash "unsafeHead with empty list"
+unsafeHead xs =
+    case xs of
+        x :: _ ->
+            x
+
+        _ ->
+            Debug.crash "unsafeHead with empty list"
+
 
 unsafeTail : List a -> List a
-unsafeTail xs = case xs of
-  (_::ys) -> ys
-  _ -> Debug.crash "unsafeTail with empty list"
+unsafeTail xs =
+    case xs of
+        _ :: ys ->
+            ys
+
+        _ ->
+            Debug.crash "unsafeTail with empty list"
+
 
 unsafeMaybe : Maybe a -> a
-unsafeMaybe x = case x of
-  Just y -> y
-  _ -> Debug.crash "unsafeMaybe with Nothing"
+unsafeMaybe x =
+    case x of
+        Just y ->
+            y
 
-curry3 : ((a,b,c) -> d) -> a -> b -> c -> d
-curry3 f a b c = f (a,b,c)
+        _ ->
+            Debug.crash "unsafeMaybe with Nothing"
 
-uncurry3 : (a -> b -> c -> d) -> (a,b,c) -> d
-uncurry3 f (a,b,c) = f a b c
 
-uncurry4 : (a -> b -> c -> d -> e) -> (a,b,c,d) -> e
-uncurry4 f (a,b,c,d) = f a b c d
+curry3 : (( a, b, c ) -> d) -> a -> b -> c -> d
+curry3 f a b c =
+    f ( a, b, c )
+
+
+uncurry3 : (a -> b -> c -> d) -> ( a, b, c ) -> d
+uncurry3 f ( a, b, c ) =
+    f a b c
+
+
+uncurry4 : (a -> b -> c -> d -> e) -> ( a, b, c, d ) -> e
+uncurry4 f ( a, b, c, d ) =
+    f a b c d
+
 
 floatMod : Float -> Float -> Float
 floatMod numerator divisor =
-  let
-    q = numerator / divisor |> floor |> toFloat
-  in
-    numerator - q * divisor
+    let
+        q = numerator / divisor |> floor |> toFloat
+    in
+        numerator - q * divisor
+
 
 init : List a -> List a
-init l = case l of
-           [x] -> []
-           (x::xs) -> x :: init xs
-           _ -> Debug.crash "init failed"
+init l =
+    case l of
+        x :: [] ->
+            []
 
-{-| splitAt 2 [1,2,3,4,5,6] === ([1,2],[3,4,5,6]) -}
-splitAt : Int -> List a -> (List a, List a)
-splitAt n l = case (n, l) of
-                (0, xs)     -> ([], xs)
-                (_, [])     -> ([], [])
-                (n, (x::xs)) ->
-                  let (xs', xs'') = splitAt (n - 1) xs
-                  in (x::xs', xs'')
+        x :: xs ->
+            x :: init xs
 
-{-| pairs [1,2,3,4,5] === [(1,2),(2,3),(3,4),(4,5)] -}
-pairs : List a -> List (a,a)
-pairs xs = map2 (,) xs (unsafeTail xs)
+        _ ->
+            Debug.crash "init failed"
 
-{-| numberedPairs [a,b,c,d,e] === [(0,a,b),(1,b,c),(2,c,d),(3,d,e)] -}
-numberedPairs : List a -> List (Int,a,a)
+
+{-| splitAt 2 [1,2,3,4,5,6] === ([1,2],[3,4,5,6])
+-}
+splitAt : Int -> List a -> ( List a, List a )
+splitAt n l =
+    case ( n, l ) of
+        ( 0, xs ) ->
+            ( [], xs )
+
+        ( _, [] ) ->
+            ( [], [] )
+
+        ( n, x :: xs ) ->
+            let
+                ( xs', xs'' ) = splitAt (n - 1) xs
+            in
+                ( x :: xs', xs'' )
+
+
+{-| pairs [1,2,3,4,5] === [(1,2),(2,3),(3,4),(4,5)]
+-}
+pairs : List a -> List ( a, a )
+pairs xs =
+    map2 (,) xs (unsafeTail xs)
+
+
+{-| numberedPairs [a,b,c,d,e] === [(0,a,b),(1,b,c),(2,c,d),(3,d,e)]
+-}
+numberedPairs : List a -> List ( Int, a, a )
 numberedPairs xs =
-  let
-    ps = pairs xs
-    l = length ps - 1
-    nums = [0..l]
-  in
-    map2 (\i (a,b) -> (i,a,b)) nums ps
+    let
+        ps = pairs xs
 
-{-| nonOverlappingPairs [1,2,3,4,5] === [(1,2),(3,4)] -}
-nonOverlappingPairs : List a -> List (a,a)
+        l = length ps - 1
+
+        nums = [0..l]
+    in
+        map2 (\i ( a, b ) -> ( i, a, b )) nums ps
+
+
+{-| nonOverlappingPairs [1,2,3,4,5] === [(1,2),(3,4)]
+-}
+nonOverlappingPairs : List a -> List ( a, a )
 nonOverlappingPairs l =
-  case l of
-    (x1::x2::xs) -> (x1,x2) :: nonOverlappingPairs xs
-    _            -> []
+    case l of
+        x1 :: (x2 :: xs) ->
+            ( x1, x2 ) :: nonOverlappingPairs xs
 
-{-| nonOverlappingTriples [1,2,3,4,5,6,7,8] === [(1,2,3),(4,5,6)] -}
-nonOverlappingTriples : List a -> List (a,a,a)
+        _ ->
+            []
+
+
+{-| nonOverlappingTriples [1,2,3,4,5,6,7,8] === [(1,2,3),(4,5,6)]
+-}
+nonOverlappingTriples : List a -> List ( a, a, a )
 nonOverlappingTriples l =
-  case l of
-    (x1::x2::x3::xs) -> (x1,x2,x3) :: nonOverlappingTriples xs
-    _             -> []
+    case l of
+        x1 :: (x2 :: (x3 :: xs)) ->
+            ( x1, x2, x3 ) :: nonOverlappingTriples xs
 
-{-| nonOverlappingQuadruples [1,2,3,4,5,6,7,8,9] === [(1,2,3,4),(5,6,7,8)] -}
-nonOverlappingQuadruples : List a -> List (a,a,a,a)
+        _ ->
+            []
+
+
+{-| nonOverlappingQuadruples [1,2,3,4,5,6,7,8,9] === [(1,2,3,4),(5,6,7,8)]
+-}
+nonOverlappingQuadruples : List a -> List ( a, a, a, a )
 nonOverlappingQuadruples l =
-  case l of
-    (x1::x2::x3::x4::xs) -> (x1,x2,x3,x4) :: nonOverlappingQuadruples xs
-    _                    -> []
+    case l of
+        x1 :: (x2 :: (x3 :: (x4 :: xs))) ->
+            ( x1, x2, x3, x4 ) :: nonOverlappingQuadruples xs
 
-{-| Sort list with given comparison function. -}
+        _ ->
+            []
+
+
+{-| Sort list with given comparison function.
+-}
 quicksort : (a -> a -> Bool) -> List a -> List a
 quicksort cmp l =
-  case l of
-    [] -> []
-    (p::xs) ->
-      let
-        lesser  = filter (cmp p) xs
-        greater = filter (cmp p >> not) xs
-      in
-        (quicksort cmp lesser) ++ [p] ++ (quicksort cmp greater)
+    case l of
+        [] ->
+            []
 
-sortByLess = quicksort
+        p :: xs ->
+            let
+                lesser = filter (cmp p) xs
+
+                greater = filter (cmp p >> not) xs
+            in
+                (quicksort cmp lesser) ++ [ p ] ++ (quicksort cmp greater)
+
+
+sortByLess =
+    quicksort
